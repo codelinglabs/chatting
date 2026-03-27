@@ -1,0 +1,55 @@
+import { renderToStaticMarkup } from "react-dom/server";
+
+async function renderSignupForm() {
+  vi.resetModules();
+
+  vi.doMock("next/navigation", () => ({
+    useRouter: () => ({
+      replace: vi.fn(),
+      push: vi.fn(),
+      refresh: vi.fn(),
+      prefetch: vi.fn()
+    })
+  }));
+
+  vi.doMock("react-dom", async () => {
+    const actual = await vi.importActual<typeof import("react-dom")>("react-dom");
+    return {
+      ...actual,
+      useFormStatus: () => ({ pending: false })
+    };
+  });
+
+  vi.doMock("../login/actions", () => ({
+    signupAction: vi.fn()
+  }));
+
+  vi.doMock("react", async () => {
+    const actual = await vi.importActual<typeof import("react")>("react");
+
+    return {
+      ...actual,
+      useEffect: vi.fn(),
+      useActionState: vi.fn((_: unknown, initialState: unknown) => [initialState, vi.fn()]),
+      useMemo: (factory: () => unknown) => factory(),
+      useState: vi.fn((initialValue: unknown) => [initialValue, vi.fn()])
+    };
+  });
+
+  const module = await import("./signup-form");
+  return renderToStaticMarkup(<module.SignupForm />);
+}
+
+describe("signup form", () => {
+  it("renders the standalone signup screen copy", async () => {
+    const html = await renderSignupForm();
+
+    expect(html).toContain("Start chatting in minutes");
+    expect(html).toContain("Create your account");
+    expect(html).toContain("Website URL");
+    expect(html).toContain("Free");
+    expect(html).toContain("5 min");
+    expect(html).toContain("No CC");
+    expect(html).toContain("Sign in");
+  });
+});

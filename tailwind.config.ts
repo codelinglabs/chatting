@@ -8,14 +8,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0d1b1e",
-        tide: "#0f766e",
-        sand: "#f7f1e8",
-        coral: "#ef7a5d",
-        sky: "#dff2f3"
+        ink: "#0F172A",
+        tide: "#2563EB",
+        sand: "#F1F5F9",
+        coral: "#EF4444",
+        sky: "#DBEAFE"
       },
       boxShadow: {
-        glow: "0 20px 60px rgba(15, 118, 110, 0.18)"
+        glow: "0 20px 40px rgba(37, 99, 235, 0.14)"
       }
     }
   },
@@ -23,4 +23,3 @@ const config: Config = {
 };
 
 export default config;
-

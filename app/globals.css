@@ -3,14 +3,21 @@
 @tailwind utilities;
 
 :root {
-  --background: #f7f1e8;
-  --foreground: #0d1b1e;
-  --muted: #5f6b6c;
-  --panel: rgba(255, 255, 255, 0.84);
-  --panel-border: rgba(13, 27, 30, 0.08);
-  --accent: #0f766e;
-  --accent-soft: #dff2f3;
-  --highlight: #ef7a5d;
+  --background: #f8fbff;
+  --foreground: #0f172a;
+  --muted: #475569;
+  --muted-soft: #94a3b8;
+  --panel: rgba(255, 255, 255, 0.92);
+  --panel-border: rgba(148, 163, 184, 0.22);
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --accent-soft: #dbeafe;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --font-sans: "DM Sans", "Sohne", "Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-mono: "Sohne Mono", "SF Mono", Consolas, monospace;
 }
 
 * {
@@ -25,11 +32,11 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top right, rgba(239, 122, 93, 0.22), transparent 28%),
-    radial-gradient(circle at left center, rgba(15, 118, 110, 0.14), transparent 34%),
-    linear-gradient(180deg, #fffaf3 0%, var(--background) 100%);
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 26%),
+    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.08), transparent 22%),
+    linear-gradient(180deg, #ffffff 0%, var(--background) 100%);
   color: var(--foreground);
-  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
 }
 
 a {
@@ -39,17 +46,20 @@ a {
 
 code,
 pre {
-  font-family: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-mono);
 }
 
 .display-font {
-  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-family: var(--font-serif);
+  font-variation-settings: "SOFT" 70, "WONK" 0;
+  letter-spacing: -0.03em;
 }
 
 .glass-panel {
   background: var(--panel);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(18px);
   border: 1px solid var(--panel-border);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
 }
 
 .grain {
@@ -69,18 +79,157 @@ pre {
   mask-image: radial-gradient(circle at center, black, transparent 90%);
 }
 
+.hover-lift {
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out,
+    border-color 200ms ease-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 22px 44px rgba(15, 23, 42, 0.08);
+}
+
+.message-enter {
+  animation: messageIn 450ms ease-out both;
+}
+
+.float-badge {
+  animation: floaty 4.2s ease-in-out infinite;
+}
+
+.float-badge-delayed {
+  animation: floaty 4.8s ease-in-out infinite;
+  animation-delay: 0.8s;
+}
+
+.glow-send {
+  box-shadow:
+    0 0 0 0 rgba(37, 99, 235, 0.25),
+    0 10px 25px rgba(37, 99, 235, 0.28);
+  transition:
+    transform 160ms ease-out,
+    background-color 160ms ease-out,
+    box-shadow 160ms ease-out;
+}
+
+.glow-send:hover {
+  transform: scale(1.04);
+  background-color: #1d4ed8;
+  box-shadow:
+    0 0 0 10px rgba(37, 99, 235, 0.08),
+    0 16px 32px rgba(37, 99, 235, 0.34);
+}
+
+.typing-dot {
+  animation: typingDot 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes typingDot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
 textarea,
 input,
 button {
   font: inherit;
 }
 
+textarea,
+input {
+  color: var(--foreground);
+}
+
 button {
   cursor: pointer;
 }
 
-.thread-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(13, 27, 30, 0.18) transparent;
+button:disabled {
+  cursor: not-allowed;
 }
 
+:focus-visible {
+  outline: none;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.thread-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .float-badge,
+  .float-badge-delayed,
+  .typing-dot,
+  .message-enter {
+    animation: none !important;
+  }
+
+  .hover-lift:hover,
+  .glow-send:hover {
+    transform: none !important;
+  }
+}
