@@ -1,28 +1,37 @@
+import { sendWelcomeTemplateEmail } from "@/lib/conversation-template-emails";
 import { updateConversationEmail } from "@/lib/data";
-import { dashboardRedirect, requireRouteUser } from "@/lib/route-helpers";
+import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
 
 export async function POST(request: Request) {
-  const auth = await requireRouteUser(request);
+  const auth = await requireJsonRouteUser();
   if ("response" in auth) {
     return auth.response;
   }
   const { user } = auth;
 
   const formData = await request.formData();
-  const conversationId = String(formData.get("conversationId") ?? "");
+  const conversationId = String(formData.get("conversationId") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
 
-  if (conversationId && email) {
-    const updated = await updateConversationEmail(conversationId, email, user.id);
-    if (!updated) {
-      return dashboardRedirect(request, {
-        error: "not-found"
+  if (!conversationId || !email) {
+    return jsonError("missing-fields", 400);
+  }
+
+  const updated = await updateConversationEmail(conversationId, email, user.id);
+  if (!updated.updated) {
+    return jsonError("not-found", 404);
+  }
+
+  if (updated.welcomeEmailEligible) {
+    try {
+      await sendWelcomeTemplateEmail({
+        conversationId,
+        userId: user.id
       });
+    } catch (templateError) {
+      console.error("welcome template email failed", templateError);
     }
   }
 
-  return dashboardRedirect(request, {
-    conversationId,
-    success: "email-saved"
-  });
+  return jsonOk({ conversationId, email });
 }

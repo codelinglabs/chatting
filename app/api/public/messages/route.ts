@@ -1,71 +1,115 @@
-import { NextResponse } from "next/server";
 import { createUserMessage } from "@/lib/data";
-
-function corsHeaders() {
-  return {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
-  };
-}
+import { extractUploadedAttachments, extractVisitorMetadata } from "@/lib/conversation-io";
+import { sendWelcomeTemplateEmail } from "@/lib/conversation-template-emails";
+import { publishConversationLive } from "@/lib/live-events";
+import { publicJsonResponse, publicNoContentResponse } from "@/lib/public-api";
+import { notifyIncomingVisitorMessage } from "@/lib/team-notifications";
 
 export function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders()
-  });
+  return publicNoContentResponse();
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const siteId = String(body.siteId ?? "").trim();
-    const sessionId = String(body.sessionId ?? "").trim();
-    const content = String(body.content ?? "").trim();
-    const conversationId = body.conversationId ? String(body.conversationId) : null;
-    const email = body.email ? String(body.email) : null;
+    const contentType = request.headers.get("content-type") || "";
+    const isMultipart = contentType.includes("multipart/form-data");
+    const body = isMultipart ? null : await request.json();
+    const formData = isMultipart ? await request.formData() : null;
+    const siteId = String((formData?.get("siteId") ?? body?.siteId) ?? "").trim();
+    const sessionId = String((formData?.get("sessionId") ?? body?.sessionId) ?? "").trim();
+    const content = String((formData?.get("content") ?? body?.content) ?? "").trim();
+    const conversationIdValue = formData?.get("conversationId") ?? body?.conversationId;
+    const emailValue = formData?.get("email") ?? body?.email;
+    const conversationId = conversationIdValue ? String(conversationIdValue) : null;
+    const email = emailValue ? String(emailValue) : null;
+    const attachments = formData ? await extractUploadedAttachments(formData) : [];
 
-    if (!siteId || !sessionId || !content) {
-      return NextResponse.json(
-        { error: "siteId, sessionId, and content are required." },
-        {
-          status: 400,
-          headers: corsHeaders()
-        }
+    if (!siteId || !sessionId || (!content && !attachments.length)) {
+      return publicJsonResponse(
+        { error: "siteId, sessionId, and either content or an attachment are required." },
+        { status: 400 }
       );
     }
+
+    const metadata = extractVisitorMetadata(request, {
+      pageUrl: formData ? String(formData.get("pageUrl") ?? "") : body?.pageUrl ? String(body.pageUrl) : null,
+      referrer: formData ? String(formData.get("referrer") ?? "") : body?.referrer ? String(body.referrer) : null,
+      timezone: formData ? String(formData.get("timezone") ?? "") : body?.timezone ? String(body.timezone) : null,
+      locale: formData ? String(formData.get("locale") ?? "") : body?.locale ? String(body.locale) : null
+    });
 
     const result = await createUserMessage({
       siteId,
       sessionId,
       conversationId,
       email,
+      attachments,
       content,
-      metadata: {
-        pageUrl: body.pageUrl ? String(body.pageUrl) : null,
-        referrer: body.referrer ? String(body.referrer) : null,
-        userAgent: request.headers.get("user-agent")
-      }
+      metadata
     });
 
-    return NextResponse.json(
-      { ok: true, conversationId: result.conversationId },
-      {
-        headers: corsHeaders()
+    publishConversationLive(result.conversationId, {
+      type: "message.created",
+      conversationId: result.conversationId,
+      sender: "user",
+      createdAt: result.message.createdAt
+    });
+    publishConversationLive(result.conversationId, {
+      type: "conversation.updated",
+      conversationId: result.conversationId,
+      status: "open",
+      updatedAt: result.message.createdAt
+    });
+
+    await notifyIncomingVisitorMessage({
+      userId: result.siteUserId,
+      conversationId: result.conversationId,
+      createdAt: result.message.createdAt,
+      preview: result.preview,
+      siteName: result.siteName,
+      visitorLabel: result.visitorLabel,
+      pageUrl: result.pageUrl,
+      location: result.location,
+      attachmentsCount: attachments.length,
+      isNewConversation: result.isNewConversation,
+      isNewVisitor: result.isNewVisitor,
+      highIntent: result.highIntent
+    });
+
+    if (result.welcomeEmailEligible) {
+      try {
+        await sendWelcomeTemplateEmail({
+          conversationId: result.conversationId,
+          userId: result.siteUserId
+        });
+      } catch (templateError) {
+        console.error("welcome template email failed", templateError);
       }
-    );
+    }
+
+    return publicJsonResponse({
+      ok: true,
+      conversationId: result.conversationId,
+      message: result.message
+    });
   } catch (error) {
     console.error("public message error", error);
-    const status = error instanceof Error && error.message === "SITE_NOT_FOUND" ? 404 : 500;
+    const status =
+      error instanceof Error && error.message === "SITE_NOT_FOUND"
+        ? 404
+        : error instanceof Error &&
+            (error.message === "ATTACHMENT_LIMIT" || error.message === "ATTACHMENT_TOO_LARGE")
+          ? 400
+          : 500;
     const message =
-      status === 404 ? "Unknown siteId. Create a site in the dashboard first." : "Unable to store message.";
+      status === 404
+        ? "Unknown siteId. Create a site in the dashboard first."
+        : error instanceof Error && error.message === "ATTACHMENT_LIMIT"
+          ? "You can attach up to 3 files per message."
+          : error instanceof Error && error.message === "ATTACHMENT_TOO_LARGE"
+            ? "Each attachment must be smaller than 4 MB."
+            : "Unable to store message.";
 
-    return NextResponse.json(
-      { error: message },
-      {
-        status,
-        headers: corsHeaders()
-      }
-    );
+    return publicJsonResponse({ error: message }, { status });
   }
 }

@@ -1,0 +1,65 @@
+import { sendResolvedConversationTemplateEmails } from "@/lib/conversation-template-emails";
+import { getConversationSummaryById, markConversationRead, updateConversationStatus } from "@/lib/data";
+import { publishConversationLive, publishDashboardLive } from "@/lib/live-events";
+import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
+
+export async function POST(request: Request) {
+  const auth = await requireJsonRouteUser();
+  if ("response" in auth) {
+    return auth.response;
+  }
+
+  const formData = await request.formData().catch(() => null);
+  const conversationId = String(formData?.get("conversationId") ?? "").trim();
+  const status = String(formData?.get("status") ?? "").trim();
+
+  if (!conversationId || (status !== "open" && status !== "resolved")) {
+    return jsonError("missing-fields", 400);
+  }
+
+  const updatedStatus = await updateConversationStatus(conversationId, status, auth.user.id);
+  if (!updatedStatus) {
+    return jsonError("not-found", 404);
+  }
+
+  if (updatedStatus === "resolved") {
+    await markConversationRead(conversationId, auth.user.id);
+  }
+
+  const summary = await getConversationSummaryById(conversationId, auth.user.id);
+  const updatedAt = summary?.updatedAt ?? new Date().toISOString();
+
+  publishConversationLive(conversationId, {
+    type: "conversation.updated",
+    conversationId,
+    status: updatedStatus,
+    updatedAt
+  });
+  publishDashboardLive(auth.user.id, {
+    type: "conversation.updated",
+    conversationId,
+    status: updatedStatus,
+    updatedAt
+  });
+
+  if (updatedStatus === "resolved") {
+    publishDashboardLive(auth.user.id, {
+      type: "conversation.read",
+      conversationId,
+      updatedAt
+    });
+  }
+
+  if (updatedStatus === "resolved") {
+    try {
+      await sendResolvedConversationTemplateEmails({
+        conversationId,
+        userId: auth.user.id
+      });
+    } catch (templateError) {
+      console.error("resolved conversation template email failed", templateError);
+    }
+  }
+
+  return jsonOk({ conversationId, status: updatedStatus });
+}

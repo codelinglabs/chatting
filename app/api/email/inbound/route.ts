@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { addInboundReply } from "@/lib/data";
+import { addInboundReply, getConversationNotificationContext } from "@/lib/data";
+import { publishConversationLive } from "@/lib/live-events";
+import { previewIncomingMessage } from "@/lib/notification-utils";
+import { notifyIncomingVisitorMessage } from "@/lib/team-notifications";
 
 type ResendReceivedEvent = {
   type: "email.received";
@@ -154,7 +157,40 @@ export async function POST(request: Request) {
     const body = await extractReplyBody(event);
     const from = extractSenderEmail(event.data.from);
 
-    await addInboundReply(conversationId, from, body);
+    const message = await addInboundReply(conversationId, from, body);
+    const context = await getConversationNotificationContext(conversationId);
+
+    publishConversationLive(conversationId, {
+      type: "message.created",
+      conversationId,
+      sender: "user",
+      createdAt: message.createdAt
+    });
+    publishConversationLive(conversationId, {
+      type: "conversation.updated",
+      conversationId,
+      status: "open",
+      updatedAt: message.createdAt
+    });
+
+    if (context) {
+      const summary = context.summary;
+
+      await notifyIncomingVisitorMessage({
+        userId: context.userId,
+        conversationId,
+        createdAt: message.createdAt,
+        preview: previewIncomingMessage(body, 0),
+        siteName: context.siteName,
+        visitorLabel: summary?.email ?? from,
+        pageUrl: summary?.pageUrl ?? null,
+        location: [summary?.city, summary?.region, summary?.country].filter(Boolean).join(", ") || null,
+        attachmentsCount: 0,
+        isNewConversation: false,
+        isNewVisitor: false,
+        highIntent: false
+      });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

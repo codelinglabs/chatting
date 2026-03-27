@@ -1,27 +1,25 @@
 import { toggleTag } from "@/lib/data";
-import { dashboardRedirect, requireRouteUser } from "@/lib/route-helpers";
+import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
 
 export async function POST(request: Request) {
-  const auth = await requireRouteUser(request);
+  const auth = await requireJsonRouteUser();
   if ("response" in auth) {
     return auth.response;
   }
   const { user } = auth;
 
   const formData = await request.formData();
-  const conversationId = String(formData.get("conversationId") ?? "");
-  const tag = String(formData.get("tag") ?? "");
+  const conversationId = String(formData.get("conversationId") ?? "").trim();
+  const tag = String(formData.get("tag") ?? "").trim();
 
-  if (conversationId && tag) {
-    const updated = await toggleTag(conversationId, tag, user.id);
-    if (!updated) {
-      return dashboardRedirect(request, {
-        error: "not-found"
-      });
-    }
+  if (!conversationId || !tag) {
+    return jsonError("missing-fields", 400);
   }
 
-  return dashboardRedirect(request, {
-    conversationId
-  });
+  const updated = await toggleTag(conversationId, tag, user.id);
+  if (!updated) {
+    return jsonError("not-found", 404);
+  }
+
+  return jsonOk({ conversationId, tag });
 }

@@ -1,0 +1,43 @@
+import { updateConversationTyping } from "@/lib/data";
+import { publishConversationLive, publishDashboardLive } from "@/lib/live-events";
+import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
+
+export async function POST(request: Request) {
+  const auth = await requireJsonRouteUser();
+  if ("response" in auth) {
+    return auth.response;
+  }
+
+  const body = await request.json().catch(() => null);
+  const conversationId = String(body?.conversationId ?? "").trim();
+  const typing = Boolean(body?.typing);
+
+  if (!conversationId) {
+    return jsonError("not-found", 404);
+  }
+
+  const ok = await updateConversationTyping({
+    conversationId,
+    userId: auth.user.id,
+    typing
+  });
+
+  if (!ok) {
+    return jsonError("not-found", 404);
+  }
+
+  publishConversationLive(conversationId, {
+    type: "typing.updated",
+    conversationId,
+    actor: "team",
+    typing
+  });
+  publishDashboardLive(auth.user.id, {
+    type: "typing.updated",
+    conversationId,
+    actor: "team",
+    typing
+  });
+
+  return jsonOk({ conversationId, typing });
+}
