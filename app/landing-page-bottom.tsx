@@ -3,15 +3,47 @@ import { CheckIcon } from "./dashboard/dashboard-ui";
 import { codeSnippet, plans, setupSteps, stats, testimonials } from "./landing-page-data";
 import { SectionLabel } from "./landing-page-primitives";
 
+const footerGroups = [
+  {
+    title: "Product",
+    links: [
+      { label: "Features", href: "#features" },
+      { label: "Pricing", href: "#pricing" },
+      { label: "Changelog" },
+      { label: "Status" }
+    ]
+  },
+  {
+    title: "Company",
+    links: [{ label: "About" }, { label: "Blog" }, { label: "Careers" }, { label: "Contact" }]
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Help Center" },
+      { label: "API Docs", href: "#docs" },
+      { label: "Widget Guide", href: "#how-it-works" },
+      { label: "Security" }
+    ]
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+      { label: "Cookies" }
+    ]
+  }
+] as const;
+
 export function LandingBottomSections() {
   return (
     <>
       <section className="bg-white">
         <div className="mx-auto w-full max-w-[1240px] px-4 py-24 sm:px-6 lg:px-8">
-          <div className="grid gap-14 px-2 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div className="grid gap-14 px-2 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
             <div>
-              <SectionLabel>Team Inbox</SectionLabel>
-              <h2 className="display-font mt-5 text-4xl text-slate-900 sm:text-5xl">One inbox for your entire team</h2>
+              <h2 className="display-font text-4xl text-slate-900 sm:text-5xl">One inbox for your entire team</h2>
               <p className="mt-5 text-lg leading-8 text-slate-600">
                 Every conversation in one place. See who&apos;s handling what. Jump in when teammates need backup.
                 No more &ldquo;Did anyone reply to this?&rdquo;
@@ -25,7 +57,7 @@ export function LandingBottomSections() {
             </div>
 
             <div className="overflow-hidden rounded-[34px] border border-slate-200/90 bg-[#FCFDFE] shadow-[0_18px_54px_rgba(15,23,42,0.06)]">
-              <div className="grid min-h-[540px] lg:grid-cols-[220px_1fr_220px]">
+              <div className="grid min-h-[540px] lg:grid-cols-[192px_minmax(0,1.35fr)_208px]">
                 <div className="border-b border-slate-200 bg-slate-50/80 p-4 lg:border-b-0 lg:border-r">
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between rounded-[18px] bg-white px-4 py-3 font-medium text-slate-700">
@@ -72,17 +104,17 @@ export function LandingBottomSections() {
                   </div>
                 </div>
 
-                <div className="border-b border-slate-200 bg-white px-5 py-5 lg:border-b-0 lg:border-r">
+                <div className="border-b border-slate-200 bg-white px-6 py-5 lg:border-b-0 lg:border-r">
                   <div className="border-b border-slate-200 pb-5">
                     <p className="text-sm font-semibold text-slate-900">Alex Chen</p>
                     <p className="mt-1 text-sm text-slate-500">alex@example.com</p>
                   </div>
 
                   <div className="space-y-4 py-5">
-                    <div className="max-w-[74%] rounded-[18px] rounded-bl-md bg-slate-100 px-4 py-3 text-sm leading-8 text-slate-700">
+                    <div className="max-w-[76%] rounded-[18px] rounded-bl-md bg-slate-100 px-4 py-3 text-sm leading-7 text-slate-700">
                       Quick question about pricing...
                     </div>
-                    <div className="ml-auto max-w-[78%] rounded-[18px] rounded-br-md bg-blue-600 px-4 py-3 text-sm leading-8 text-white">
+                    <div className="ml-auto max-w-[88%] rounded-[18px] rounded-br-md bg-blue-600 px-4 py-3 text-sm leading-7 text-white">
                       Happy to help! What would you like to know?
                     </div>
                   </div>
@@ -305,59 +337,67 @@ export function LandingBottomSections() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.2),transparent_34%),#0F172A] text-white">
+      <section
+        className="relative -mt-px overflow-hidden text-white"
+        style={{
+          backgroundColor: "#2563EB"
+        }}
+      >
         <div className="relative mx-auto w-full max-w-[1240px] px-4 sm:px-6 lg:px-8">
           <section className="px-2 py-32 sm:py-36">
             <div className="mx-auto max-w-5xl text-center">
               <h2 className="display-font text-5xl leading-tight text-white sm:text-6xl lg:text-7xl">
                 Your next customer is on your site right now.
               </h2>
-              <p className="mx-auto mt-8 max-w-3xl text-xl leading-9 text-slate-400">
-                They have a question. Are you going to answer it, or is someone else?
+              <p className="mx-auto mt-8 max-w-3xl text-xl leading-9 text-blue-100/90">
+                They have a question. Are you going to answer it?
               </p>
               <div className="mt-12 flex flex-col items-center gap-8">
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-3 rounded-2xl bg-blue-600 px-9 py-5 text-center text-lg font-semibold text-white transition hover:bg-blue-700"
+                  className="inline-flex items-center gap-3 rounded-2xl bg-white px-9 py-5 text-center text-lg font-semibold text-blue-700 transition hover:bg-blue-50"
                 >
                   Start chatting free
                   <span aria-hidden="true">→</span>
                 </Link>
-                <p className="text-lg text-slate-400">
-                  Free plan available. No credit card required. Setup takes 5 minutes.
-                </p>
+                <p className="text-lg text-blue-100/85">Set up Chatting in 5 minutes. No credit card required.</p>
               </div>
             </div>
           </section>
 
-          <footer
-            id="footer"
-            className="flex flex-col gap-6 border-t border-white/10 py-10 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <p className="text-sm text-slate-500">© 2024 Chatting. Made with ☕ for small teams everywhere.</p>
+          <footer id="footer" className="border-t border-white/15 py-14">
+            <div className="grid gap-10 lg:grid-cols-[1.35fr_repeat(4,minmax(0,0.7fr))]">
+              <div className="max-w-sm">
+                <p className="text-2xl font-semibold text-white">Chatting</p>
+                <p className="mt-4 text-sm leading-7 text-blue-100/80">
+                  Live chat for teams who care. Built for small teams, priced for small teams.
+                </p>
+              </div>
 
-            <div className="flex items-center gap-4">
-              <a
-                href="https://x.com"
-                aria-label="Chatting on X"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-sm font-semibold text-slate-300 transition hover:bg-white/14 hover:text-white"
-              >
-                X
-              </a>
-              <a
-                href="#"
-                aria-label="Chatting on LinkedIn"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-sm font-semibold text-slate-300 transition hover:bg-white/14 hover:text-white"
-              >
-                in
-              </a>
-              <a
-                href="#"
-                aria-label="Chatting social"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-slate-300 transition hover:bg-white/14 hover:text-white"
-              >
-                <span className="h-3.5 w-3.5 rounded-full border border-current" />
-              </a>
+              {footerGroups.map((group) => (
+                <div key={group.title}>
+                  <p className="text-sm font-semibold text-white">{group.title}</p>
+                  <ul className="mt-4 space-y-3 text-sm text-blue-100/80">
+                    {group.links.map((link) => (
+                      <li key={link.label}>
+                        {"href" in link ? (
+                          <Link className="transition hover:text-white" href={link.href}>
+                            {link.label}
+                          </Link>
+                        ) : (
+                          <span>{link.label}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-12 space-y-1 text-sm leading-6 text-blue-100/72">
+              <p>Chatting by Regulus Framework Limited. All rights reserved.</p>
+              <p>Registered in England and Wales. Company No. 16998528</p>
+              <p>Registered office: 124-128 City Road, London, EC1V 2NX</p>
             </div>
           </footer>
         </div>

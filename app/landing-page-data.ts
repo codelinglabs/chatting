@@ -15,24 +15,24 @@ export const pillars = [
     title: "Real-time, really",
     body:
       "See who's typing. Know when messages are read. No refresh button in sight. When someone asks a question, you answer, and they see it appear in real-time.",
-    stat: "< 100ms",
-    meta: "message latency"
+    stat: "",
+    meta: ""
   },
   {
     icon: "eye",
     title: "Context at a glance",
     body:
       "See what page they're viewing, where they came from, and how long they've been browsing. Start every conversation with context, not \"How can I help you today?\"",
-    stat: "No more",
-    meta: "\"What's your account email?\""
+    stat: "",
+    meta: ""
   },
   {
     icon: "users",
     title: "Small team, big presence",
     body:
       "Customizable branding, smart away messages, and email fallback mean you're always on, even when you're not. Your team of 3 can feel like a team of 30.",
-    stat: "Coverage",
-    meta: "without the overhead"
+    stat: "",
+    meta: ""
   }
 ];
 
