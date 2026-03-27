@@ -23,6 +23,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Added a guided onboarding flow for widget customization, installation, and verification.
 - Shipped the embeddable widget runtime, public conversation APIs, and live conversation plumbing.
 - Rebuilt the dashboard into modular inbox, visitors, analytics, settings, team, and widget surfaces.
+- Added repo guidance, product notes, and design system references for contributors.
 
 ## 🚀 Key Modules
 
@@ -51,6 +52,10 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Stripe-backed billing flows for checkout, portal access, invoice sync, and webhook handling.
 - Cloudflare R2-backed team photo uploads for widget presentation.
 - Vitest-based app test suite covering routes, pages, helpers, onboarding, widget flows, and billing.
+
+### Contributor Docs
+
+- Repo agent guidance, product context, and design-system reference docs live alongside the codebase.
 
 ## Ops Note
 
