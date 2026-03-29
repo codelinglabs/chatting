@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { createHomeData } from "./dashboard-home.test-fixtures";
 
 const mocks = vi.hoisted(() => ({
   getDashboardHomeData: vi.fn()
@@ -42,38 +43,7 @@ import { DashboardHome } from "./dashboard-home";
 
 describe("dashboard home", () => {
   it("renders metrics, conversations, and installation state", async () => {
-    mocks.getDashboardHomeData.mockResolvedValueOnce({
-      openConversations: 6,
-      openConversationsDelta: 2,
-      resolvedToday: 4,
-      resolvedTodayDelta: 1,
-      avgResponseSeconds: 72,
-      avgResponseDeltaPercent: 12,
-      satisfactionPercent: 94,
-      satisfactionDeltaPercent: 3,
-      recentConversations: [
-        {
-          id: "conv_1",
-          email: "alex@example.com",
-          unreadCount: 2,
-          lastMessageAt: "2026-03-27T12:00:00.000Z",
-          updatedAt: "2026-03-27T12:00:00.000Z",
-          lastMessagePreview: "Quick question about pricing...",
-          pageUrl: "/pricing"
-        }
-      ],
-      chart: {
-        changePercent: 8,
-        total: 15,
-        points: [
-          { label: "Mon", count: 3 },
-          { label: "Tue", count: 7 },
-          { label: "Wed", count: 5 }
-        ]
-      },
-      hasWidgetInstalled: true,
-      widgetSiteIds: ["site_1"]
-    });
+    mocks.getDashboardHomeData.mockResolvedValueOnce(createHomeData());
 
     const html = renderToStaticMarkup(
       await DashboardHome({
@@ -86,13 +56,18 @@ describe("dashboard home", () => {
     expect(html).toContain("Resolved today");
     expect(html).toContain("Avg response time");
     expect(html).toContain("Visitor satisfaction");
+    expect(html).not.toContain("Growth loops");
+    expect(html).not.toContain("The widget is live. Now push for the first conversation.");
+    expect(html).not.toContain("Customer health score");
+    expect(html).not.toContain("Expansion revenue");
+    expect(html).not.toContain("Unlock deeper analytics and API access");
     expect(html).toContain("Recent conversations");
     expect(html).toContain("Quick question about pricing...");
     expect(html).toContain("Widget installed");
   });
 
   it("renders empty-state copy and neutral badges when data is missing", async () => {
-    mocks.getDashboardHomeData.mockResolvedValueOnce({
+    mocks.getDashboardHomeData.mockResolvedValueOnce(createHomeData({
       openConversations: 0,
       openConversationsDelta: 0,
       resolvedToday: 0,
@@ -110,9 +85,54 @@ describe("dashboard home", () => {
           { label: "Tue", count: 0 }
         ]
       },
+      growth: {
+        activation: {
+          status: "needs-install",
+          tone: "warning",
+          badge: "Install blocker",
+          title: "Activation is blocked until the widget is live",
+          description: "No chats can happen until the widget is installed.",
+          helper: "Finish installation to start the clock",
+          action: { label: "Check installation", href: "/dashboard/widget" }
+        },
+        health: {
+          status: "at-risk",
+          tone: "warning",
+          score: 44,
+          badge: "Intervene now",
+          title: "Customer health score",
+          description: "Health will stabilize once you have a few real conversations to benchmark.",
+          action: { label: "Open analytics", href: "/dashboard/analytics" },
+          metrics: [
+            {
+              label: "Conversation volume",
+              value: "0 this week",
+              detail: "No conversation baseline yet",
+              tone: "warning"
+            },
+            {
+              label: "Response time",
+              value: "No reply data",
+              detail: "We need a few replied conversations first",
+              tone: "neutral"
+            },
+            {
+              label: "Login frequency",
+              value: "0 this week",
+              detail: "No recent login history",
+              tone: "warning"
+            }
+          ]
+        },
+        expansion: {
+          title: "Expansion revenue",
+          description: "No upgrade pressure yet. We'll surface expansion signals as the workspace grows.",
+          prompts: []
+        }
+      },
       hasWidgetInstalled: false,
       widgetSiteIds: []
-    });
+    }));
 
     const html = renderToStaticMarkup(
       await DashboardHome({
@@ -123,6 +143,9 @@ describe("dashboard home", () => {
 
     expect(html).toContain("New conversations will show up here once visitors start chatting.");
     expect(html).toContain("No data");
+    expect(html).not.toContain("Activation is blocked until the widget is live");
+    expect(html).not.toContain("Customer health score");
+    expect(html).not.toContain("View all");
     expect(html).toContain("Widget install needed");
   });
 });

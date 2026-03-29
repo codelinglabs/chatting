@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Split the dashboard home into focused modules and cleaned up empty-state conversation actions.
 - Redesigned the public landing, login, and signup flows around the new Chatting brand.
 - Added a guided onboarding flow for widget customization, installation, and verification.
 - Shipped the embeddable widget runtime, public conversation APIs, and live conversation plumbing.
@@ -45,6 +46,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Dashboard
 
 - Shared dashboard shell with focused pages for inbox, visitors, analytics, team, settings, and widget setup.
+- Dashboard home now uses dedicated metrics, recent-conversations, and sidebar modules with cleaner empty states.
 - Optimistic inbox interactions for replies and tags, plus modularized page components throughout.
 
 ### Billing & Operations
