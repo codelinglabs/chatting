@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Added a dedicated referrals page in billing settings with shareable signup links, copied codes, and tracked signup and reward states.
 - Added tiered landing-page pricing cards with Free, Starter, and Pro plans plus a Pro team-size slider.
 - Forced schema reinitialization for the visitor-presence rollout so existing processes stop hitting missing-table errors.
 - Added an internal Chatting distribution playbook markdown file under `app/` for growth-channel planning and launch copy.
@@ -68,6 +69,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Scheduled lifecycle nudges now deliver activation, health, and upgrade reminders from the node runtime instead of widget pageviews.
 - Schema version bumps now rerun auto-initialized Postgres setup during visitor-presence rollouts so existing processes do not miss new tables.
 - Seat-based `Growth` and `Pro` billing with monthly/annual pricing, plan-aware widget gating, and trial-extension support for active workspaces.
+- Billing settings now include a dedicated referrals page with program cards, direct signup links, and referred-signup status tracking.
 - Referral programs with per-workspace codes and paid-conversion reward tracking in billing settings.
 - Affiliate commission ledger visibility tied to paid billing activity.
 - Cloudflare R2-backed team photo uploads for widget presentation.

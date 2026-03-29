@@ -20,6 +20,7 @@ import {
   rewardKey,
   type DashboardReferralSummary
 } from "@/lib/referral-definitions";
+import { listReferralWorkspaceNames } from "@/lib/referral-workspace-names";
 import {
   buildReferralReward,
   REFERRAL_PROGRAM_TYPES,
@@ -117,9 +118,13 @@ export async function getDashboardReferralSummary(userId: string): Promise<Dashb
     listReferralAttributionsByOwnerUserId(userId),
     listReferralRewardsByBeneficiaryUserId(userId)
   ]);
+  const workspaceNames = await listReferralWorkspaceNames(
+    attributedSignups.map((signup) => signup.referred_user_id)
+  );
+
   return {
     programs: normalizeProgramRows(programs),
-    attributedSignups: normalizeAttributionRows(attributedSignups),
+    attributedSignups: normalizeAttributionRows(attributedSignups, workspaceNames),
     rewards: normalizeRewardRows(rewards),
     ...summarizeReferralRewards(rewards)
   };

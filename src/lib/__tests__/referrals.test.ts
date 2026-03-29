@@ -3,6 +3,7 @@ const referralMocks = vi.hoisted(() => ({
   findReferralProgramByCode: vi.fn(),
   insertReferralAttribution: vi.fn(),
   insertReferralProgram: vi.fn(),
+  listReferralWorkspaceNames: vi.fn(),
   listReferralAttributionsByOwnerUserId: vi.fn(),
   listReferralProgramsByOwnerUserId: vi.fn(),
   listReferralRewardsByAttributionId: vi.fn(),
@@ -13,6 +14,9 @@ const referralMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/repositories/referral-repository", () => referralMocks);
+vi.mock("@/lib/referral-workspace-names", () => ({
+  listReferralWorkspaceNames: referralMocks.listReferralWorkspaceNames
+}));
 vi.mock("@/lib/repositories/billing-repository", () => ({
   listBillingInvoiceRows: referralMocks.listBillingInvoiceRows
 }));
@@ -23,6 +27,7 @@ vi.mock("@/lib/env", () => ({
 describe("referrals", () => {
   beforeEach(() => {
     Object.values(referralMocks).forEach((mock) => mock.mockReset());
+    referralMocks.listReferralWorkspaceNames.mockResolvedValue(new Map());
   });
 
   it("normalizes referral codes for manual entry and query params", async () => {
@@ -116,12 +121,15 @@ describe("referrals", () => {
         earned_at: "2026-03-29T12:00:00.000Z"
       }
     ]);
+    referralMocks.listReferralWorkspaceNames.mockResolvedValue(new Map([["user_456", "Acme Support"]]));
 
     const module = await import("@/lib/referrals");
     const summary = await module.getDashboardReferralSummary("user_123");
 
     expect(summary.programs[0]?.shareUrl).toBe("https://chatly.example/signup?ref=REF-ABC123");
     expect(summary.attributedSignups[0]?.status).toBe("converted");
+    expect(summary.attributedSignups[0]?.code).toBe("REF-ABC123");
+    expect(summary.attributedSignups[0]?.workspaceName).toBe("Acme Support");
     expect(summary.earnedCommissionCents).toBe(1975);
   });
 

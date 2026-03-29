@@ -17,7 +17,9 @@ export type DashboardReferralProgram = {
 
 export type DashboardReferralAttribution = {
   id: string;
+  code: string;
   referredEmail: string;
+  workspaceName: string | null;
   programLabel: string;
   programType: "customer" | "affiliate" | "mutual";
   status: "pending" | "converted";
@@ -153,10 +155,15 @@ export function normalizeProgramRows(rows: ReferralProgramRow[]): DashboardRefer
   }));
 }
 
-export function normalizeAttributionRows(rows: ReferralAttributionRow[]): DashboardReferralAttribution[] {
+export function normalizeAttributionRows(
+  rows: ReferralAttributionRow[],
+  workspaceNames = new Map<string, string>()
+): DashboardReferralAttribution[] {
   return rows.map((row) => ({
     id: row.id,
+    code: row.code,
     referredEmail: row.referred_email,
+    workspaceName: workspaceNames.get(row.referred_user_id) ?? null,
     programLabel: row.program_label,
     programType: row.program_type,
     status: row.converted_to_paid_at ? "converted" : "pending",
