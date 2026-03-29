@@ -11,7 +11,7 @@ declare global {
   var __chatlySchemaVersion: string | undefined;
 }
 
-const SCHEMA_VERSION = "2026-03-27-widget-install-urls";
+const SCHEMA_VERSION = "2026-03-29-visitor-presence-schema";
 
 function getConnectionString() {
   return getRequiredServerEnv("DATABASE_URL");
