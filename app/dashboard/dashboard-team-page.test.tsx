@@ -6,6 +6,7 @@ describe("dashboard team page", () => {
   it("renders owner rows, pending invites, and the invite modal trigger", () => {
     const html = renderToStaticMarkup(
       <DashboardTeamPage
+        canManageTeam
         initialMembers={[
           {
             id: "member_1",
@@ -33,7 +34,7 @@ describe("dashboard team page", () => {
       />
     );
 
-    expect(html).toContain("Keep the workspace owner and any pending inbox invites organized in one place.");
+    expect(html).toContain("Keep workspace members and pending inbox invites organized in one place.");
     expect(html).toContain("Invite member");
     expect(html).toContain("Tina Bauer");
     expect(html).toContain("(You)");
