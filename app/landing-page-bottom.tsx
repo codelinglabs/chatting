@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { CheckIcon } from "./dashboard/dashboard-ui";
-import { codeSnippet, plans, setupSteps, stats, testimonials } from "./landing-page-data";
+import { codeSnippet, setupSteps, stats, testimonials } from "./landing-page-data";
 import { LandingFinalCtaFooter } from "./landing-page-final-cta-footer";
+import { LandingPricingSection } from "./landing-page-pricing-section";
 import { SectionLabel } from "./landing-page-primitives";
 
 export function LandingBottomSections() {
@@ -243,67 +244,7 @@ export function LandingBottomSections() {
         </div>
       </section>
 
-      <section className="bg-slate-50">
-        <div className="mx-auto w-full max-w-[1240px] px-4 py-24 sm:px-6 lg:px-8">
-          <section id="pricing" className="px-2">
-            <div className="max-w-3xl">
-              <SectionLabel>Pricing</SectionLabel>
-              <h2 className="display-font mt-5 text-4xl text-slate-900 sm:text-5xl">Simple pricing for small teams</h2>
-              <p className="mt-5 text-lg leading-8 text-slate-600">Start free. Upgrade when you&apos;re ready.</p>
-            </div>
-
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              {plans.map((plan) => (
-                <article
-                  key={plan.name}
-                  className={`relative flex min-h-[38rem] flex-col rounded-[28px] border bg-white p-10 ${
-                    plan.featured
-                      ? "border-2 border-blue-600 shadow-[0_18px_48px_rgba(37,99,235,0.08)]"
-                      : "border-slate-200"
-                  }`}
-                >
-                  {plan.featured ? (
-                    <div className="absolute left-1/2 top-0 inline-flex -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
-                      Most Popular
-                    </div>
-                  ) : null}
-                  <h3 className="text-[2rem] font-semibold tracking-tight text-slate-900">{plan.name}</h3>
-                  <p className="mt-4 text-[15px] leading-7 text-slate-500">{plan.subtitle}</p>
-                  <div className="mt-12 flex items-end gap-2">
-                    <span className="display-font text-6xl leading-none text-slate-900 sm:text-7xl">
-                      {plan.price}
-                    </span>
-                    {plan.cadence ? (
-                      <span className="pb-2 text-[15px] font-medium text-slate-500">{plan.cadence}</span>
-                    ) : null}
-                  </div>
-                  <ul className="mt-12 border-t border-slate-100">
-                    {plan.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-center gap-3 border-b border-slate-100 py-5 text-[15px] text-slate-700"
-                      >
-                        <CheckIcon className="h-4 w-4 shrink-0 text-emerald-500" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href="/login"
-                    className={`mt-auto inline-flex w-full items-center justify-center rounded-2xl px-5 py-4 text-base font-semibold transition ${
-                      plan.featured
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
-                    }`}
-                  >
-                    {plan.cta}
-                  </Link>
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
-      </section>
+      <LandingPricingSection />
 
       <LandingFinalCtaFooter />
     </>

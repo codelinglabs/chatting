@@ -1,2 +1,3 @@
 # Concerns Log
 - Health scoring currently uses the workspace owner's `auth_sessions` history as the login-frequency signal. Accepted teammate memberships now exist, but the score is still owner-weighted rather than truly team-wide.
+- The landing-page pricing cards now follow a marketing-only tier model (Free at `1` team member and `20` conversations/month, Starter at flat `$29` for up to `3` users, then Pro at `$8/$7/$6` volume bands with yearly discounts) that is intentionally separate from the shared dashboard billing copy and checkout surfaces. Until the product billing model is migrated too, public pricing can diverge from what existing billing screens describe.

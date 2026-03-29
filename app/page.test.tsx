@@ -31,7 +31,7 @@ describe("landing page", () => {
     expect(html).toContain("Trusted by 2,400+ teams");
     expect(html).toContain("Your visitors have questions. Right now.");
     expect(html).toContain("Teams who switched never looked back");
-    expect(html).toContain("Simple pricing for small teams");
+    expect(html).toContain("Simple, transparent pricing");
     expect(html).toContain("Your next customer is on your site right now.");
   });
 

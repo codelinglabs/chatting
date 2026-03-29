@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Added tiered landing-page pricing cards with Free, Starter, and Pro plans plus a Pro team-size slider.
 - Forced schema reinitialization for the visitor-presence rollout so existing processes stop hitting missing-table errors.
 - Added an internal Chatting distribution playbook markdown file under `app/` for growth-channel planning and launch copy.
 - Added dashboard growth insights for activation, workspace health, and expansion signals on the home view.
@@ -40,6 +41,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Public Site & Auth
 
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
+- Landing pricing now highlights Free, Starter, and Pro options with usage-based Pro pricing directly on the marketing page.
 - Dedicated login and signup screens with shared form controls, referral-code signup support, and direct onboarding handoff.
 
 ### Onboarding
