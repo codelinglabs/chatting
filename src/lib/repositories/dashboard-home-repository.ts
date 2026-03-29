@@ -107,13 +107,13 @@ export async function getDashboardHomeSatisfactionMetrics(userId: string) {
   const result = await query<DashboardHomeSatisfactionRow>(
     `
       SELECT
-        ((AVG(f.rating) FILTER (
+        (AVG(CASE WHEN f.helpful THEN 1 ELSE 0 END) FILTER (
           WHERE f.created_at >= NOW() - INTERVAL '30 days'
-        )) / 5 * 100)::text AS current_rate,
-        ((AVG(f.rating) FILTER (
+        ) * 100)::text AS current_rate,
+        (AVG(CASE WHEN f.helpful THEN 1 ELSE 0 END) FILTER (
           WHERE f.created_at >= NOW() - INTERVAL '60 days'
             AND f.created_at < NOW() - INTERVAL '30 days'
-        )) / 5 * 100)::text AS previous_rate
+        ) * 100)::text AS previous_rate
       FROM feedback f
       INNER JOIN conversations c
         ON c.id = f.conversation_id

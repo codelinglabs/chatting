@@ -1,9 +1,7 @@
 import {
   buildDashboardEmailTemplatePreviewContext,
-  type DashboardEmailTemplateKey,
   renderDashboardEmailTemplate
 } from "@/lib/email-templates";
-import { buildConversationFeedbackLinks } from "@/lib/conversation-feedback";
 import { getDashboardSettingsData } from "@/lib/data";
 import { sendSettingsTemplateTestEmail } from "@/lib/email";
 import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
@@ -17,14 +15,12 @@ export async function POST(request: Request) {
 
   try {
     const payload = (await request.json()) as {
-      key?: unknown;
       subject?: unknown;
       body?: unknown;
       notificationEmail?: unknown;
       replyToEmail?: unknown;
     };
 
-    const key = String(payload.key ?? "").trim() as DashboardEmailTemplateKey;
     const subject = String(payload.subject ?? "").trim();
     const body = String(payload.body ?? "").trim();
     const notificationEmail = String(payload.notificationEmail ?? "").trim();
@@ -44,21 +40,7 @@ export async function POST(request: Request) {
     });
     const rendered = renderDashboardEmailTemplate({ subject, body }, previewContext, {
       highlightVariables: false,
-      includeShell: true,
-      sections:
-        key === "satisfaction_survey"
-          ? [
-              {
-                type: "actions" as const,
-                tone: "soft" as const,
-                title: "Rate this conversation",
-                textTitle: "Rate this conversation",
-                links: buildConversationFeedbackLinks("https://chatly.example", "preview").map(
-                  ({ label, href }) => ({ label, href })
-                )
-              }
-            ]
-          : []
+      includeShell: true
     });
 
     await sendSettingsTemplateTestEmail({

@@ -17,7 +17,7 @@ import {
   upsertConversationTypingRecord,
   upsertVisitorTypingRecord
 } from "@/lib/repositories/conversations-repository";
-import type { ConversationRating, ConversationStatus, ConversationThread, VisitorActivity } from "@/lib/types";
+import type { ConversationStatus, ConversationThread, VisitorActivity } from "@/lib/types";
 import { optionalText } from "@/lib/utils";
 import { isHighIntentPage, previewIncomingMessage } from "@/lib/notification-utils";
 import { getSiteByPublicId } from "./sites";
@@ -247,8 +247,8 @@ export async function toggleTag(conversationId: string, tag: string, userId: str
   return true;
 }
 
-export async function recordFeedback(conversationId: string, rating: ConversationRating) {
-  await upsertConversationFeedback(conversationId, rating);
+export async function recordFeedback(conversationId: string, helpful: boolean) {
+  await upsertConversationFeedback(conversationId, helpful);
 }
 
 export async function updateConversationEmail(conversationId: string, email: string, userId: string) {

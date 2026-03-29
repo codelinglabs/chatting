@@ -1,4 +1,3 @@
-import { parseConversationRating } from "@/lib/conversation-feedback";
 import type {
   ConversationSummary,
   MessageAttachment,
@@ -114,7 +113,7 @@ export function mapSummary(row: SummaryRow): ConversationSummary {
     lastMessageAt: row.last_message_at,
     lastMessagePreview: row.last_message_preview,
     unreadCount: Number(row.unread_count ?? 0),
-    rating: parseConversationRating(row.rating),
+    helpful: row.helpful,
     tags: row.tags ?? []
   };
 }

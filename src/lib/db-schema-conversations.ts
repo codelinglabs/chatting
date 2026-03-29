@@ -87,25 +87,9 @@ export async function runConversationSchemaInitialization(pool: Pool) {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS feedback (
       conversation_id TEXT PRIMARY KEY REFERENCES conversations(id) ON DELETE CASCADE,
-      rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      helpful BOOLEAN NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
-  `);
-
-  await pool.query(`
-    ALTER TABLE feedback
-    ADD COLUMN IF NOT EXISTS rating SMALLINT;
-  `);
-
-  await pool.query(`
-    ALTER TABLE feedback
-    DROP CONSTRAINT IF EXISTS feedback_rating_check;
-  `);
-
-  await pool.query(`
-    ALTER TABLE feedback
-    ADD CONSTRAINT feedback_rating_check
-    CHECK (rating BETWEEN 1 AND 5);
   `);
 
   await pool.query(`

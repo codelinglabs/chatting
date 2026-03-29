@@ -28,7 +28,7 @@ export function useDashboardState({
   const [activeConversation, setActiveConversation] = useState(initialActiveConversation);
   const [loadingConversationId, setLoadingConversationId] = useState<string | null>(routeConversationId);
   const [answeredConversations, setAnsweredConversations] = useState(initialStats.answeredConversations);
-  const [ratedConversations, setRatedConversations] = useState(initialStats.ratedConversations);
+  const [helpfulResponses, setHelpfulResponses] = useState(initialStats.helpfulResponses);
   const [banner, setBanner] = useState<BannerState>(null);
   const [savingSiteId, setSavingSiteId] = useState<string | null>(null);
   const [savingEmail, setSavingEmail] = useState(false);
@@ -189,7 +189,7 @@ export function useDashboardState({
     setConversations(initialConversations);
     setActiveConversation(initialActiveConversation);
     setAnsweredConversations(initialStats.answeredConversations);
-    setRatedConversations(initialStats.ratedConversations);
+    setHelpfulResponses(initialStats.helpfulResponses);
     setBanner(null);
   }, [initialActiveConversation, initialConversations, initialSites, initialStats]);
 
@@ -352,7 +352,7 @@ export function useDashboardState({
     filteredConversations,
     activeConversation,
     answeredConversations,
-    ratedConversations,
+    helpfulResponses,
     banner,
     savingSiteId,
     savingEmail,

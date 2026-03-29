@@ -7,7 +7,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Postgres-backed message capture with page URL, referrer, user agent, email, and session tracking
 - A team inbox to read threads, tag conversations, and reply by email
 - Email-based thread continuation with a webhook endpoint for inbound replies
-- 1-5 conversation ratings captured from reply and survey emails
+- Helpful / not helpful feedback capture after each team reply
 
 ## Stack
 
@@ -15,14 +15,14 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - TypeScript
 - Tailwind CSS
 - Postgres via `pg`
-- Resend for outbound email and inbound reply threading
+- Amazon SES for outbound email and inbound reply threading
 
 ## Recent Updates
 
-- Replaced helpful yes/no email feedback with 1-5 conversation ratings that now drive dashboard satisfaction metrics.
+- Added an internal Chatting distribution playbook markdown file under `app/` for growth-channel planning and launch copy.
 - Added dashboard growth insights for activation, workspace health, and expansion signals on the home view.
-- Added a public blog, shared newsletter signup, and free-tools directory with calculators, generators, templates, and tone analysis for small teams.
 - Added scheduled lifecycle growth nudges for activation, health, and upgrade reminders without running email checks on widget requests.
+- Added seat-based `Starter / Growth / Pro` packaging with annual pricing, proactive-chat gating, and 7-day trial extensions for active workspaces.
 - Tightened the social content generator rules around lowercase output, Chatting branding, and the canonical site URL.
 - Removed the visible onboarding step counts to keep setup screens cleaner.
 - Split the dashboard home into focused modules and cleaned up empty-state conversation actions.
@@ -39,7 +39,6 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Public Site & Auth
 
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
-- Public growth surfaces now include the blog, free-tools directory, shared footer/legal pages, and newsletter capture flows.
 - Dedicated login and signup screens with shared form controls, referral-code signup support, and direct onboarding handoff.
 
 ### Onboarding
@@ -51,7 +50,6 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Widget & Public APIs
 
 - Embeddable widget with optimistic sending, typing, conversation polling, and install detection.
-- Public growth endpoints now handle newsletter signups, free-tool exports, and response-tone analysis.
 - Public API endpoints for conversation messages, status, typing, site config, and attachments.
 
 ### Dashboard
@@ -59,13 +57,14 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Shared dashboard shell with focused pages for inbox, visitors, analytics, team, settings, and widget setup.
 - Dashboard home now uses dedicated metrics, recent-conversations, and sidebar modules with cleaner empty states.
 - Dashboard home now surfaces activation, health, and expansion growth signals for the workspace.
-- Satisfaction reporting now uses real 1-5 conversation ratings captured from reply and survey emails.
 - Optimistic inbox interactions for replies and tags, plus modularized page components throughout.
 
 ### Billing & Operations
 
 - Stripe-backed billing flows for checkout, portal access, invoice sync, and webhook handling.
 - Scheduled lifecycle nudges now deliver activation, health, and upgrade reminders from the node runtime instead of widget pageviews.
+- Seat-based `Growth` and `Pro` billing with monthly/annual pricing, plan-aware widget gating, and trial-extension support for active workspaces.
+- Referral programs with per-workspace codes and paid-conversion reward tracking in billing settings.
 - Affiliate commission ledger visibility tied to paid billing activity.
 - Cloudflare R2-backed team photo uploads for widget presentation.
 - Vitest-based app test suite covering routes, pages, helpers, onboarding, widget flows, and billing.
@@ -74,10 +73,10 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - Repo agent guidance, product context, and design-system reference docs live alongside the codebase.
 - The social content generator now enforces lowercase output, `https://usechatting.com`, and Chatting-first branding.
+- The app now includes an internal Chatting distribution playbook markdown file for channel planning and launch messaging.
 
 ## Ops Note
 
-- Resend is currently managed from the Triggla Gmail account.
 - Vercel is currently connected through the personal GitHub account.
 - The production Postgres database is hosted on Neon.
 - Neon is currently managed from the Letterflow account `tina@letterflow.so`.
@@ -96,12 +95,14 @@ npm install
 - `DATABASE_URL`
 - `AUTH_SECRET`
 - `NEXT_PUBLIC_APP_URL`
-- `RESEND_API_KEY`
-- `RESEND_WEBHOOK_SECRET`
+- `AWS_REGION`
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` if you are not using an attached IAM role
 - `MAIL_FROM`
-- `REPLY_DOMAIN` if you want inbound email replies to continue threads
+- `REPLY_DOMAIN` and `SES_INBOUND_SNS_TOPIC_ARN` if you want inbound email replies to continue threads
 - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, and `R2_PUBLIC_BASE_URL` if you want real uploaded team photos in the widget
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PRICE_PRO_MONTHLY` if you want real Stripe-backed billing
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_GROWTH_MONTHLY`, `STRIPE_PRICE_GROWTH_ANNUAL`, `STRIPE_PRICE_PRO_MONTHLY`, and `STRIPE_PRICE_PRO_ANNUAL` if you want real Stripe-backed billing
+
+Paid Stripe prices should be configured as graduated tiers so seats 1-5 bill at the plan rate and seats 6+ bill at the lower overflow rate.
 
 3. Start the app:
 
@@ -160,9 +161,16 @@ Optional attributes:
 - `data-position`
 - `data-api-base`
 
+## Email Setup
+
+Outbound email and inbound reply threading both use Amazon SES.
+
+- founder replies set `Reply-To` to `reply+<conversationId>@<REPLY_DOMAIN>`
+- SES receives that inbound reply and sends an SNS notification to `POST /api/email/inbound`
+
 ## Inbound Email Webhook
 
-Configure a Resend webhook to deliver to:
+Configure an SNS HTTPS subscription to deliver to:
 
 ```text
 POST /api/email/inbound
@@ -170,24 +178,19 @@ POST /api/email/inbound
 
 The outbound email sets `reply-to` as `reply+<conversationId>@<REPLY_DOMAIN>`. The inbound route extracts the `conversationId` from that alias and appends the reply to the correct thread.
 
-Recommended Resend setup:
+Recommended setup:
 
-1. Add a verified sending domain in Resend for `MAIL_FROM`.
-2. Set up a Resend receiving domain or use the Resend-managed `*.resend.app` receiving domain.
-3. Add a webhook for `email.received` pointing to `POST /api/email/inbound`.
-4. Copy the webhook signing secret into `RESEND_WEBHOOK_SECRET`.
-5. Set `REPLY_DOMAIN` to the receiving domain you want to use for `reply+<conversationId>@...`.
+1. Verify `MAIL_FROM` in Amazon SES and move the SES account out of sandbox if you need to send to unverified recipients.
+2. Create an SES receipt rule for the domain or subdomain used in `REPLY_DOMAIN`.
+3. Add an SNS action to that receipt rule and configure it to include UTF-8 email content.
+4. Subscribe `POST /api/email/inbound` to that SNS topic.
+5. Set `SES_INBOUND_SNS_TOPIC_ARN` to that SNS topic ARN.
+6. Set `REPLY_DOMAIN` to the SES-receiving domain you want to use for `reply+<conversationId>@...`.
 
 The inbound route now:
 
-- verifies Resend webhook signatures
-- handles `email.received` events
-- fetches the full received email body with the Resend Receiving API
+- verifies SNS signatures
+- auto-confirms SNS subscription requests
+- handles SES `Received` notifications
+- parses raw MIME email content with `mailparser`
 - strips common quoted reply blocks before saving the new user message
-
-Official docs:
-
-- [Send Email](https://resend.com/docs/api-reference/emails)
-- [Receiving Emails](https://resend.com/docs/dashboard/receiving/introduction)
-- [Retrieve Received Email](https://resend.com/docs/api-reference/emails/retrieve-received-email)
-- [Verify Webhook Requests](https://resend.com/docs/dashboard/webhooks/verify-webhooks-requests)

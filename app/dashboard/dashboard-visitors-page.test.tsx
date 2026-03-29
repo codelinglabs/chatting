@@ -35,7 +35,7 @@ describe("dashboard visitors page", () => {
             lastMessageAt: now,
             lastMessagePreview: "Quick question about pricing...",
             unreadCount: 1,
-            rating: 5,
+            helpful: true,
             tags: ["lead", "pricing"]
           },
           {
@@ -58,7 +58,7 @@ describe("dashboard visitors page", () => {
             lastMessageAt: now,
             lastMessagePreview: "Is there a free trial?",
             unreadCount: 0,
-            rating: null,
+            helpful: null,
             tags: []
           }
         ]}

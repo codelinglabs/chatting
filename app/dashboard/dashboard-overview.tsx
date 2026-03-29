@@ -27,14 +27,14 @@ export function DashboardOverview({
   userEmail,
   conversationsCount,
   answeredConversations,
-  ratedConversations,
+  helpfulResponses,
   topTags,
   banner
 }: {
   userEmail: string;
   conversationsCount: number;
   answeredConversations: number;
-  ratedConversations: number;
+  helpfulResponses: number;
   topTags: DashboardStats["topTags"];
   banner: BannerState;
 }) {
@@ -63,7 +63,7 @@ export function DashboardOverview({
       <section className="grid gap-4 lg:grid-cols-4">
         <StatCard label="Conversations" value={String(conversationsCount)} />
         <StatCard label="Replied" value={String(answeredConversations)} />
-        <StatCard label="Rated conversations" value={String(ratedConversations)} tone="red" />
+        <StatCard label="Helpful clicks" value={String(helpfulResponses)} tone="red" />
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Top tags</p>
           <div className="mt-3 flex flex-wrap gap-2">

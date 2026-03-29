@@ -9,7 +9,7 @@ import {
   buildConversationBucketDescription,
   buildConversationBucketLabel,
   formatDurationShort,
-  averageRatingScore,
+  helpfulScore,
   startOfWeek,
   type ChartPoint
 } from "./dashboard-analytics-core";
@@ -172,8 +172,14 @@ export function buildTopPages(conversations: AnalyticsConversationRecord[]) {
 
 export function buildRatingBreakdown(conversations: AnalyticsConversationRecord[]): RatingBreakdown[] {
   const ratings = conversations
-    .map((conversation) => conversation.rating)
-    .filter((value): value is 1 | 2 | 3 | 4 | 5 => value != null);
+    .map((conversation) => {
+      if (conversation.helpful == null) {
+        return null;
+      }
+
+      return conversation.helpful ? 5 : 1;
+    })
+    .filter((value): value is 1 | 5 => value != null);
 
   const total = ratings.length;
 
@@ -262,7 +268,7 @@ export function buildTeamRows(conversations: AnalyticsConversationRecord[], user
       .filter((value): value is number => value != null)
   );
 
-  const satisfaction = averageRatingScore(conversations);
+  const satisfaction = helpfulScore(conversations);
   const resolutionRate = conversations.length
     ? (conversations.filter((conversation) => conversation.status === "resolved").length / conversations.length) * 100
     : null;
@@ -288,7 +294,7 @@ export function exportAnalytics(conversations: AnalyticsConversationRecord[], ra
     "Referrer",
     "First response (seconds)",
     "Resolution (seconds)",
-    "Rating",
+    "Helpful",
     "Tags"
   ];
 
@@ -300,7 +306,7 @@ export function exportAnalytics(conversations: AnalyticsConversationRecord[], ra
     conversation.referrer || "",
     conversation.firstResponseSeconds ?? "",
     conversation.resolutionSeconds ?? "",
-    conversation.rating ?? "",
+    conversation.helpful == null ? "" : conversation.helpful ? "Yes" : "No",
     conversation.tags.join(", ")
   ]);
 

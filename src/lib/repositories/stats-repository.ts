@@ -24,10 +24,10 @@ export async function getConversationTotalsForUser(userId: string) {
   return result.rows[0] ?? { total: "0", answered: "0" };
 }
 
-export async function getRatedConversationCountForUser(userId: string) {
-  const result = await query<{ rated: string }>(
+export async function getHelpfulConversationCountForUser(userId: string) {
+  const result = await query<{ helpful: string }>(
     `
-      SELECT COUNT(*) FILTER (WHERE f.rating IS NOT NULL)::text AS rated
+      SELECT COUNT(*) FILTER (WHERE f.helpful = TRUE)::text AS helpful
       FROM feedback f
       INNER JOIN conversations c
         ON c.id = f.conversation_id
@@ -38,7 +38,7 @@ export async function getRatedConversationCountForUser(userId: string) {
     [userId]
   );
 
-  return result.rows[0]?.rated ?? "0";
+  return result.rows[0]?.helpful ?? "0";
 }
 
 export async function listTopTagsForUser(userId: string) {

@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { buildConversationFeedbackLinks } from "@/lib/conversation-feedback";
 import { getDashboardEmailTemplateSettings } from "@/lib/data/settings";
 import { getPublicAppUrl } from "@/lib/env";
 import {
@@ -65,7 +64,12 @@ function profileNameFromSettings(settings: Awaited<ReturnType<typeof getDashboar
 }
 
 function buildFeedbackLinks(conversationId: string) {
-  return buildConversationFeedbackLinks(getAppUrl(), conversationId);
+  const appUrl = getAppUrl();
+
+  return {
+    yesUrl: `${appUrl}/feedback?conversationId=${encodeURIComponent(conversationId)}&helpful=yes`,
+    noUrl: `${appUrl}/feedback?conversationId=${encodeURIComponent(conversationId)}&helpful=no`
+  };
 }
 
 async function getConversationTemplateContext(conversationId: string): Promise<ConversationTemplateContext | null> {
@@ -175,12 +179,12 @@ async function sendConversationTemplateEmail(input: {
     sections.push({
       type: "actions",
       tone: "soft",
-      title: "Rate this conversation",
-      textTitle: "Rate this conversation",
-      links: feedbackLinks.map((link) => ({
-        label: link.label,
-        href: link.href
-      }))
+      title: "Helpful?",
+      textTitle: "Helpful?",
+      links: [
+        { label: "Yes", href: feedbackLinks.yesUrl },
+        { label: "No", href: feedbackLinks.noUrl }
+      ]
     });
   }
 
