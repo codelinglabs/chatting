@@ -1,5 +1,6 @@
 import { getDashboardNotificationDeliverySettings } from "@/lib/data";
 import { sendTeamNewMessageEmail } from "@/lib/email";
+import { maybeSendAnalyticsExpansionEmail } from "@/lib/growth-outreach";
 import { publishDashboardLive } from "@/lib/live-events";
 
 type IncomingVisitorMessageNotificationInput = {
@@ -57,6 +58,10 @@ export async function notifyIncomingVisitorMessage(
       pageUrl: input.pageUrl,
       attachmentsCount: input.attachmentsCount
     });
+
+    if (input.isNewConversation) {
+      await maybeSendAnalyticsExpansionEmail(input.userId);
+    }
   } catch (notificationError) {
     console.error("team new message email failed", notificationError);
   }

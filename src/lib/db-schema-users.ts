@@ -126,4 +126,13 @@ export async function runUserSchemaInitialization(pool: Pool) {
       last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS growth_email_nudges (
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      nudge_key TEXT NOT NULL,
+      last_sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (user_id, nudge_key)
+    );
+  `);
 }

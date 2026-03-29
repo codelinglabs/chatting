@@ -21,6 +21,7 @@ import {
   updateSettingsUserEmail,
   upsertUserSettingsRecord
 } from "@/lib/repositories/settings-repository";
+import { maybeSendTeamExpansionEmail } from "@/lib/growth-outreach";
 import { displayNameFromEmail, firstNameFromDisplayName, initialsFromLabel } from "@/lib/user-display";
 import { optionalText } from "@/lib/utils";
 
@@ -336,6 +337,7 @@ export async function createTeamInvite(input: {
     role: input.role,
     message: input.message?.trim() || ""
   });
+  await maybeSendTeamExpansionEmail(input.ownerUserId);
 
   return listTeamInvites(input.ownerUserId);
 }

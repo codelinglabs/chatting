@@ -20,6 +20,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ## Recent Updates
 
 - Added dashboard growth insights for activation, workspace health, and expansion signals on the home view.
+- Added scheduled lifecycle growth nudges for activation, health, and upgrade reminders without running email checks on widget requests.
 - Tightened the social content generator rules around lowercase output, Chatting branding, and the canonical site URL.
 - Removed the visible onboarding step counts to keep setup screens cleaner.
 - Split the dashboard home into focused modules and cleaned up empty-state conversation actions.
@@ -57,6 +58,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Billing & Operations
 
 - Stripe-backed billing flows for checkout, portal access, invoice sync, and webhook handling.
+- Scheduled lifecycle nudges now deliver activation, health, and upgrade reminders from the node runtime instead of widget pageviews.
 - Cloudflare R2-backed team photo uploads for widget presentation.
 - Vitest-based app test suite covering routes, pages, helpers, onboarding, widget flows, and billing.
 

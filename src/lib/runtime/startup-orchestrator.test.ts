@@ -5,11 +5,17 @@ describe("startup orchestrator", () => {
     const assertStartupProductionCoreEnvConfigured = vi.fn();
     const assertR2EnvConfigured = vi.fn();
     const assertStripeBillingEnvConfigured = vi.fn();
+    const schedulerStart = vi.fn();
 
     vi.doMock("@/lib/env.server", () => ({
       assertStartupProductionCoreEnvConfigured,
       assertR2EnvConfigured,
       assertStripeBillingEnvConfigured
+    }));
+    vi.doMock("@/lib/runtime/growth-lifecycle-scheduler", () => ({
+      growthLifecycleScheduler: {
+        start: schedulerStart
+      }
     }));
 
     const { startNodeRuntimeServices } = await import("@/lib/runtime/startup-orchestrator");
@@ -18,5 +24,6 @@ describe("startup orchestrator", () => {
     expect(assertStartupProductionCoreEnvConfigured).toHaveBeenCalledTimes(1);
     expect(assertR2EnvConfigured).toHaveBeenCalledTimes(1);
     expect(assertStripeBillingEnvConfigured).toHaveBeenCalledTimes(1);
+    expect(schedulerStart).toHaveBeenCalledTimes(1);
   });
 });
