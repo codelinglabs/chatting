@@ -1,5 +1,5 @@
 import { query } from "@/lib/db";
-import type { ConversationStatus } from "@/lib/types";
+import type { ConversationRating, ConversationStatus } from "@/lib/types";
 import type { MessageRow } from "@/lib/repositories/shared-repository";
 
 export async function insertConversationRecord(input: {
@@ -164,15 +164,15 @@ export async function insertConversationTag(conversationId: string, tag: string)
   );
 }
 
-export async function upsertConversationFeedback(conversationId: string, helpful: boolean) {
+export async function upsertConversationFeedback(conversationId: string, rating: ConversationRating) {
   await query(
     `
-      INSERT INTO feedback (conversation_id, helpful)
+      INSERT INTO feedback (conversation_id, rating)
       VALUES ($1, $2)
       ON CONFLICT (conversation_id)
-      DO UPDATE SET helpful = EXCLUDED.helpful, created_at = NOW()
+      DO UPDATE SET rating = EXCLUDED.rating, created_at = NOW()
     `,
-    [conversationId, helpful]
+    [conversationId, rating]
   );
 }
 

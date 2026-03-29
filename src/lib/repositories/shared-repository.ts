@@ -49,7 +49,7 @@ export type SummaryRow = {
   last_message_at: string | null;
   last_message_preview: string | null;
   unread_count: string;
-  helpful: boolean | null;
+  rating: number | null;
   tags: string[] | null;
 };
 
@@ -142,7 +142,7 @@ const CONVERSATION_SUMMARY_SELECT = `
   latest.created_at AS last_message_at,
   latest.content AS last_message_preview,
   unread.unread_count,
-  f.helpful,
+  f.rating,
   COALESCE(ARRAY_AGG(t.tag ORDER BY t.tag) FILTER (WHERE t.tag IS NOT NULL), '{}') AS tags
 `;
 
@@ -195,7 +195,7 @@ const CONVERSATION_SUMMARY_GROUP_BY = `
   latest.created_at,
   latest.content,
   unread.unread_count,
-  f.helpful
+  f.rating
 `;
 
 export async function querySites(whereClause: string, values: unknown[], suffix: string) {

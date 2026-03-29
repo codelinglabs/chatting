@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { buildConversationFeedbackLinks } from "@/lib/conversation-feedback";
 import {
   buildDashboardEmailTemplatePreviewContext,
   EMAIL_TEMPLATE_VARIABLES,
@@ -51,7 +52,22 @@ export function SettingsEmailTemplates({
     }
 
     return renderDashboardEmailTemplate(editingTemplate, previewContext, {
-      highlightVariables: true
+      highlightVariables: true,
+      sections:
+        editingTemplate.key === "satisfaction_survey"
+          ? [
+              {
+                type: "actions" as const,
+                tone: "soft" as const,
+                title: "Rate this conversation",
+                textTitle: "Rate this conversation",
+                links: buildConversationFeedbackLinks(
+                  new URL(previewContext.conversationLink).origin,
+                  "preview"
+                ).map(({ label, href }) => ({ label, href }))
+              }
+            ]
+          : []
     });
   }, [editingTemplate, previewContext]);
 
@@ -159,6 +175,7 @@ export function SettingsEmailTemplates({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          key: template.key,
           subject: template.subject,
           body: template.body,
           notificationEmail,

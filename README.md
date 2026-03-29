@@ -7,7 +7,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Postgres-backed message capture with page URL, referrer, user agent, email, and session tracking
 - A team inbox to read threads, tag conversations, and reply by email
 - Email-based thread continuation with a webhook endpoint for inbound replies
-- Helpful / not helpful feedback capture after each team reply
+- 1-5 conversation ratings captured from reply and survey emails
 
 ## Stack
 
@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Replaced helpful yes/no email feedback with 1-5 conversation ratings that now drive dashboard satisfaction metrics.
 - Added dashboard growth insights for activation, workspace health, and expansion signals on the home view.
 - Added a public blog, shared newsletter signup, and free-tools directory with calculators, generators, templates, and tone analysis for small teams.
 - Added scheduled lifecycle growth nudges for activation, health, and upgrade reminders without running email checks on widget requests.
@@ -58,6 +59,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Shared dashboard shell with focused pages for inbox, visitors, analytics, team, settings, and widget setup.
 - Dashboard home now uses dedicated metrics, recent-conversations, and sidebar modules with cleaner empty states.
 - Dashboard home now surfaces activation, health, and expansion growth signals for the workspace.
+- Satisfaction reporting now uses real 1-5 conversation ratings captured from reply and survey emails.
 - Optimistic inbox interactions for replies and tags, plus modularized page components throughout.
 
 ### Billing & Operations
