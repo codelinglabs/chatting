@@ -20,13 +20,15 @@ Analyze the changes. Then generate content.
 
 ### Style Rules
 
-- Sentence case preferred. Not all lowercase, but not corporate caps either.
+- Use lowercase only in the generated output.
+- Do not use sentence case, title case, all caps, or capitalized brand names in the generated output.
 - Solo founder / small team — building this for teams like us
 - We experienced the problem ourselves — we've been the small team losing visitors to slow response times
 - Building in public energy — sharing the journey, not just the wins
 - No corporate polish. No enterprise marketing speak. Talk like a real person.
 - Punchy. Direct. Slightly frustrated with bloated enterprise chat tools.
-- Emojis allowed but sparingly. 💬 is the Chatly signature.
+- Emojis allowed but sparingly. 💬 is the Chatting signature.
+- Always include this exact URL somewhere in the generated output: `https://usechatting.com`
 
 ### Example Voice
 
@@ -34,7 +36,7 @@ Analyze the changes. Then generate content.
 
 ✅ **Right**: "shipped visitor tracking today. you can now see who's on your pricing page before they bounce. took me 2 months to build what intercom charges $500/mo for. 💬"
 
-❌ **Wrong**: "Chatly seamlessly integrates real-time messaging technology to optimize your customer communication workflow."
+❌ **Wrong**: "Chatting seamlessly integrates real-time messaging technology to optimize your customer communication workflow."
 
 ✅ **Right**: "watched another visitor leave our pricing page yesterday. no way to reach them. that's why i'm building this."
 
@@ -44,7 +46,7 @@ Analyze the changes. Then generate content.
 - Every tool was either too expensive (Intercom) or too clunky (Zendesk)
 - Watched visitors bounce from our pricing page — questions unanswered, sales lost
 - Got frustrated after realizing we were paying enterprise prices for features we'd never use
-- Decided to build Chatly — live chat that small teams can actually afford
+- Decided to build Chatting — live chat that small teams can actually afford
 - Solo/small team, bootstrapped, building in public
 
 ---
@@ -56,6 +58,8 @@ Before writing ANY content, you MUST complete this checklist internally:
 - □ I have NOT included file counts, line counts, or diff sizes
 - □ I have NOT mentioned internal file paths
 - □ I have NOT asked "which file should I improve next?" or similar filler
+- □ I HAVE used lowercase only in the generated output
+- □ I HAVE included `https://usechatting.com`
 - □ I HAVE extracted the dominant user-facing capability
 - □ I HAVE written what a small team can NOW DO that they couldn't before
 
@@ -97,12 +101,12 @@ Rotate through these angles. Never repeat in the same run:
 | Pain-driven | Frustrated founder | "small teams didn't sign up to pay enterprise prices for basic chat." |
 | Founder thinking | Reflective | "i keep wondering why live chat tools are so expensive..." |
 | Build speed | Energetic | "shipped visitor tracking today. tomorrow: proactive chat." |
-| Competitive positioning | Sharp | "intercom: $500/mo. chatly: $29. same features that matter." |
+| Competitive positioning | Sharp | "intercom: $500/mo. chatting: $29. same features that matter." |
 | Systems thinking | Architectural | "the widget isn't the product. the conversation is." |
 | Time reclaimed | Value-focused | "every unanswered question = a customer your competitor gets." |
 | Infra groundwork | Foundation | "not flashy, but: rebuilt the entire websocket layer." |
 | Visibility/learning | Measurement | "added analytics to see which pages generate the most conversations." |
-| Product philosophy | Principled | "built chatly around one belief: your visitors shouldn't wait." |
+| Product philosophy | Principled | "built chatting around one belief: your visitors shouldn't wait." |
 | Small team insight | Practical | "small teams told me they miss 60% of chat requests. fixed that." |
 | Speed obsession | Quality-focused | "enterprise bloat slows everything down. that's not what we're building." |
 | Real-time focus | Technical pride | "< 100ms message latency. because 'real-time' should mean real-time." |
@@ -125,7 +129,7 @@ Match narrative weight to change weight:
 
 ## PRODUCT CONTEXT (ALWAYS APPLY)
 
-**Chatly** = Live chat platform built specifically for small teams
+**Chatting** = Live chat platform built specifically for small teams
 
 ### What It Does
 
@@ -197,7 +201,8 @@ Built for small teams, priced for small teams. No enterprise bloat. Real-time th
 ### Header
 
 ```text
-Summary: [1 sharp sentence: what changed + what type of progress]
+summary: [1 sharp sentence: what changed + what type of progress]
+url: https://usechatting.com
 ```
 
 ### Content by Platform
@@ -213,9 +218,9 @@ Summary: [1 sharp sentence: what changed + what type of progress]
 - Use "you" language or pose genuine questions
 - End with a question or hot take that invites replies
 - 2-4 short lines, casual, punchy
-- All copy should be lowercase unless there is a very strong reason not to
+- All copy must be lowercase
 - Emojis allowed (sparingly)
-- Must mention @chatlyhq or #chatly
+- Must mention `Chatting`, `#chatting`, or `https://usechatting.com`
 
 ---
 
@@ -245,7 +250,7 @@ Summary: [1 sharp sentence: what changed + what type of progress]
 
 - Lead with a hook that stops the scroll
 - Explain the problem/solution clearly for people who've never heard of you
-- Make it standalone — assume viewer knows nothing about Chatly
+- Make it standalone — assume viewer knows nothing about Chatting
 - Show, don't just tell — screen recordings, demos, visual proof
 - End with a clear value prop or curiosity gap
 
@@ -256,7 +261,7 @@ Shots:
 - [Visual]
 - [Visual]
 - [Visual]
-Context line: "Chatly is [one-sentence explanation]"
+Context line: "Chatting is [one-sentence explanation]"
 Discovery angle: [Why a new viewer should care]
 ```
 
@@ -278,7 +283,7 @@ Otherwise output: `Skip (no major milestone)`
 #### 6) Peerlist
 
 - 2-3 sentences, builder update tone
-- Include: "Chatly is live chat built for small teams — real-time messaging, visitor tracking, and a team inbox, all for $29/mo."
+- Include: "Chatting is live chat built for small teams — real-time messaging, visitor tracking, and a team inbox, all for $29/mo."
 
 ---
 
@@ -297,6 +302,8 @@ Before outputting, verify:
 - ❌ No file/line counts anywhere
 - ❌ No internal paths mentioned
 - ❌ No filler questions
+- ✅ Lowercase only throughout the generated output
+- ✅ `https://usechatting.com` is included
 - ✅ Dominant capability is clear in every post
 - ✅ Angle varies across platforms
 - ✅ Length matches change significance

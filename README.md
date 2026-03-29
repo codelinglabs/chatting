@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Tightened the social content generator rules around lowercase output, Chatting branding, and the canonical site URL.
 - Removed the visible onboarding step counts to keep setup screens cleaner.
 - Split the dashboard home into focused modules and cleaned up empty-state conversation actions.
 - Redesigned the public landing, login, and signup flows around the new Chatting brand.
@@ -60,6 +61,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Contributor Docs
 
 - Repo agent guidance, product context, and design-system reference docs live alongside the codebase.
+- The social content generator now enforces lowercase output, `https://usechatting.com`, and Chatting-first branding.
 
 ## Ops Note
 
