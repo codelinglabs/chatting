@@ -66,18 +66,16 @@ const TEMPLATE_DEFINITIONS: Record<DashboardEmailTemplateKey, TemplateDefinition
     trigger: "Automatic when visitor offline",
     icon: "mail",
     defaultSubject: "{{team_name}} replied to your message",
-    defaultBody: `Hi {{visitor_name}},
+    defaultBody: `We replied to your message.
 
-{{agent_name}} from {{team_name}} just replied to your message.
+{{agent_name}} from {{team_name}} just replied.
 
-You can continue the conversation here:
-{{conversation_link}}
-
-Reply from the team:
 {{transcript}}
 
-Best,
-{{team_name}}`
+Continue the conversation here:
+{{conversation_link}}
+
+Or just reply to this email and it goes straight to us.`
   },
   conversation_transcript: {
     key: "conversation_transcript",
@@ -85,17 +83,10 @@ Best,
     description: "Emailed conversation history to visitors",
     trigger: "On request or after resolution",
     icon: "transcript",
-    defaultSubject: "Your {{team_name}} conversation transcript",
-    defaultBody: `Hi {{visitor_name}},
+    defaultSubject: "Your conversation with {{team_name}}",
+    defaultBody: `Thanks for chatting with us! Here's a copy of your conversation for your records.
 
-Here is a copy of your recent conversation with {{team_name}}.
-
-{{transcript}}
-
-If you need anything else, you can pick the thread back up here:
-{{conversation_link}}
-
-{{team_name}}`
+{{transcript}}`
   },
   welcome_email: {
     key: "welcome_email",
@@ -138,16 +129,12 @@ Thanks,
     trigger: "Automatic after resolve",
     icon: "survey",
     defaultSubject: "How did we do?",
-    defaultBody: `Hi {{visitor_name}},
+    defaultBody: `Thanks for chatting with {{team_name}}.
 
-Thanks for chatting with {{team_name}}.
+We'd love your feedback on your recent conversation with {{agent_name}}.
 
-We'd love your feedback on the conversation with {{agent_name}}.
-Please reply to this email or continue the conversation here:
-{{conversation_link}}
-
-If you'd rather not receive follow-up emails, you can unsubscribe here:
-{{unsubscribe_link}}`
+If you'd like to continue the conversation:
+{{conversation_link}}`
   }
 };
 
@@ -226,7 +213,11 @@ function companyNameFromEmail(email: string) {
     .map((part) => capitalizeWord(part))
     .join(" ");
 
-  return companyName === "Chatly" ? "Chatting" : companyName;
+  if (!companyName || companyName.toLowerCase() === "chatly") {
+    return "Chatting";
+  }
+
+  return companyName;
 }
 
 function buildDefaultTemplate(key: DashboardEmailTemplateKey): DashboardEmailTemplate {
@@ -342,12 +333,34 @@ function replaceTemplateVariables(
   return output;
 }
 
+export function resolveDashboardEmailTemplateValue(
+  value: string,
+  context: DashboardEmailTemplatePreviewContext
+) {
+  return VARIABLE_TOKEN_MAP.reduce((text, variable) => {
+    return text.split(variable.placeholder).join(String(context[variable.token]));
+  }, value);
+}
+
+export function renderDashboardEmailTemplateFragment(
+  value: string,
+  context: DashboardEmailTemplatePreviewContext,
+  options?: {
+    highlightVariables?: boolean;
+  }
+) {
+  return {
+    text: resolveDashboardEmailTemplateValue(value, context),
+    html: renderBodyHtml(value, context, options?.highlightVariables ?? false)
+  };
+}
+
 function renderBodyHtml(value: string, context: DashboardEmailTemplatePreviewContext, highlightVariables: boolean) {
   const codeBlocks: string[] = [];
   let html = escapeHtml(value);
 
   html = html.replace(/```([\s\S]*?)```/g, (_match, code) => {
-    const token = `__CHATLY_CODE_BLOCK_${codeBlocks.length}__`;
+    const token = `__CHATTING_CODE_BLOCK_${codeBlocks.length}__`;
     codeBlocks.push(
       `<pre style="margin:16px 0;overflow:auto;border-radius:8px;background:#0f172a;padding:16px;color:#e2e8f0;"><code>${String(
         code
@@ -376,7 +389,7 @@ function renderBodyHtml(value: string, context: DashboardEmailTemplatePreviewCon
   html = html.replace(/\n/g, "<br />");
 
   for (const [index, block] of codeBlocks.entries()) {
-    html = html.replace(`__CHATLY_CODE_BLOCK_${index}__`, block);
+    html = html.replace(`__CHATTING_CODE_BLOCK_${index}__`, block);
   }
 
   return html;
@@ -393,14 +406,10 @@ export function renderDashboardEmailTemplate(
 ) {
   const highlightVariables = options?.highlightVariables ?? false;
   const sections = options?.sections ?? [];
-  const bodyText = VARIABLE_TOKEN_MAP.reduce((text, variable) => {
-    return text.split(variable.placeholder).join(String(context[variable.token]));
-  }, template.body);
+  const bodyText = resolveDashboardEmailTemplateValue(template.body, context);
 
   return {
-    subject: VARIABLE_TOKEN_MAP.reduce((text, variable) => {
-      return text.split(variable.placeholder).join(String(context[variable.token]));
-    }, template.subject),
+    subject: resolveDashboardEmailTemplateValue(template.subject, context),
     bodyText: renderStyledEmailTextLayout({
       contentText: bodyText,
       sections
@@ -427,7 +436,7 @@ export function buildDashboardEmailTemplatePreviewContext(input: {
     teamName,
     agentName,
     companyName,
-    conversationLink: "https://chatting.example/conversation/123",
+    conversationLink: "https://chatly.example/conversation/123",
     transcript: "Alex: Hi there\nSarah: Happy to help. What can I do for you?",
     unsubscribeLink: "https://chatly.example/unsubscribe"
   };

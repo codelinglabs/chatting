@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { buildConversationFeedbackLinks } from "@/lib/conversation-feedback";
+import {
+  buildConversationTranscriptPreviewMessages,
+  renderConversationTranscriptEmailTemplate
+} from "@/lib/conversation-transcript-email";
+import { renderVisitorConversationEmailTemplate } from "@/lib/conversation-visitor-email";
 import {
   buildDashboardEmailTemplatePreviewContext,
   EMAIL_TEMPLATE_VARIABLES,
   getDefaultDashboardEmailTemplates,
-  renderDashboardEmailTemplate,
   type DashboardEmailTemplate,
   type DashboardEmailTemplateKey
 } from "@/lib/email-templates";
@@ -23,6 +28,8 @@ export function SettingsEmailTemplates({
   replyToEmail,
   profileEmail,
   profileName,
+  profileAvatarDataUrl,
+  showTranscriptBrandingPreview,
   onChange,
   onNotice
 }: {
@@ -31,6 +38,8 @@ export function SettingsEmailTemplates({
   replyToEmail: string;
   profileEmail: string;
   profileName: string;
+  profileAvatarDataUrl: string | null;
+  showTranscriptBrandingPreview: boolean;
   onChange: (templates: DashboardEmailTemplate[]) => void;
   onNotice: (notice: { tone: DashboardNoticeTone; message: string }) => void;
 }) {
@@ -50,10 +59,32 @@ export function SettingsEmailTemplates({
       return null;
     }
 
-    return renderDashboardEmailTemplate(editingTemplate, previewContext, {
-      highlightVariables: true
-    });
-  }, [editingTemplate, previewContext]);
+    return editingTemplate.key === "conversation_transcript"
+      ? renderConversationTranscriptEmailTemplate(editingTemplate, previewContext, {
+          appUrl:
+            typeof window === "undefined" ? new URL(previewContext.conversationLink).origin : window.location.origin,
+          siteUrl: new URL(previewContext.conversationLink).origin,
+          replyToEmail: replyToEmail || profileEmail,
+          messages: buildConversationTranscriptPreviewMessages(),
+          teamAvatarUrl: profileAvatarDataUrl,
+          showViralFooter: showTranscriptBrandingPreview,
+          highlightVariables: true
+        })
+      : renderVisitorConversationEmailTemplate(editingTemplate, previewContext, {
+          templateKey: editingTemplate.key,
+          appUrl:
+            typeof window === "undefined" ? new URL(previewContext.conversationLink).origin : window.location.origin,
+          siteUrl: new URL(previewContext.conversationLink).origin,
+          replyToEmail: replyToEmail || profileEmail,
+          teamAvatarUrl: profileAvatarDataUrl,
+          showViralFooter: showTranscriptBrandingPreview,
+          feedbackLinks: buildConversationFeedbackLinks(
+            new URL(previewContext.conversationLink).origin,
+            "preview"
+          ),
+          highlightVariables: true
+        });
+  }, [editingTemplate, previewContext, profileAvatarDataUrl, profileEmail, replyToEmail, showTranscriptBrandingPreview]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -159,6 +190,7 @@ export function SettingsEmailTemplates({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          key: template.key,
           subject: template.subject,
           body: template.body,
           notificationEmail,

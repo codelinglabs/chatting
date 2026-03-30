@@ -1,8 +1,16 @@
 import {
   buildDashboardEmailTemplatePreviewContext,
-  renderDashboardEmailTemplate
+  type DashboardEmailTemplateKey
 } from "@/lib/email-templates";
+import { buildConversationFeedbackLinks } from "@/lib/conversation-feedback";
+import {
+  buildConversationTranscriptPreviewMessages,
+  renderConversationTranscriptEmailTemplate
+} from "@/lib/conversation-transcript-email";
+import { shouldShowTranscriptViralFooter } from "@/lib/conversation-transcript-footer";
+import { renderVisitorConversationEmailTemplate } from "@/lib/conversation-visitor-email";
 import { getDashboardSettingsData } from "@/lib/data";
+import { getPublicAppUrl } from "@/lib/env";
 import { sendSettingsTemplateTestEmail } from "@/lib/email";
 import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
 import { displayNameFromEmail } from "@/lib/user-display";
@@ -15,12 +23,14 @@ export async function POST(request: Request) {
 
   try {
     const payload = (await request.json()) as {
+      key?: unknown;
       subject?: unknown;
       body?: unknown;
       notificationEmail?: unknown;
       replyToEmail?: unknown;
     };
 
+    const key = String(payload.key ?? "").trim() as DashboardEmailTemplateKey;
     const subject = String(payload.subject ?? "").trim();
     const body = String(payload.body ?? "").trim();
     const notificationEmail = String(payload.notificationEmail ?? "").trim();
@@ -38,10 +48,33 @@ export async function POST(request: Request) {
       profileEmail: settings.profile.email,
       profileName
     });
-    const rendered = renderDashboardEmailTemplate({ subject, body }, previewContext, {
-      highlightVariables: false,
-      includeShell: true
-    });
+    const rendered =
+      key === "conversation_transcript"
+        ? renderConversationTranscriptEmailTemplate(
+            { subject, body },
+            previewContext,
+            {
+              appUrl: getPublicAppUrl(),
+              siteUrl: new URL(previewContext.conversationLink).origin,
+              replyToEmail: replyToEmail || settings.email.replyToEmail || settings.profile.email,
+              messages: buildConversationTranscriptPreviewMessages(),
+              teamAvatarUrl: settings.profile.avatarDataUrl,
+              showViralFooter: shouldShowTranscriptViralFooter(settings.billing.planKey)
+            }
+          )
+        : renderVisitorConversationEmailTemplate(
+            { subject, body },
+            previewContext,
+            {
+              templateKey: key,
+              appUrl: getPublicAppUrl(),
+              siteUrl: new URL(previewContext.conversationLink).origin,
+              replyToEmail: replyToEmail || settings.email.replyToEmail || settings.profile.email,
+              teamAvatarUrl: settings.profile.avatarDataUrl,
+              showViralFooter: shouldShowTranscriptViralFooter(settings.billing.planKey),
+              feedbackLinks: buildConversationFeedbackLinks(getPublicAppUrl(), "preview")
+            }
+          );
 
     await sendSettingsTemplateTestEmail({
       to: notificationEmail,

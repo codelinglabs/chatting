@@ -2,7 +2,7 @@ import {
   joinEmailText,
   renderBrandLockup,
   renderButtonRow,
-  renderChatlyEmailShell,
+  renderChattingEmailShell,
   renderDivider,
   renderEmailSection,
   renderHeadingBlock,
@@ -43,7 +43,7 @@ export function renderAccountWelcomeEmail(input: {
       `Go to Dashboard → ${input.dashboardUrl}`,
       "Questions? Just reply to this email — we read every one.\n\n— The Chatting Team"
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: "You're 5 minutes away from talking to your first visitor.",
       rows: [
         renderEmailSection(renderBrandLockup()),
@@ -85,7 +85,7 @@ export function renderEmailVerificationEmail(input: {
       `Or copy this link: ${input.verifyUrl}`,
       "This link expires in 24 hours."
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: "Click to activate your Chatting account.",
       rows: [
         renderEmailSection(
@@ -118,7 +118,7 @@ export function renderPasswordResetEmail(input: {
       "If you didn't request this, you can safely ignore this email. Your password won't change until you click the link above.",
       "This link expires in 1 hour."
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: "Choose a new password for your Chatting account.",
       rows: [
         renderEmailSection(
@@ -155,7 +155,7 @@ export function renderTeamInvitationEmail(input: {
       `Accept Invitation: ${input.inviteUrl}`,
       "This invitation expires in 7 days."
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: `${input.inviterName} invited you to join ${input.teamName} on Chatting.`,
       rows: [
         renderEmailSection(renderBrandLockup()),

@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Upgraded dashboard email templates with conversation-specific previews, transcript branding controls, and richer test-email rendering.
 - Aligned billing settings and landing pricing around shared Starter and Growth pricing helpers plus the shared app button styling.
 - Added backend Growth trial lifecycle handling for owner billing defaults, local trial extensions, and automatic downgrades for expired unpaid trials.
 - Added a dedicated referrals page in billing settings with shareable signup links, copied codes, and tracked signup and reward states.
@@ -63,6 +64,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Dashboard home now uses dedicated metrics, recent-conversations, and sidebar modules with cleaner empty states.
 - Dashboard home now surfaces activation, health, and expansion growth signals for the workspace.
 - Optimistic inbox interactions for replies and tags, plus modularized page components throughout.
+- Dashboard email settings now preview transcript and visitor email layouts with conversation-specific rendering and branding-aware test sends.
 
 ### Billing & Operations
 

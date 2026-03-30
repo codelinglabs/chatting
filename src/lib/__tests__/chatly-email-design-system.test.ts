@@ -108,7 +108,10 @@ describe("chatly email design system", () => {
     expect(productUpdate.subject).toBe("New in Chatting: Smarter visitor routing");
     expect(productUpdate.bodyHtml).toContain("Read Full Changelog");
     expect(extension.bodyText).toContain("Your updated trial end date: April 8, 2026");
-    expect(expired.bodyText).toContain("Growth - $20/seat/month");
-    expect(expired.bodyHtml).toContain("Per-seat pricing as your team grows");
+    expect(expired.bodyText).toContain(
+      "Growth - $29/month for 1-3 members, then $8/member from 4-9, $7/member from 10-24, and $6/member from 25-49"
+    );
+    expect(expired.bodyHtml).toContain("Proactive chat");
+    expect(expired.bodyHtml).toContain("Visitor tracking");
   });
 });

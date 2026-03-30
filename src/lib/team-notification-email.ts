@@ -2,7 +2,7 @@ import {
   joinEmailText,
   renderBrandLockup,
   renderButtonRow,
-  renderChatlyEmailShell,
+  renderChattingEmailShell,
   renderDivider,
   renderEmailSection,
   renderFooterBlock,
@@ -101,7 +101,7 @@ export function renderStarterUpgradePromptEmail(prompt: TeamNotificationUpgradeP
       `${buttonLabel}: ${prompt.billingUrl}`,
       "You're receiving this because your workspace crossed a monthly freemium usage milestone."
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: buildPreheader(prompt),
       rows: [
         renderEmailSection(renderBrandLockup()),

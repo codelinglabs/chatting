@@ -2,7 +2,7 @@ import {
   joinEmailText,
   renderBrandLockup,
   renderButtonRow,
-  renderChatlyEmailShell,
+  renderChattingEmailShell,
   renderDivider,
   renderEmailSection,
   renderHeadingBlock,
@@ -32,7 +32,7 @@ export function renderTrialEndingReminderEmail(input: {
       input.plansUrl ? `View Plans: ${input.plansUrl}` : undefined,
       "Questions about pricing? Reply to this email."
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: `Your Chatting trial wraps up on ${input.endDate}.`,
       rows: [
         renderEmailSection(renderBrandLockup()),
@@ -76,7 +76,7 @@ export function renderTrialExpiredEmail(input: {
       `Reactivate Account: ${input.reactivateUrl}`,
       "Not ready? Your data stays safe for 30 days."
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: "Your widget is paused, but your conversations are still safe.",
       rows: [
         renderEmailSection(renderBrandLockup()),
@@ -126,7 +126,7 @@ export function renderProductUpdateEmail(input: {
       "Also in this update:\n" + input.additionalUpdates.map((item) => `• ${item}`).join("\n"),
       `Read Full Changelog: ${input.changelogUrl}`
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: `${input.featureName} is now available in Chatting.`,
       rows: [
         renderEmailSection(renderBrandLockup()),
@@ -174,7 +174,7 @@ export function renderTrialExtensionOutreachEmail(input: {
       `Your updated trial end date: ${input.formattedEndDate}`,
       "If you'd like help with rollout, pricing, or setup, reply directly to this email and we'll jump in personally."
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: `Your ${input.planName} trial has been extended.`,
       rows: [
         renderEmailSection(renderBrandLockup()),

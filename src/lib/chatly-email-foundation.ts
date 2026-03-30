@@ -2,13 +2,13 @@ import { escapeHtml } from "@/lib/utils";
 
 type Align = "left" | "center" | "right";
 
-export type ChatlyEmailButton = {
+export type ChattingEmailButton = {
   href: string;
   label: string;
   variant?: "primary" | "secondary";
 };
 
-export type ChatlyEmailMetric = {
+export type ChattingEmailMetric = {
   value: string;
   label: string;
 };
@@ -21,7 +21,7 @@ function joinStyle(values: Array<string | null | undefined>) {
   return values.filter(Boolean).join(";");
 }
 
-export function renderChatlyEmailShell(input: {
+export function renderChattingEmailShell(input: {
   preheader: string;
   rows: string[];
 }) {
@@ -109,7 +109,7 @@ export function renderPanel(
   ])}">${html}</div>`;
 }
 
-export function renderEmailButton(button: ChatlyEmailButton) {
+export function renderEmailButton(button: ChattingEmailButton) {
   const variant = button.variant ?? "primary";
   const safeLabel = escapeHtml(button.label);
   const style =
@@ -135,8 +135,8 @@ export function renderEmailButton(button: ChatlyEmailButton) {
 }
 
 export function renderButtonRow(input: {
-  primary?: ChatlyEmailButton | null;
-  secondary?: ChatlyEmailButton | null;
+  primary?: ChattingEmailButton | null;
+  secondary?: ChattingEmailButton | null;
   secondaryPrefix?: string;
 }) {
   const primary = input.primary ? renderEmailButton(input.primary) : "";
@@ -152,7 +152,7 @@ export function renderButtonRow(input: {
   return `<div style="text-align:center;">${primary}${secondary}</div>`;
 }
 
-export function renderMetricGrid(metrics: ChatlyEmailMetric[]) {
+export function renderMetricGrid(metrics: ChattingEmailMetric[]) {
   const width = `${Math.max(25, Math.floor(100 / Math.max(1, metrics.length)))}%`;
   const cells = metrics
     .map(

@@ -1,11 +1,13 @@
 import { randomUUID } from "node:crypto";
+import type { BillingPlanKey } from "@/lib/billing-plans";
+import { buildConversationFeedbackLinks } from "@/lib/conversation-feedback";
+import { shouldShowTranscriptViralFooter } from "@/lib/conversation-transcript-footer";
+import { renderConversationTranscriptEmailTemplate } from "@/lib/conversation-transcript-email";
+import { renderVisitorConversationEmailTemplate } from "@/lib/conversation-visitor-email";
 import { getDashboardEmailTemplateSettings } from "@/lib/data/settings";
 import { getPublicAppUrl } from "@/lib/env";
-import {
-  renderDashboardEmailTemplate,
-  type DashboardEmailTemplateKey,
-  type DashboardEmailTemplateSection
-} from "@/lib/email-templates";
+import { getReplyDomain } from "@/lib/env.server";
+import { type DashboardEmailTemplateKey } from "@/lib/email-templates";
 import { sendRichEmail } from "@/lib/email";
 import {
   claimTemplateDelivery,
@@ -15,7 +17,7 @@ import {
   markTemplateDeliverySent
 } from "@/lib/repositories/conversation-template-email-repository";
 import { displayNameFromEmail } from "@/lib/user-display";
-import { escapeHtml, optionalText } from "@/lib/utils";
+import { optionalText } from "@/lib/utils";
 
 type ConversationTemplateContext = {
   conversationId: string;
@@ -23,6 +25,7 @@ type ConversationTemplateContext = {
   siteName: string;
   siteDomain: string | null;
   visitorEmail: string | null;
+  planKey: BillingPlanKey | null;
 };
 
 type ReplyAttachment = {
@@ -36,7 +39,7 @@ function getAppUrl() {
 }
 
 function getReplyAlias(conversationId: string) {
-  const domain = process.env.REPLY_DOMAIN?.trim();
+  const domain = getReplyDomain();
 
   if (!domain) {
     return null;
@@ -64,12 +67,7 @@ function profileNameFromSettings(settings: Awaited<ReturnType<typeof getDashboar
 }
 
 function buildFeedbackLinks(conversationId: string) {
-  const appUrl = getAppUrl();
-
-  return {
-    yesUrl: `${appUrl}/feedback?conversationId=${encodeURIComponent(conversationId)}&helpful=yes`,
-    noUrl: `${appUrl}/feedback?conversationId=${encodeURIComponent(conversationId)}&helpful=no`
-  };
+  return buildConversationFeedbackLinks(getAppUrl(), conversationId);
 }
 
 async function getConversationTemplateContext(conversationId: string): Promise<ConversationTemplateContext | null> {
@@ -83,13 +81,15 @@ async function getConversationTemplateContext(conversationId: string): Promise<C
     userId: row.user_id,
     siteName: row.site_name,
     siteDomain: row.domain,
-    visitorEmail: row.email
+    visitorEmail: row.email,
+    planKey: row.plan_key
   };
 }
 
-async function getConversationTranscript(conversationId: string, agentName: string) {
-  const rows = await listConversationTranscriptRows(conversationId);
-
+function formatConversationTranscriptRows(
+  rows: Awaited<ReturnType<typeof listConversationTranscriptRows>>,
+  agentName: string
+) {
   const formatter = new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit"
@@ -102,6 +102,10 @@ async function getConversationTranscript(conversationId: string, agentName: stri
       return `[${formatter.format(new Date(message.created_at))}] ${author}: ${content}`;
     })
     .join("\n\n");
+}
+
+async function getConversationTranscript(conversationId: string, agentName: string) {
+  return formatConversationTranscriptRows(await listConversationTranscriptRows(conversationId), agentName);
 }
 
 async function claimDelivery(input: {
@@ -163,56 +167,63 @@ async function sendConversationTemplateEmail(input: {
   const agentName = settings.profile.firstName.trim() || profileName.split(/\s+/)[0] || "Support";
   const conversationLink = buildSiteUrl(conversation.siteDomain);
   const feedbackLinks = buildFeedbackLinks(input.conversationId);
-  const signature = optionalText(settings.email.emailSignature);
-  const sections: DashboardEmailTemplateSection[] = [];
-
-  if (signature) {
-    sections.push({
-      type: "plain",
-      tone: "soft",
-      text: signature,
-      html: escapeHtml(signature).replace(/\n/g, "<br />")
-    });
-  }
-
-  if (input.templateKey === "satisfaction_survey") {
-    sections.push({
-      type: "actions",
-      tone: "soft",
-      title: "Helpful?",
-      textTitle: "Helpful?",
-      links: [
-        { label: "Yes", href: feedbackLinks.yesUrl },
-        { label: "No", href: feedbackLinks.noUrl }
-      ]
-    });
-  }
-
-  const rendered = renderDashboardEmailTemplate(
-    {
-      subject: template.subject,
-      body: template.body
-    },
-    {
-      visitorName: conversation.visitorEmail.split("@")[0] || "there",
-      visitorEmail: conversation.visitorEmail,
-      teamName: conversation.siteName,
-      agentName,
-      companyName: conversation.siteName,
-      conversationLink,
-      transcript: await getConversationTranscript(input.conversationId, agentName),
-      unsubscribeLink: getAppUrl()
-    },
-    {
-      highlightVariables: false,
-      includeShell: true,
-      sections
-    }
-  );
+  const transcriptRows =
+    input.templateKey === "conversation_transcript"
+      ? await listConversationTranscriptRows(input.conversationId)
+      : null;
   const replyTo =
     input.templateKey === "welcome_email"
       ? settings.email.replyToEmail
       : getReplyAlias(input.conversationId) || settings.email.replyToEmail;
+  const templateContext = {
+    visitorName: conversation.visitorEmail.split("@")[0] || "there",
+    visitorEmail: conversation.visitorEmail,
+    teamName: conversation.siteName,
+    agentName,
+    companyName: conversation.siteName,
+    conversationLink,
+    transcript: transcriptRows
+      ? formatConversationTranscriptRows(transcriptRows, agentName)
+      : await getConversationTranscript(input.conversationId, agentName),
+    unsubscribeLink: getAppUrl()
+  };
+  const rendered =
+    input.templateKey === "conversation_transcript"
+      ? renderConversationTranscriptEmailTemplate(
+          {
+            subject: template.subject,
+            body: template.body
+          },
+          templateContext,
+          {
+            appUrl: getAppUrl(),
+            siteUrl: conversationLink,
+            replyToEmail: replyTo,
+            messages: (transcriptRows ?? []).map((message) => ({
+              sender: message.sender,
+              content: message.content,
+              createdAt: message.created_at
+            })),
+            teamAvatarUrl: settings.profile.avatarDataUrl,
+            showViralFooter: shouldShowTranscriptViralFooter(conversation.planKey)
+          }
+        )
+      : renderVisitorConversationEmailTemplate(
+          {
+            subject: template.subject,
+            body: [template.body, optionalText(settings.email.emailSignature)].filter(Boolean).join("\n\n")
+          },
+          templateContext,
+          {
+            templateKey: input.templateKey,
+            appUrl: getAppUrl(),
+            siteUrl: conversationLink,
+            replyToEmail: replyTo,
+            teamAvatarUrl: settings.profile.avatarDataUrl,
+            showViralFooter: shouldShowTranscriptViralFooter(conversation.planKey),
+            feedbackLinks
+          }
+        );
 
   try {
     await sendRichEmail({

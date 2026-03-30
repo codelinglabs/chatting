@@ -2,7 +2,7 @@ import {
   joinEmailText,
   renderBrandLockup,
   renderButtonRow,
-  renderChatlyEmailShell,
+  renderChattingEmailShell,
   renderDivider,
   renderEmailSection,
   renderHeadingBlock,
@@ -34,7 +34,7 @@ export function renderNewMessageNotificationEmail(input: {
       "Tip: Reply directly to this email to respond.",
       input.upgradePromptText
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: `"${input.messagePreview}" — Reply now or view in inbox.`,
       rows: [
         renderEmailSection(renderBrandLockup()),
@@ -92,7 +92,7 @@ export function renderDailyDigestEmail(input: {
       openItems,
       `Go to Inbox → ${input.inboxUrl}`
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: `Your Chatting activity snapshot for ${input.date}.`,
       rows: [
         renderEmailSection(renderBrandLockup()),
@@ -124,7 +124,7 @@ export function renderMentionNotificationEmail(input: {
       `${input.note}\n${input.noteMeta}`,
       `View Conversation: ${input.conversationUrl}`
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: `${input.mentionerName} mentioned you in a conversation with ${input.visitorName}.`,
       rows: [
         renderEmailSection(renderHeadingBlock({ title: `${input.mentionerName} mentioned you` })),
@@ -162,7 +162,7 @@ export function renderWeeklyPerformanceEmail(input: {
       "Top pages generating chats:\n" + input.topPages.join("\n"),
       `View Full Report → ${input.reportUrl}`
     ]),
-    bodyHtml: renderChatlyEmailShell({
+    bodyHtml: renderChattingEmailShell({
       preheader: `Weekly conversation highlights for ${input.dateRange}.`,
       rows: [
         renderEmailSection(renderBrandLockup()),
