@@ -42,7 +42,6 @@ describe("growth outreach rules", () => {
     expect(shouldSendTeamExpansionReminder("starter", 2)).toBe(true);
     expect(shouldSendTeamExpansionReminder("growth", 4)).toBe(false);
     expect(shouldSendAnalyticsExpansionReminder("starter", 10, 1)).toBe(true);
-    expect(shouldSendAnalyticsExpansionReminder("growth", 3, 2)).toBe(true);
-    expect(shouldSendAnalyticsExpansionReminder("pro", 20, 4)).toBe(false);
+    expect(shouldSendAnalyticsExpansionReminder("growth", 3, 2)).toBe(false);
   });
 });

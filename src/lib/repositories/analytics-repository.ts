@@ -7,7 +7,7 @@ export type AnalyticsConversationRow = {
   status: "open" | "resolved";
   page_url: string | null;
   referrer: string | null;
-  helpful: boolean | null;
+  rating: number | null;
   first_response_seconds: string | null;
   resolution_seconds: string | null;
   tags: string[] | null;
@@ -28,7 +28,7 @@ export async function listAnalyticsConversations(userId: string) {
         c.status,
         cm.page_url,
         cm.referrer,
-        f.helpful,
+        f.rating,
         CASE
           WHEN fr.first_reply_at IS NOT NULL
            AND fu.first_user_at IS NOT NULL

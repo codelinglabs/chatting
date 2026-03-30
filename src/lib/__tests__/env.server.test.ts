@@ -104,16 +104,10 @@ describe("env.server", () => {
           STRIPE_WEBHOOK_SECRET: "",
           STRIPE_PRICE_GROWTH_MONTHLY: "",
           STRIPE_PRICE_GROWTH_ANNUAL: "price_growth_annual",
-          STRIPE_PRICE_PRO_MONTHLY: "",
-          STRIPE_PRICE_PRO_ANNUAL: "price_pro_annual",
           NEXT_PUBLIC_APP_URL: "https://chatly.example"
         }
       })
-    ).toEqual([
-      "STRIPE_WEBHOOK_SECRET",
-      "STRIPE_PRICE_GROWTH_MONTHLY",
-      "STRIPE_PRICE_PRO_MONTHLY"
-    ]);
+    ).toEqual(["STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_GROWTH_MONTHLY"]);
 
     expect(
       getMissingStripeCheckoutEnvVars({
@@ -122,20 +116,16 @@ describe("env.server", () => {
           STRIPE_WEBHOOK_SECRET: "",
           STRIPE_PRICE_GROWTH_MONTHLY: "",
           STRIPE_PRICE_GROWTH_ANNUAL: "price_growth_annual",
-          STRIPE_PRICE_PRO_MONTHLY: "",
-          STRIPE_PRICE_PRO_ANNUAL: "price_pro_annual",
           NEXT_PUBLIC_APP_URL: "https://chatly.example"
         }
       })
-    ).toEqual(["STRIPE_PRICE_GROWTH_MONTHLY", "STRIPE_PRICE_PRO_MONTHLY"]);
+    ).toEqual(["STRIPE_PRICE_GROWTH_MONTHLY"]);
 
     expect(
       isStripeConfigured({
         STRIPE_SECRET_KEY: "sk_test",
         STRIPE_PRICE_GROWTH_MONTHLY: "price_growth_monthly",
         STRIPE_PRICE_GROWTH_ANNUAL: "price_growth_annual",
-        STRIPE_PRICE_PRO_MONTHLY: "price_pro_monthly",
-        STRIPE_PRICE_PRO_ANNUAL: "price_pro_annual",
         NEXT_PUBLIC_APP_URL: "https://chatly.example"
       })
     ).toBe(true);
@@ -145,8 +135,6 @@ describe("env.server", () => {
         STRIPE_SECRET_KEY: "sk_test",
         STRIPE_PRICE_GROWTH_MONTHLY: "price_growth_monthly",
         STRIPE_PRICE_GROWTH_ANNUAL: "price_growth_annual",
-        STRIPE_PRICE_PRO_MONTHLY: "price_pro_monthly",
-        STRIPE_PRICE_PRO_ANNUAL: "price_pro_annual",
         NEXT_PUBLIC_APP_URL: "https://chatly.example"
       })
     ).toBe(false);
@@ -201,8 +189,6 @@ describe("env.server", () => {
           STRIPE_WEBHOOK_SECRET: "whsec_test",
           STRIPE_PRICE_GROWTH_MONTHLY: "price_growth_monthly",
           STRIPE_PRICE_GROWTH_ANNUAL: "price_growth_annual",
-          STRIPE_PRICE_PRO_MONTHLY: "price_123",
-          STRIPE_PRICE_PRO_ANNUAL: "price_pro_annual",
           NEXT_PUBLIC_APP_URL: "https://chatly.example"
         },
         cache: false
@@ -217,8 +203,6 @@ describe("env.server", () => {
           STRIPE_WEBHOOK_SECRET: "whsec_test",
           STRIPE_PRICE_GROWTH_MONTHLY: "price_growth_monthly",
           STRIPE_PRICE_GROWTH_ANNUAL: "price_growth_annual",
-          STRIPE_PRICE_PRO_MONTHLY: "price_123",
-          STRIPE_PRICE_PRO_ANNUAL: "price_pro_annual",
           NEXT_PUBLIC_APP_URL: "https://chatly.example"
         },
         cache: false

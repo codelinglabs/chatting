@@ -51,6 +51,30 @@ export async function runUserSchemaInitialization(pool: Pool) {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS auth_email_tokens (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      email TEXT NOT NULL,
+      type TEXT NOT NULL,
+      token_hash TEXT NOT NULL UNIQUE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      consumed_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    ALTER TABLE auth_email_tokens
+    DROP CONSTRAINT IF EXISTS auth_email_tokens_type_check;
+  `);
+
+  await pool.query(`
+    ALTER TABLE auth_email_tokens
+    ADD CONSTRAINT auth_email_tokens_type_check
+    CHECK (type IN ('password_reset', 'email_verification'));
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS user_settings (
       user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
       first_name TEXT NOT NULL DEFAULT '',
@@ -93,9 +117,21 @@ export async function runUserSchemaInitialization(pool: Pool) {
       role TEXT NOT NULL DEFAULT 'member',
       message TEXT NOT NULL DEFAULT '',
       status TEXT NOT NULL DEFAULT 'pending',
+      accepted_at TIMESTAMPTZ,
+      accepted_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+  `);
+
+  await pool.query(`
+    ALTER TABLE team_invites
+    ADD COLUMN IF NOT EXISTS accepted_at TIMESTAMPTZ;
+  `);
+
+  await pool.query(`
+    ALTER TABLE team_invites
+    ADD COLUMN IF NOT EXISTS accepted_by_user_id TEXT REFERENCES users(id) ON DELETE SET NULL;
   `);
 
   await pool.query(`
@@ -117,7 +153,52 @@ export async function runUserSchemaInitialization(pool: Pool) {
   await pool.query(`
     ALTER TABLE team_invites
     ADD CONSTRAINT team_invites_status_check
-    CHECK (status IN ('pending', 'revoked'));
+    CHECK (status IN ('pending', 'accepted', 'revoked'));
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS team_memberships (
+      owner_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      member_user_id TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+      role TEXT NOT NULL DEFAULT 'member',
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (owner_user_id, member_user_id)
+    );
+  `);
+
+  await pool.query(`
+    ALTER TABLE team_memberships
+    DROP CONSTRAINT IF EXISTS team_memberships_role_check;
+  `);
+
+  await pool.query(`
+    ALTER TABLE team_memberships
+    DROP CONSTRAINT IF EXISTS team_memberships_member_unique;
+  `);
+
+  await pool.query(`
+    ALTER TABLE team_memberships
+    ADD CONSTRAINT team_memberships_member_unique
+    UNIQUE (member_user_id);
+  `);
+
+  await pool.query(`
+    ALTER TABLE team_memberships
+    ADD CONSTRAINT team_memberships_role_check
+    CHECK (role IN ('admin', 'member'));
+  `);
+
+  await pool.query(`
+    ALTER TABLE team_memberships
+    DROP CONSTRAINT IF EXISTS team_memberships_status_check;
+  `);
+
+  await pool.query(`
+    ALTER TABLE team_memberships
+    ADD CONSTRAINT team_memberships_status_check
+    CHECK (status IN ('active', 'revoked'));
   `);
 
   await pool.query(`

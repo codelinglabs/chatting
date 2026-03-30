@@ -1,5 +1,5 @@
 import { Pool, type QueryResultRow } from "pg";
-import { getRequiredServerEnv } from "@/lib/env.server";
+import { getDatabaseConfig } from "@/lib/env.server";
 import { runSchemaInitialization } from "@/lib/db-schema";
 
 declare global {
@@ -13,17 +13,12 @@ declare global {
 
 const SCHEMA_VERSION = "2026-03-29-visitor-presence-schema";
 
-function getConnectionString() {
-  return getRequiredServerEnv("DATABASE_URL");
-}
-
 function createPool() {
+  const config = getDatabaseConfig();
+
   return new Pool({
-    connectionString: getConnectionString(),
-    ssl:
-      process.env.DATABASE_SSL === "require"
-        ? { rejectUnauthorized: false }
-        : undefined
+    connectionString: config.connectionString,
+    ssl: config.ssl
   });
 }
 

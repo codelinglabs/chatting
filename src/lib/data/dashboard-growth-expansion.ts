@@ -35,7 +35,7 @@ export function buildExpansion(billing: DashboardBillingSummary): DashboardHomeG
     });
   }
 
-  if (billing.planKey !== "pro" && (billing.usedSeats > 1 || billing.conversationCount >= 10)) {
+  if (billing.planKey === "starter" && (billing.usedSeats > 1 || billing.conversationCount >= 10)) {
     prompts.push({
       id: "analytics" as const,
       tone: "neutral",
@@ -50,8 +50,8 @@ export function buildExpansion(billing: DashboardBillingSummary): DashboardHomeG
     description:
       prompts.length > 0
         ? "Upgrade nudges appear when team usage, conversation volume, or reporting needs signal expansion potential."
-        : billing.planKey === "pro"
-          ? "You're already on Pro, so advanced reporting and API access are unlocked."
+        : billing.planKey === "growth"
+          ? "You're already on Growth, so advanced reporting and API access are unlocked."
           : "No upgrade pressure yet. We'll surface expansion signals as the workspace grows.",
     prompts
   };

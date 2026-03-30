@@ -3,9 +3,9 @@ import type { ConversationStatus } from "@/lib/types";
 import type { MessageRow } from "@/lib/repositories/shared-repository";
 
 export async function findConversationById(conversationId: string) {
-  const result = await query<{ id: string; site_id: string; email: string | null }>(
+  const result = await query<{ id: string; site_id: string; email: string | null; session_id: string }>(
     `
-      SELECT id, site_id, email
+      SELECT id, site_id, email, session_id
       FROM conversations
       WHERE id = $1
       LIMIT 1

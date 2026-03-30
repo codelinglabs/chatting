@@ -3,8 +3,10 @@ import {
   deleteConversationTypingRecord,
   deleteVisitorTypingRecord,
   findActiveConversationTyping,
+  findConversationById,
   findConversationEmailById,
   findConversationEmailStateForUser,
+  findConversationIdentityForActivity,
   findConversationNotificationContextRow,
   findConversationTag,
   findPublicAttachmentRecord,
@@ -17,10 +19,13 @@ import {
   upsertConversationTypingRecord,
   upsertVisitorTypingRecord
 } from "@/lib/repositories/conversations-repository";
-import type { ConversationStatus, ConversationThread, VisitorActivity } from "@/lib/types";
+import type { ConversationRating, ConversationStatus, ConversationThread, VisitorActivity } from "@/lib/types";
 import { optionalText } from "@/lib/utils";
 import { isHighIntentPage, previewIncomingMessage } from "@/lib/notification-utils";
+import { getWorkspaceAccess } from "@/lib/workspace-access";
 import { getSiteByPublicId } from "./sites";
+import { migrateVisitorNoteIdentity } from "./visitor-notes";
+import { recordVisitorPresence } from "./visitors";
 import {
   ensureConversation,
   getConversationVisitorActivity,
@@ -48,6 +53,10 @@ export async function createUserMessage(input: CreateUserMessageInput) {
     throw new Error("SITE_NOT_FOUND");
   }
 
+  const requestedConversation = input.conversationId?.trim()
+    ? await findConversationById(input.conversationId.trim())
+    : null;
+
   const { conversationId, createdConversation, emailCaptured } = await ensureConversation(input);
   const isNewVisitor = createdConversation
     ? !(await hasPreviousVisitorConversation({
@@ -57,7 +66,30 @@ export async function createUserMessage(input: CreateUserMessageInput) {
         sessionId: input.sessionId
       }))
     : false;
+  await migrateVisitorNoteIdentity({
+    siteId: input.siteId,
+    sessionId: input.sessionId,
+    previousEmail:
+      requestedConversation && requestedConversation.site_id === input.siteId
+        ? requestedConversation.email
+        : null,
+    nextEmail: input.email
+  });
   await upsertMetadata(conversationId, input.metadata);
+  await recordVisitorPresence({
+    siteId: input.siteId,
+    sessionId: input.sessionId,
+    conversationId,
+    email: input.email,
+    pageUrl: input.metadata.pageUrl,
+    referrer: input.metadata.referrer,
+    userAgent: input.metadata.userAgent,
+    country: input.metadata.country,
+    region: input.metadata.region,
+    city: input.metadata.city,
+    timezone: input.metadata.timezone,
+    locale: input.metadata.locale
+  });
   const message = await insertMessage(
     conversationId,
     "user",
@@ -147,6 +179,21 @@ export async function saveVisitorConversationEmail(input: {
     email
   });
 
+  if (updated) {
+    await migrateVisitorNoteIdentity({
+      siteId: input.siteId,
+      sessionId: input.sessionId,
+      previousEmail: before.email,
+      nextEmail: email
+    });
+    await recordVisitorPresence({
+      siteId: input.siteId,
+      sessionId: input.sessionId,
+      conversationId: input.conversationId,
+      email
+    });
+  }
+
   return {
     updated,
     welcomeEmailEligible: !optionalText(before.email),
@@ -168,6 +215,16 @@ export async function addFounderReply(
 }
 
 export async function addInboundReply(conversationId: string, email: string | null, content: string) {
+  const conversation = await findConversationById(conversationId);
+  if (conversation) {
+    await migrateVisitorNoteIdentity({
+      siteId: conversation.site_id,
+      sessionId: conversation.session_id,
+      previousEmail: conversation.email,
+      nextEmail: email
+    });
+  }
+
   await updateConversationEmailValue(conversationId, email, "merge");
   return insertMessage(conversationId, "user", content, [], { reopenConversation: true });
 }
@@ -188,9 +245,10 @@ export async function getConversationNotificationContext(conversationId: string)
 }
 
 export async function listConversationSummaries(userId: string) {
+  const workspace = await getWorkspaceAccess(userId);
   const result = await queryConversationSummaries(
     "s.user_id = $1",
-    [userId],
+    [workspace.ownerUserId],
     "ORDER BY latest.created_at DESC NULLS LAST, c.updated_at DESC",
     userId
   );
@@ -199,9 +257,10 @@ export async function listConversationSummaries(userId: string) {
 }
 
 export async function getConversationSummaryById(id: string, userId: string) {
+  const workspace = await getWorkspaceAccess(userId);
   const result = await queryConversationSummaries(
     "c.id = $1 AND s.user_id = $2",
-    [id, userId],
+    [id, workspace.ownerUserId],
     "LIMIT 1",
     userId
   );
@@ -210,8 +269,9 @@ export async function getConversationSummaryById(id: string, userId: string) {
 }
 
 export async function getConversationById(id: string, userId: string) {
+  const workspace = await getWorkspaceAccess(userId);
   const [summaryResult, visitorActivity] = await Promise.all([
-    queryConversationSummaries("c.id = $1 AND s.user_id = $2", [id, userId], "LIMIT 1", userId),
+    queryConversationSummaries("c.id = $1 AND s.user_id = $2", [id, workspace.ownerUserId], "LIMIT 1", userId),
     getConversationVisitorActivity(id, userId)
   ]);
 
@@ -247,11 +307,13 @@ export async function toggleTag(conversationId: string, tag: string, userId: str
   return true;
 }
 
-export async function recordFeedback(conversationId: string, helpful: boolean) {
-  await upsertConversationFeedback(conversationId, helpful);
+export async function recordFeedback(conversationId: string, rating: ConversationRating) {
+  await upsertConversationFeedback(conversationId, rating);
 }
 
 export async function updateConversationEmail(conversationId: string, email: string, userId: string) {
+  const workspace = await getWorkspaceAccess(userId);
+
   if (!(await hasConversationAccess(conversationId, userId))) {
     return {
       updated: false,
@@ -260,8 +322,18 @@ export async function updateConversationEmail(conversationId: string, email: str
   }
 
   const previousEmail = await findConversationEmailById(conversationId);
+  const identityBefore = await findConversationIdentityForActivity(conversationId, workspace.ownerUserId);
 
   await updateConversationEmailValue(conversationId, email, "replace");
+  if (identityBefore) {
+    await migrateVisitorNoteIdentity({
+      siteId: identityBefore.site_id,
+      sessionId: identityBefore.session_id,
+      previousEmail,
+      nextEmail: email,
+      updatedByUserId: userId
+    });
+  }
   return {
     updated: true,
     welcomeEmailEligible: !optionalText(previousEmail)
@@ -269,7 +341,8 @@ export async function updateConversationEmail(conversationId: string, email: str
 }
 
 export async function getConversationEmail(conversationId: string, userId: string) {
-  return findConversationEmailStateForUser(conversationId, userId);
+  const workspace = await getWorkspaceAccess(userId);
+  return findConversationEmailStateForUser(conversationId, workspace.ownerUserId);
 }
 
 export async function markConversationRead(conversationId: string, userId: string) {
@@ -287,7 +360,8 @@ export async function updateConversationStatus(
   status: ConversationStatus,
   userId: string
 ) {
-  return updateConversationStatusRecord(conversationId, userId, status);
+  const workspace = await getWorkspaceAccess(userId);
+  return updateConversationStatusRecord(conversationId, workspace.ownerUserId, status);
 }
 
 export async function getAttachmentForPublic(input: {

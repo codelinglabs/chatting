@@ -62,8 +62,33 @@ export async function runIndexSchemaInitialization(pool: Pool) {
   `);
 
   await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_visitor_presence_site_last_seen
+      ON visitor_presence_sessions(site_id, last_seen_at DESC);
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_visitor_presence_conversation_last_seen
+      ON visitor_presence_sessions(conversation_id, last_seen_at DESC);
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_visitor_notes_site_updated_at
+      ON visitor_notes(site_id, updated_at DESC);
+  `);
+
+  await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_team_invites_owner_status
       ON team_invites(owner_user_id, status, updated_at DESC);
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_team_memberships_member_status
+      ON team_memberships(member_user_id, status, updated_at DESC);
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_team_memberships_owner_status
+      ON team_memberships(owner_user_id, status, updated_at DESC);
   `);
 
   await pool.query(`

@@ -1,4 +1,5 @@
 import { query } from "@/lib/db";
+import type { BillingPlanKey } from "@/lib/billing-plans";
 import type { DashboardEmailTemplateKey } from "@/lib/email-templates";
 
 export async function findConversationTemplateContext(conversationId: string) {
@@ -8,6 +9,7 @@ export async function findConversationTemplateContext(conversationId: string) {
     site_name: string;
     domain: string | null;
     email: string | null;
+    plan_key: BillingPlanKey | null;
   }>(
     `
       SELECT
@@ -15,10 +17,13 @@ export async function findConversationTemplateContext(conversationId: string) {
         s.user_id,
         s.name AS site_name,
         s.domain,
-        c.email
+        c.email,
+        ba.plan_key
       FROM conversations c
       INNER JOIN sites s
         ON s.id = c.site_id
+      LEFT JOIN billing_accounts ba
+        ON ba.user_id = s.user_id
       WHERE c.id = $1
       LIMIT 1
     `,

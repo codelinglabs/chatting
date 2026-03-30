@@ -70,15 +70,11 @@ export async function sendExpansionReminderEmail(input: {
   const subject =
     input.mode === "team"
       ? "Your workspace is growing beyond Starter"
-      : input.planKey === "growth"
-        ? "You may be ready for Pro reporting and API access"
-        : "You may be ready for deeper analytics and API access";
+      : "You may be ready for deeper analytics and API access";
   const intro =
     input.mode === "team"
       ? `You now have ${input.usedSeats} reserved seats in play. As the inbox becomes a team workflow, moving beyond Starter keeps coverage and reporting from getting cramped.`
-      : input.planKey === "growth"
-        ? `Your workspace is showing signs that Pro could help: ${input.conversationCount} conversations this month and a team that likely needs deeper reporting plus API access.`
-        : `Your workspace is showing signs that a paid plan could help: ${input.conversationCount} conversations this month and enough activity to benefit from fuller analytics and API options.`;
+      : `Your workspace is showing signs that a paid plan could help: ${input.conversationCount} conversations this month and enough activity to benefit from fuller analytics and API access.`;
 
   await sendRichEmail({
     to: input.to,

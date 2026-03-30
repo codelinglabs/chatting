@@ -4,6 +4,7 @@ import {
   listAnalyticsReplyEvents
 } from "@/lib/repositories/analytics-repository";
 import type { ConversationRating } from "@/lib/types";
+import { getWorkspaceAccess } from "@/lib/workspace-access";
 
 export type AnalyticsConversationRecord = {
   id: string;
@@ -33,9 +34,10 @@ function toNullableNumber(value: string | null) {
 }
 
 export async function getAnalyticsDataset(userId: string): Promise<AnalyticsDataset> {
+  const workspace = await getWorkspaceAccess(userId);
   const [conversations, replyEvents] = await Promise.all([
-    listAnalyticsConversations(userId),
-    listAnalyticsReplyEvents(userId)
+    listAnalyticsConversations(workspace.ownerUserId),
+    listAnalyticsReplyEvents(workspace.ownerUserId)
   ]);
 
   return {

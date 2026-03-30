@@ -64,7 +64,7 @@ describe("growth outreach email", () => {
       conversationCount: 18
     });
 
-    expect(mocks.sendRichEmail.mock.calls[0][0].subject).toBe("You may be ready for Pro reporting and API access");
+    expect(mocks.sendRichEmail.mock.calls[0][0].subject).toBe("You may be ready for deeper analytics and API access");
     expect(mocks.sendRichEmail.mock.calls[0][0].bodyText).toContain("https://chatly.example/dashboard/settings?section=billing");
   });
 });

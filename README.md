@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Expanded backend route and data coverage across public APIs, Stripe webhook handling, repositories, and growth/billing services.
 - Expanded dashboard coverage across shell, inbox, visitors, widget settings, and dashboard route workflows.
 - Renamed the remaining product-facing Chatly references across docs, service labels, invite copy, and pricing-driven blog content to Chatting.
 - Upgraded dashboard email templates with conversation-specific previews, transcript branding controls, and richer test-email rendering.
@@ -76,6 +77,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Scheduled lifecycle nudges now deliver activation, health, and upgrade reminders from the node runtime instead of widget pageviews.
 - Seat-based `Growth` and `Pro` billing with monthly/annual pricing, plan-aware widget gating, and trial-extension support for active workspaces.
 - Billing settings now share the same Starter and Growth pricing presentation as the landing page, backed by shared pricing primitives and button styles.
+- Public APIs, Stripe billing flows, repositories, and growth services now have broad backend coverage in the Vitest suite.
 - Referral programs with per-workspace codes and paid-conversion reward tracking in billing settings.
 - Billing settings now include a dedicated referrals page with program cards, direct signup links, and referred-signup status tracking.
 - Affiliate commission ledger visibility tied to paid billing activity.

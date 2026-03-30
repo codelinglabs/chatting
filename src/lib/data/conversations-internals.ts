@@ -13,6 +13,7 @@ import {
 } from "@/lib/repositories/conversations-repository";
 import type { VisitorActivity } from "@/lib/types";
 import { optionalText } from "@/lib/utils";
+import { getWorkspaceAccess } from "@/lib/workspace-access";
 import {
   mapAttachment,
   mapMessage,
@@ -82,7 +83,8 @@ export async function getConversationVisitorActivity(
   conversationId: string,
   userId: string
 ): Promise<VisitorActivity | null> {
-  const identity = await findConversationIdentityForActivity(conversationId, userId);
+  const workspace = await getWorkspaceAccess(userId);
+  const identity = await findConversationIdentityForActivity(conversationId, workspace.ownerUserId);
 
   if (!identity) {
     return null;

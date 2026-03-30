@@ -12,7 +12,8 @@ describe("stripe helpers", () => {
 
   it("reports whether stripe is configured", async () => {
     process.env.STRIPE_SECRET_KEY = "sk_test_123";
-    process.env.STRIPE_PRICE_PRO_MONTHLY = "price_123";
+    process.env.STRIPE_PRICE_GROWTH_MONTHLY = "price_growth_monthly";
+    process.env.STRIPE_PRICE_GROWTH_ANNUAL = "price_growth_annual";
     process.env.NEXT_PUBLIC_APP_URL = "https://chatly.example";
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_123";
 
@@ -29,7 +30,8 @@ describe("stripe helpers", () => {
 
   it("treats missing webhook setup as not billing-ready", async () => {
     process.env.STRIPE_SECRET_KEY = "sk_test_123";
-    process.env.STRIPE_PRICE_PRO_MONTHLY = "price_123";
+    process.env.STRIPE_PRICE_GROWTH_MONTHLY = "price_growth_monthly";
+    process.env.STRIPE_PRICE_GROWTH_ANNUAL = "price_growth_annual";
     process.env.NEXT_PUBLIC_APP_URL = "https://chatly.example";
     delete process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -46,15 +48,16 @@ describe("stripe helpers", () => {
   });
 
   it("throws a stripe-specific error when required env is missing", async () => {
-    delete process.env.STRIPE_PRICE_PRO_MONTHLY;
+    delete process.env.STRIPE_PRICE_GROWTH_MONTHLY;
     const stripeModule = await import("@/lib/stripe");
 
-    expect(() => stripeModule.getStripeProPriceId()).toThrow("STRIPE_NOT_CONFIGURED");
+    expect(() => stripeModule.getStripePriceId("growth", "monthly")).toThrow("STRIPE_NOT_CONFIGURED");
   });
 
   it("caches the stripe client", async () => {
     process.env.STRIPE_SECRET_KEY = "sk_test_123";
-    process.env.STRIPE_PRICE_PRO_MONTHLY = "price_123";
+    process.env.STRIPE_PRICE_GROWTH_MONTHLY = "price_growth_monthly";
+    process.env.STRIPE_PRICE_GROWTH_ANNUAL = "price_growth_annual";
     process.env.NEXT_PUBLIC_APP_URL = "https://chatly.example";
 
     const stripeModule = await import("@/lib/stripe");

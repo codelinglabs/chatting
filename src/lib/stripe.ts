@@ -31,14 +31,7 @@ export function getStripePriceId(planKey: BillingPlanKey, interval: BillingInter
     throw new Error("STRIPE_CHECKOUT_UNAVAILABLE");
   }
 
-  const envName =
-    planKey === "growth"
-      ? interval === "annual"
-        ? "STRIPE_PRICE_GROWTH_ANNUAL"
-        : "STRIPE_PRICE_GROWTH_MONTHLY"
-      : interval === "annual"
-        ? "STRIPE_PRICE_PRO_ANNUAL"
-        : "STRIPE_PRICE_PRO_MONTHLY";
+  const envName = interval === "annual" ? "STRIPE_PRICE_GROWTH_ANNUAL" : "STRIPE_PRICE_GROWTH_MONTHLY";
 
   return getRequiredServerEnv(envName, { errorCode: "STRIPE_NOT_CONFIGURED" });
 }

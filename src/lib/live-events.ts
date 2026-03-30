@@ -33,6 +33,14 @@ export type DashboardLiveEvent =
       conversationId: string;
       actor: DashboardTypingActor;
       typing: boolean;
+    }
+  | {
+      type: "visitor.presence.updated";
+      siteId: string;
+      sessionId: string;
+      conversationId: string | null;
+      pageUrl: string | null;
+      updatedAt: string;
     };
 
 export type PublicConversationLiveEvent =
