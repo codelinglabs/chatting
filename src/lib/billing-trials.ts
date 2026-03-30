@@ -3,10 +3,12 @@ import {
   getBillingPlanFeatures,
   isPaidPlan
 } from "@/lib/billing-plans";
+import { getEffectiveBillingSubscriptionStatus } from "@/lib/billing-trial-state";
 
 export type BillingTrialEligibilityInput = {
   planKey: BillingPlanKey;
   subscriptionStatus: string | null;
+  stripeSubscriptionId: string | null;
   trialEndsAt: string | null;
   trialExtensionUsedAt: string | null;
   siteCount: number;
@@ -30,7 +32,14 @@ export function isBillingTrialExtensionEligible(input: BillingTrialEligibilityIn
     return false;
   }
 
-  if (input.subscriptionStatus !== "trialing" || !input.trialEndsAt) {
+  if (
+    getEffectiveBillingSubscriptionStatus({
+      planKey: input.planKey,
+      subscriptionStatus: input.subscriptionStatus,
+      stripeSubscriptionId: input.stripeSubscriptionId,
+      trialEndsAt: input.trialEndsAt
+    }) !== "trialing"
+  ) {
     return false;
   }
 

@@ -10,6 +10,9 @@ import {
   normalizeBillingInterval,
   normalizeBillingPlanKey
 } from "@/lib/billing-plans";
+import { ensureOwnerGrowthTrialBillingAccount } from "@/lib/billing-default-account";
+import { extendBillingTrial } from "@/lib/billing-trial-extension";
+import { getEffectiveBillingSubscriptionStatus } from "@/lib/billing-trial-state";
 import { countBillableWorkspaceSeats, normalizeBillableSeatCount } from "@/lib/billing-seats";
 import { sendTrialExtensionOutreachEmail } from "@/lib/billing-outreach";
 import {
@@ -22,14 +25,12 @@ import {
   findBillingAccountRow,
   findBillingPaymentMethodRow,
   findBillingUsageRow,
-  listBillingInvoiceRows,
-  upsertBillingAccountRow
+  listBillingInvoiceRows
 } from "@/lib/repositories/billing-repository";
 import { findBillingInsightsRow } from "@/lib/repositories/billing-insights-repository";
 import {
   createStripeBillingPortalSession,
   createStripeCheckoutSession,
-  extendStripeTrial,
   syncStripeBillingState
 } from "@/lib/stripe-billing";
 import { isStripeBillingReady, isStripeConfigured } from "@/lib/stripe";
@@ -147,36 +148,7 @@ function toDashboardInvoices(
 }
 
 async function ensureBillingAccount(userId: string) {
-  const existing = await findBillingAccountRow(userId);
-  if (existing) {
-    return existing;
-  }
-
-  await upsertBillingAccountRow({
-    userId,
-    planKey: "starter",
-    billingInterval: "monthly",
-    seatQuantity: 1,
-    nextBillingDate: null
-  });
-
-  return {
-    user_id: userId,
-    plan_key: "starter" as const,
-    billing_interval: "monthly" as const,
-    seat_quantity: 1,
-    next_billing_date: null,
-    stripe_customer_id: null,
-    stripe_subscription_id: null,
-    stripe_price_id: null,
-    stripe_status: null,
-    stripe_current_period_end: null,
-    trial_started_at: null,
-    trial_ends_at: null,
-    trial_extension_used_at: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
+  return ensureOwnerGrowthTrialBillingAccount(userId);
 }
 
 async function resolveUsedSeats(userId: string, usedSeats?: number) {
@@ -213,9 +185,16 @@ async function buildDashboardBillingSummary(userId: string, usedSeats?: number) 
     conversationCount: monthlyConversationCount,
     usedSeats: resolvedUsedSeats
   });
-  const trialExtensionEligible = isBillingTrialExtensionEligible({
+  const subscriptionStatus = getEffectiveBillingSubscriptionStatus({
     planKey,
     subscriptionStatus: account.stripe_status,
+    stripeSubscriptionId: account.stripe_subscription_id,
+    trialEndsAt: account.trial_ends_at
+  });
+  const trialExtensionEligible = isBillingTrialExtensionEligible({
+    planKey,
+    subscriptionStatus,
+    stripeSubscriptionId: account.stripe_subscription_id,
     trialEndsAt: account.trial_ends_at,
     trialExtensionUsedAt: account.trial_extension_used_at,
     siteCount,
@@ -246,7 +225,7 @@ async function buildDashboardBillingSummary(userId: string, usedSeats?: number) 
     trialExtensionEligible,
     trialExtensionUsedAt: formatBillingDate(account.trial_extension_used_at),
     activityQualifiedForTrialExtension,
-    subscriptionStatus: account.stripe_status,
+    subscriptionStatus,
     customerId: account.stripe_customer_id,
     portalAvailable: Boolean(account.stripe_customer_id && billingReady),
     checkoutAvailable: billingReady,
@@ -319,6 +298,7 @@ export async function requestDashboardTrialExtension(userId: string, email: stri
   if (!isBillingTrialExtensionEligible({
     planKey,
     subscriptionStatus: account.stripe_status,
+    stripeSubscriptionId: account.stripe_subscription_id,
     trialEndsAt: account.trial_ends_at,
     trialExtensionUsedAt: account.trial_extension_used_at,
     siteCount,
@@ -328,7 +308,7 @@ export async function requestDashboardTrialExtension(userId: string, email: stri
     throw new Error("TRIAL_EXTENSION_UNAVAILABLE");
   }
 
-  const extended = await extendStripeTrial(workspace.ownerUserId, BILLING_TRIAL_EXTENSION_DAYS, resolvedUsedSeats);
+  const extended = await extendBillingTrial(workspace.ownerUserId, BILLING_TRIAL_EXTENSION_DAYS, resolvedUsedSeats);
   const billing = await buildDashboardBillingSummary(workspace.ownerUserId, resolvedUsedSeats);
 
   let outreachQueued = true;

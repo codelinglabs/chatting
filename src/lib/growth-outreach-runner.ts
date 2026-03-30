@@ -1,7 +1,9 @@
+import { runExpiredGrowthTrialDowngrades } from "@/lib/billing-lifecycle";
 import { maybeSendSiteLifecycleEmails } from "@/lib/growth-outreach";
 import { listGrowthLifecycleSiteRows } from "@/lib/repositories/growth-outreach-repository";
 
 export async function runScheduledGrowthLifecycleEmails() {
+  const { downgradedWorkspaces } = await runExpiredGrowthTrialDowngrades();
   const sites = await listGrowthLifecycleSiteRows();
   let processed = 0;
 
@@ -11,6 +13,7 @@ export async function runScheduledGrowthLifecycleEmails() {
   }
 
   return {
-    processedSites: processed
+    processedSites: processed,
+    downgradedWorkspaces
   };
 }

@@ -19,9 +19,9 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Added backend Growth trial lifecycle handling for owner billing defaults, local trial extensions, and automatic downgrades for expired unpaid trials.
 - Added a dedicated referrals page in billing settings with shareable signup links, copied codes, and tracked signup and reward states.
 - Added tiered landing-page pricing cards with Free, Starter, and Pro plans plus a Pro team-size slider.
-- Forced schema reinitialization for the visitor-presence rollout so existing processes stop hitting missing-table errors.
 - Added an internal Chatting distribution playbook markdown file under `app/` for growth-channel planning and launch copy.
 - Added dashboard growth insights for activation, workspace health, and expansion signals on the home view.
 - Added scheduled lifecycle growth nudges for activation, health, and upgrade reminders without running email checks on widget requests.
@@ -66,11 +66,11 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Billing & Operations
 
 - Stripe-backed billing flows for checkout, portal access, invoice sync, and webhook handling.
+- Owner workspaces now default to a backend-seeded Growth trial, support local trial extensions, and automatically downgrade expired unpaid trials to Starter.
 - Scheduled lifecycle nudges now deliver activation, health, and upgrade reminders from the node runtime instead of widget pageviews.
-- Schema version bumps now rerun auto-initialized Postgres setup during visitor-presence rollouts so existing processes do not miss new tables.
 - Seat-based `Growth` and `Pro` billing with monthly/annual pricing, plan-aware widget gating, and trial-extension support for active workspaces.
-- Billing settings now include a dedicated referrals page with program cards, direct signup links, and referred-signup status tracking.
 - Referral programs with per-workspace codes and paid-conversion reward tracking in billing settings.
+- Billing settings now include a dedicated referrals page with program cards, direct signup links, and referred-signup status tracking.
 - Affiliate commission ledger visibility tied to paid billing activity.
 - Cloudflare R2-backed team photo uploads for widget presentation.
 - Vitest-based app test suite covering routes, pages, helpers, onboarding, widget flows, and billing.

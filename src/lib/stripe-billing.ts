@@ -3,8 +3,12 @@ import {
   BILLING_TRIAL_DAYS,
   type BillingInterval,
   type BillingPlanKey,
-  isPaidPlan
+  isPaidPlan,
+  normalizeBillingPlanKey
 } from "@/lib/billing-plans";
+import { ensureOwnerGrowthTrialBillingAccount } from "@/lib/billing-default-account";
+import { isLocalGrowthTrialActive } from "@/lib/billing-trial-state";
+import { getOptionalServerEnv } from "@/lib/env.server";
 import {
   clearBillingPaymentMethodRow,
   findBillingAccountRow,
@@ -38,15 +42,21 @@ function getStripePriceIdValue(value: string | Stripe.Price | null | undefined) 
 function resolvePlanFromPriceId(priceId: string | null | undefined) {
   const paidPlans: Array<{ planKey: BillingPlanKey; billingInterval: BillingInterval }> = [
     { planKey: "growth", billingInterval: "monthly" },
-    { planKey: "growth", billingInterval: "annual" },
-    { planKey: "pro", billingInterval: "monthly" },
-    { planKey: "pro", billingInterval: "annual" }
+    { planKey: "growth", billingInterval: "annual" }
   ];
 
   for (const plan of paidPlans) {
     if (priceId === getStripePriceId(plan.planKey, plan.billingInterval)) {
       return plan;
     }
+  }
+
+  if (priceId === getOptionalServerEnv("STRIPE_PRICE_PRO_MONTHLY")) {
+    return { planKey: "growth" as const, billingInterval: "monthly" as const };
+  }
+
+  if (priceId === getOptionalServerEnv("STRIPE_PRICE_PRO_ANNUAL")) {
+    return { planKey: "growth" as const, billingInterval: "annual" as const };
   }
 
   return {
@@ -103,7 +113,7 @@ function subscriptionTimestamp(
 }
 
 async function ensureStripeCustomer(userId: string, email: string) {
-  const account = await findBillingAccountRow(userId);
+  const account = await ensureOwnerGrowthTrialBillingAccount(userId);
   const stripe = getStripe();
 
   if (account?.stripe_customer_id) {
@@ -256,7 +266,7 @@ export async function syncStripeBillingState(userId: string, email?: string, des
     return null;
   }
 
-  const account = await findBillingAccountRow(userId);
+  const account = await ensureOwnerGrowthTrialBillingAccount(userId);
   const stripeCustomerId =
     account?.stripe_customer_id ?? (email ? (await ensureStripeCustomer(userId, email)).customerId : null);
 
@@ -290,17 +300,35 @@ export async function syncStripeBillingState(userId: string, email?: string, des
 
   const subscriptionItem = subscription?.items.data[0] ?? null;
   const priceId = subscriptionItem?.price?.id ?? null;
-  const plan = resolvePlanFromPriceId(priceId);
+  const localGrowthTrialActive = isLocalGrowthTrialActive({
+    planKey: normalizeBillingPlanKey(account.plan_key),
+    stripeSubscriptionId: account.stripe_subscription_id,
+    trialEndsAt: account.trial_ends_at
+  });
+  const plan = priceId
+    ? resolvePlanFromPriceId(priceId)
+    : localGrowthTrialActive
+      ? {
+          planKey: "growth" as const,
+          billingInterval: account.billing_interval
+        }
+      : {
+          planKey: "starter" as const,
+          billingInterval: "monthly" as const
+        };
   const nextBillingDate =
     subscription && subscription.status !== "canceled"
       ? toIsoFromUnix(subscriptionTimestamp(subscription, "current_period_end"))
-      : null;
+      : localGrowthTrialActive
+        ? account.trial_ends_at
+        : null;
   const seatQuantity = Math.max(
     1,
     subscriptionItem?.quantity ?? desiredSeatCount ?? account?.seat_quantity ?? 1
   );
   const trialExtensionUsedAt =
-    metadataValue(subscription?.metadata?.trialExtensionUsedAt) ?? account?.trial_extension_used_at ?? null;
+    metadataValue(subscription?.metadata?.trialExtensionUsedAt) ??
+    (localGrowthTrialActive ? account.trial_extension_used_at : null);
 
   await upsertBillingAccountRow({
     userId,
@@ -312,9 +340,17 @@ export async function syncStripeBillingState(userId: string, email?: string, des
     stripeSubscriptionId: subscription?.id ?? null,
     stripePriceId: priceId,
     stripeStatus: subscription?.status ?? null,
-    stripeCurrentPeriodEnd: nextBillingDate,
-    trialStartedAt: toIsoFromUnix(subscriptionTimestamp(subscription, "trial_start")),
-    trialEndsAt: toIsoFromUnix(subscriptionTimestamp(subscription, "trial_end")),
+    stripeCurrentPeriodEnd: subscription ? nextBillingDate : null,
+    trialStartedAt: subscription
+      ? toIsoFromUnix(subscriptionTimestamp(subscription, "trial_start"))
+      : localGrowthTrialActive
+        ? account.trial_started_at
+        : null,
+    trialEndsAt: subscription
+      ? toIsoFromUnix(subscriptionTimestamp(subscription, "trial_end"))
+      : localGrowthTrialActive
+        ? account.trial_ends_at
+        : null,
     trialExtensionUsedAt
   });
 
@@ -459,21 +495,21 @@ export async function syncStripeBillingStateFromEvent(input: {
   }
 
   if (customerId) {
-    const existing = await findBillingAccountRow(userId);
+    const existing = await ensureOwnerGrowthTrialBillingAccount(userId);
     await upsertBillingAccountRow({
       userId,
-      planKey: existing?.plan_key ?? "starter",
-      billingInterval: existing?.billing_interval ?? "monthly",
-      seatQuantity: existing?.seat_quantity ?? 1,
-      nextBillingDate: existing?.next_billing_date ?? null,
+      planKey: existing.plan_key,
+      billingInterval: existing.billing_interval,
+      seatQuantity: existing.seat_quantity,
+      nextBillingDate: existing.next_billing_date,
       stripeCustomerId: customerId,
-      stripeSubscriptionId: existing?.stripe_subscription_id ?? null,
-      stripePriceId: existing?.stripe_price_id ?? null,
-      stripeStatus: existing?.stripe_status ?? null,
-      stripeCurrentPeriodEnd: existing?.stripe_current_period_end ?? null,
-      trialStartedAt: existing?.trial_started_at ?? null,
-      trialEndsAt: existing?.trial_ends_at ?? null,
-      trialExtensionUsedAt: existing?.trial_extension_used_at ?? null
+      stripeSubscriptionId: existing.stripe_subscription_id,
+      stripePriceId: existing.stripe_price_id,
+      stripeStatus: existing.stripe_status,
+      stripeCurrentPeriodEnd: existing.stripe_current_period_end,
+      trialStartedAt: existing.trial_started_at,
+      trialEndsAt: existing.trial_ends_at,
+      trialExtensionUsedAt: existing.trial_extension_used_at
     });
   }
 
