@@ -1,5 +1,6 @@
 const mocks = vi.hoisted(() => ({
   applyReferralCodeForSignup: vi.fn(),
+  acceptTeamInvite: vi.fn(),
   cookies: vi.fn(),
   createBillingAccount: vi.fn(),
   redirect: vi.fn(),
@@ -9,10 +10,12 @@ const mocks = vi.hoisted(() => ({
   findAuthUserById: vi.fn(),
   findCurrentUserByTokenHash: vi.fn(),
   findExistingUserIdByEmail: vi.fn(),
+  getWorkspaceAccess: vi.fn(),
   insertAuthSession: vi.fn(),
   insertAuthUser: vi.fn(),
   updateAuthUserPassword: vi.fn(),
-  validateReferralCodeForSignup: vi.fn()
+  validateReferralCodeForSignup: vi.fn(),
+  validateTeamInvite: vi.fn()
 }));
 
 vi.mock("next/headers", () => ({
@@ -46,16 +49,36 @@ vi.mock("@/lib/repositories/auth-repository", () => ({
   insertAuthUser: mocks.insertAuthUser,
   updateAuthUserPassword: mocks.updateAuthUserPassword
 }));
-import { clearUserSession, getCurrentUser, signUpUser } from "../auth";
+
+vi.mock("@/lib/workspace-access", () => ({
+  acceptTeamInvite: mocks.acceptTeamInvite,
+  getWorkspaceAccess: mocks.getWorkspaceAccess,
+  validateTeamInvite: mocks.validateTeamInvite
+}));
+
+import {
+  clearUserSession,
+  getCurrentUser,
+  signUpInvitedUser,
+  signUpUser
+} from "../auth";
 
 describe("auth session helpers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.getWorkspaceAccess.mockResolvedValue({
+      ownerUserId: "user_123",
+      role: "owner",
+      ownerEmail: "hello@chatly.example",
+      ownerCreatedAt: "2026-03-27T00:00:00.000Z"
+    });
     mocks.findExistingUserIdByEmail.mockResolvedValue(null);
     mocks.validateReferralCodeForSignup.mockResolvedValue(undefined);
     mocks.applyReferralCodeForSignup.mockResolvedValue(undefined);
     mocks.createSiteForUser.mockResolvedValue(undefined);
     mocks.createBillingAccount.mockResolvedValue(undefined);
+    mocks.validateTeamInvite.mockResolvedValue(undefined);
+    mocks.acceptTeamInvite.mockResolvedValue(undefined);
   });
 
   it("does not try to delete cookies during read-only current user lookups", async () => {
@@ -70,6 +93,26 @@ describe("auth session helpers", () => {
 
     expect(result).toBeNull();
     expect(deleteCookie).not.toHaveBeenCalled();
+  });
+
+  it("includes workspace ownership metadata on active sessions", async () => {
+    mocks.cookies.mockResolvedValue({
+      get: vi.fn().mockReturnValue({ value: "active-token" }),
+      delete: vi.fn()
+    });
+    mocks.findCurrentUserByTokenHash.mockResolvedValueOnce({
+      id: "user_123",
+      email: "owner@acme.com",
+      created_at: "2026-03-29T00:00:00.000Z"
+    });
+
+    await expect(getCurrentUser()).resolves.toEqual({
+      id: "user_123",
+      email: "owner@acme.com",
+      createdAt: "2026-03-29T00:00:00.000Z",
+      workspaceOwnerId: "user_123",
+      workspaceRole: "owner"
+    });
   });
 
   it("still clears the auth cookie in the explicit logout path", async () => {
@@ -99,5 +142,21 @@ describe("auth session helpers", () => {
       domain: "https://acme.com"
     });
     expect(mocks.createBillingAccount).toHaveBeenCalledWith(insertedUser.userId);
+  });
+
+  it("skips owner billing setup for invited teammate signups", async () => {
+    await signUpInvitedUser({
+      inviteId: "invite_123",
+      email: "teammate@acme.com",
+      password: "password123"
+    });
+
+    expect(mocks.createBillingAccount).not.toHaveBeenCalled();
+    expect(mocks.createSiteForUser).not.toHaveBeenCalled();
+    expect(mocks.acceptTeamInvite).toHaveBeenCalledWith({
+      inviteId: "invite_123",
+      userId: expect.any(String),
+      email: "teammate@acme.com"
+    });
   });
 });

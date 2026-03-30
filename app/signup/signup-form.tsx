@@ -33,11 +33,15 @@ export function SignupForm() {
   const searchParams = useSearchParams();
   const [signupState, setSignupState] = useState<AuthActionState>(INITIAL_AUTH_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const inviteIdFromQuery = String(searchParams.get("invite") ?? "").trim();
   const referralCodeFromQuery = String(searchParams.get("ref") ?? "").trim().toUpperCase();
+  const emailFromQuery = String(searchParams.get("email") ?? "").trim();
+  const isInviteSignup = Boolean(inviteIdFromQuery);
+  const nextPath = isInviteSignup ? "/dashboard" : SIGNUP_ONBOARDING_PATH;
 
   useEffect(() => {
-    router.prefetch(SIGNUP_ONBOARDING_PATH);
-  }, [router]);
+    router.prefetch(nextPath);
+  }, [nextPath, router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -65,12 +69,16 @@ export function SignupForm() {
       formData.set("referralCode", referralCode);
     }
 
+    if (inviteIdFromQuery) {
+      formData.set("inviteId", inviteIdFromQuery);
+    }
+
     try {
       const result = await signupAction(INITIAL_AUTH_STATE, formData);
       setSignupState(result);
 
       if (result.ok) {
-        router.replace((result.nextPath ?? SIGNUP_ONBOARDING_PATH) as never);
+        router.replace((result.nextPath ?? nextPath) as never);
       } else {
         setIsSubmitting(false);
       }
@@ -92,20 +100,33 @@ export function SignupForm() {
 
   return (
     <AuthPageShell
-      heroTitle="Start chatting in minutes"
-      heroDescription="Join 2,400+ teams who've transformed their customer conversations with Chatting."
+      heroTitle={isInviteSignup ? "Join the workspace" : "Start chatting in minutes"}
+      heroDescription={
+        isInviteSignup
+          ? "Create your account with the invited email and we'll drop you straight into the shared inbox."
+          : "Join 2,400+ teams who've transformed their customer conversations with Chatting."
+      }
       stats={SIGNUP_STATS}
     >
       <div>
         <AuthFormIntro
-          title="Create your account"
-          caption="Already have an account?"
+          title={isInviteSignup ? "Create your teammate account" : "Create your account"}
+          caption={isInviteSignup ? "Already have an account for this email?" : "Already have an account?"}
           actionLabel="Sign in"
-          onAction={() => router.push("/login")}
+          onAction={() =>
+            router.push(
+              `/login${inviteIdFromQuery ? `?invite=${encodeURIComponent(inviteIdFromQuery)}${emailFromQuery ? `&email=${encodeURIComponent(emailFromQuery)}` : ""}` : ""}` as never
+            )
+          }
         />
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <FormErrorMessage message={signupState.error} />
+          {isInviteSignup ? (
+            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+              Create this account with {emailFromQuery || "the invited email"} to join the workspace.
+            </div>
+          ) : null}
 
           <FormTextField
             label="Work email"
@@ -113,28 +134,32 @@ export function SignupForm() {
             type="email"
             required
             autoComplete="email"
-            defaultValue={signupState.fields.email}
+            defaultValue={signupState.fields.email || emailFromQuery}
             placeholder="you@company.com"
           />
 
-          <FormTextField
-            label="Website URL"
-            name="websiteUrl"
-            type="text"
-            required
-            autoComplete="url"
-            defaultValue={signupState.fields.websiteUrl}
-            placeholder="https://yoursite.com"
-          />
+          {isInviteSignup ? null : (
+            <>
+              <FormTextField
+                label="Website URL"
+                name="websiteUrl"
+                type="text"
+                required
+                autoComplete="url"
+                defaultValue={signupState.fields.websiteUrl}
+                placeholder="https://yoursite.com"
+              />
 
-          <FormTextField
-            label="Referral code"
-            name="referralCode"
-            type="text"
-            autoComplete="off"
-            defaultValue={signupState.fields.referralCode || referralCodeFromQuery}
-            placeholder="Optional"
-          />
+              <FormTextField
+                label="Referral code"
+                name="referralCode"
+                type="text"
+                autoComplete="off"
+                defaultValue={signupState.fields.referralCode || referralCodeFromQuery}
+                placeholder="Optional"
+              />
+            </>
+          )}
 
           <div>
             <FormPasswordField
@@ -154,7 +179,7 @@ export function SignupForm() {
             disabled={isSubmitting}
             trailingIcon={<span aria-hidden="true">→</span>}
           >
-            {isSubmitting ? "Creating account..." : "Create account"}
+            {isSubmitting ? "Creating account..." : isInviteSignup ? "Join workspace" : "Create account"}
           </FormButton>
         </form>
 

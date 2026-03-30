@@ -1,15 +1,18 @@
 const authMocks = vi.hoisted(() => ({
   setUserSession: vi.fn(),
   signInUser: vi.fn(),
+  signUpInvitedUser: vi.fn(),
   signUpUser: vi.fn()
 }));
 
 const emailMocks = vi.hoisted(() => ({ sendAccountWelcomeEmail: vi.fn() }));
 const dataMocks = vi.hoisted(() => ({ getPostAuthPath: vi.fn() }));
+const workspaceMocks = vi.hoisted(() => ({ acceptTeamInvite: vi.fn() }));
 
 vi.mock("@/lib/auth", () => authMocks);
 vi.mock("@/lib/chatly-transactional-email-senders", () => emailMocks);
 vi.mock("@/lib/data", () => dataMocks);
+vi.mock("@/lib/workspace-access", () => workspaceMocks);
 
 import { loginAction, signupAction, type AuthActionState } from "./actions";
 
@@ -40,6 +43,16 @@ describe("login actions edge cases", () => {
   });
 
   it("maps the remaining login auth error variants", async () => {
+    authMocks.signInUser.mockRejectedValueOnce(new Error("INVITE_NOT_FOUND"));
+    expect(await loginAction(INITIAL_STATE, authForm({ email: "a@b.com", password: "password123" }))).toMatchObject({
+      error: "That team invite is no longer available."
+    });
+
+    authMocks.signInUser.mockRejectedValueOnce(new Error("INVITE_ALREADY_ACCEPTED"));
+    expect(await loginAction(INITIAL_STATE, authForm({ email: "a@b.com", password: "password123" }))).toMatchObject({
+      error: "That team invite has already been accepted."
+    });
+
     authMocks.signInUser.mockRejectedValueOnce(new Error("password authentication failed"));
     expect(await loginAction(INITIAL_STATE, authForm({ email: "a@b.com", password: "password123" }))).toMatchObject({
       error: "Database connection failed. Check the Neon DATABASE_URL in your local .env file."

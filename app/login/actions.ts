@@ -1,6 +1,7 @@
 "use server";
 
-import { setUserSession, signInUser, signUpUser } from "@/lib/auth";
+import { acceptTeamInvite } from "@/lib/workspace-access";
+import { setUserSession, signInUser, signUpInvitedUser, signUpUser } from "@/lib/auth";
 import { sendAccountWelcomeEmail } from "@/lib/chatly-transactional-email-senders";
 import { getPostAuthPath } from "@/lib/data";
 import { getPublicAppUrl } from "@/lib/env";
@@ -47,6 +48,34 @@ function formatAuthError(message: string, mode: "login" | "signup") {
     return "That referral code wasn't recognized.";
   }
 
+  if (message === "INVITE_NOT_FOUND") {
+    return "That team invite is no longer available.";
+  }
+
+  if (message === "INVITE_EXPIRED") {
+    return "That team invite has expired. Ask the workspace owner to resend it.";
+  }
+
+  if (message === "INVITE_REVOKED") {
+    return "That team invite has been revoked.";
+  }
+
+  if (message === "INVITE_ALREADY_ACCEPTED") {
+    return "That team invite has already been accepted.";
+  }
+
+  if (message === "INVITE_EMAIL_MISMATCH") {
+    return "Sign in with the email address that received this invite.";
+  }
+
+  if (message === "INVITE_OWNER_CONFLICT") {
+    return "You already own this workspace.";
+  }
+
+  if (message === "INVITE_WORKSPACE_CONFLICT") {
+    return "This account already owns another workspace, so it can't join this one yet.";
+  }
+
   if (message.includes("DATABASE_URL")) {
     return `DATABASE_URL is missing or invalid in ${envLabel}.`;
   }
@@ -88,6 +117,7 @@ export async function loginAction(
 ): Promise<AuthActionState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "").trim();
+  const inviteId = String(formData.get("inviteId") ?? "").trim();
 
   const fields = {
     email,
@@ -125,8 +155,16 @@ export async function loginAction(
       };
     }
 
+    if (inviteId) {
+      await acceptTeamInvite({
+        inviteId,
+        userId: user.id,
+        email: user.email
+      });
+    }
+
     await setUserSession(user.id);
-    const nextPath = await getPostAuthPath(user.id);
+    const nextPath = inviteId ? "/dashboard" : await getPostAuthPath(user.id);
 
     return {
       ok: true,
@@ -157,6 +195,7 @@ export async function signupAction(
   const password = String(formData.get("password") ?? "");
   const websiteUrl = String(formData.get("websiteUrl") ?? "").trim();
   const referralCode = String(formData.get("referralCode") ?? "").trim();
+  const inviteId = String(formData.get("inviteId") ?? "").trim();
 
   const fields = {
     email,
@@ -166,28 +205,36 @@ export async function signupAction(
   };
 
   try {
-    const user = await signUpUser({
-      email,
-      password,
-      websiteUrl,
-      referralCode
-    });
+    const user = inviteId
+      ? await signUpInvitedUser({
+          inviteId,
+          email,
+          password
+        })
+      : await signUpUser({
+          email,
+          password,
+          websiteUrl,
+          referralCode
+        });
 
     await setUserSession(user.id);
-    try {
-      await sendAccountWelcomeEmail({
-        to: user.email,
-        firstName: user.email.split("@")[0] || "there",
-        dashboardUrl: `${getPublicAppUrl()}/dashboard`
-      });
-    } catch (emailError) {
-      console.error("signup welcome email failed", emailError);
+    if (!inviteId) {
+      try {
+        await sendAccountWelcomeEmail({
+          to: user.email,
+          firstName: user.email.split("@")[0] || "there",
+          dashboardUrl: `${getPublicAppUrl()}/dashboard`
+        });
+      } catch (emailError) {
+        console.error("signup welcome email failed", emailError);
+      }
     }
 
     return {
       ok: true,
       error: null,
-      nextPath: "/onboarding?step=customize",
+      nextPath: inviteId ? "/dashboard" : "/onboarding?step=customize",
       fields
     };
   } catch (error) {

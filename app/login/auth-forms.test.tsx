@@ -2,7 +2,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 type AuthMode = "signin" | "forgot" | "reset" | "success";
 
-async function renderAuthForms(mode: AuthMode = "signin") {
+async function renderAuthForms(
+  mode: AuthMode = "signin",
+  options?: {
+    inviteId?: string;
+    inviteEmail?: string;
+  }
+) {
   vi.resetModules();
 
   vi.doMock("next/navigation", () => ({
@@ -56,7 +62,9 @@ async function renderAuthForms(mode: AuthMode = "signin") {
   });
 
   const module = await import("./auth-forms");
-  return renderToStaticMarkup(<module.AuthForms />);
+  return renderToStaticMarkup(
+    <module.AuthForms inviteId={options?.inviteId ?? ""} inviteEmail={options?.inviteEmail ?? ""} />
+  );
 }
 
 describe("auth forms", () => {
@@ -94,5 +102,16 @@ describe("auth forms", () => {
     expect(html).toContain("Reset email sent");
     expect(html).toContain("Back to sign in");
     expect(html).toContain("Create account");
+  });
+
+  it("renders invite-specific sign-in copy", async () => {
+    const html = await renderAuthForms("signin", {
+      inviteId: "invite_123",
+      inviteEmail: "teammate@chatly.example"
+    });
+
+    expect(html).toContain("Join your team&#x27;s workspace");
+    expect(html).toContain("Sign in to accept your invite");
+    expect(html).toContain("Use teammate@chatly.example to join this workspace.");
   });
 });

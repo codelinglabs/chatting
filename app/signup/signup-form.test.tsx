@@ -56,4 +56,17 @@ describe("signup form", () => {
     expect(html).toContain("No CC");
     expect(html).toContain("Sign in");
   });
+
+  it("renders invite signup without workspace setup fields", async () => {
+    const html = await renderSignupForm({
+      invite: "invite_123",
+      email: "teammate@chatly.example"
+    });
+
+    expect(html).toContain("Join the workspace");
+    expect(html).toContain("Create your teammate account");
+    expect(html).toContain("Join workspace");
+    expect(html).not.toContain("Website URL");
+    expect(html).not.toContain("Referral code");
+  });
 });

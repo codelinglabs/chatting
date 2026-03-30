@@ -81,4 +81,28 @@ describe("signup form actions", () => {
     expect(submittedFormData.get("referralCode")).toBe("HELLO");
     expect(router.replace).toHaveBeenCalledWith("/dashboard");
   });
+
+  it("keeps invite signup routing intact and surfaces submit failures", async () => {
+    const { SignupForm, reactMocks, router, signupAction } = await loadSignupForm({
+      invite: "invite_123",
+      email: "teammate@example.com"
+    });
+    signupAction.mockRejectedValue(new Error("boom"));
+
+    reactMocks.beginRender();
+    let tree = SignupForm();
+    collectElements(tree, (element) => typeof element.type === "function" && element.props.actionLabel === "Sign in")[0]?.props.onAction();
+    collectElements(tree, (element) => element.type === "form")[0]?.props.onSubmit({
+      preventDefault: vi.fn(),
+      currentTarget: { __data: { email: "teammate@example.com", password: "Password123!" } }
+    });
+    await flushAsyncWork();
+
+    reactMocks.beginRender();
+    tree = SignupForm();
+    const html = renderToStaticMarkup(tree);
+    expect(router.push).toHaveBeenCalledWith("/login?invite=invite_123&email=teammate%40example.com");
+    expect(html).toContain("server setup error");
+    expect(html).toContain("Join workspace");
+  });
 });

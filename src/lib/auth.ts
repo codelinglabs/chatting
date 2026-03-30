@@ -19,6 +19,7 @@ import {
 import { isProductionRuntime } from "@/lib/env";
 import type { CurrentUser } from "@/lib/types";
 import { normalizeSiteDomain } from "@/lib/widget-settings";
+import { acceptTeamInvite, getWorkspaceAccess, validateTeamInvite } from "@/lib/workspace-access";
 
 const AUTH_COOKIE_NAME = "chatly_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
@@ -185,6 +186,55 @@ export async function signUpUser(input: {
   };
 }
 
+export async function signUpInvitedUser(input: {
+  inviteId: string;
+  email: string;
+  password: string;
+}) {
+  const email = normalizeEmail(input.email);
+  const password = input.password.trim();
+
+  if (!email) {
+    throw new Error("MISSING_EMAIL");
+  }
+
+  if (!password) {
+    throw new Error("MISSING_PASSWORD");
+  }
+
+  if (password.length < 8) {
+    throw new Error("WEAK_PASSWORD");
+  }
+
+  await validateTeamInvite(input.inviteId, email);
+
+  const existingUserId = await findExistingUserIdByEmail(email);
+  if (existingUserId) {
+    throw new Error("EMAIL_TAKEN");
+  }
+
+  const userId = randomBytes(16).toString("hex");
+  const passwordHash = await hashPassword(password);
+
+  await insertAuthUser({
+    userId,
+    email,
+    passwordHash,
+    onboardingStep: "done",
+    onboardingCompletedAt: new Date().toISOString()
+  });
+  await acceptTeamInvite({
+    inviteId: input.inviteId,
+    userId,
+    email
+  });
+
+  return {
+    id: userId,
+    email
+  };
+}
+
 export async function signInUser(email: string, password: string) {
   const normalizedEmail = normalizeEmail(email);
   const row = await findAuthUserByEmail(normalizedEmail);
@@ -245,7 +295,14 @@ export async function getCurrentUser() {
     return null;
   }
 
-  return mapUser(row);
+  const user = mapUser(row);
+  const workspace = await getWorkspaceAccess(user.id);
+
+  return {
+    ...user,
+    workspaceOwnerId: workspace.ownerUserId,
+    workspaceRole: workspace.role
+  };
 }
 
 export async function requireUser() {

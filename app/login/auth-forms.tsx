@@ -17,7 +17,8 @@ const INITIAL_AUTH_STATE: AuthActionState = {
   fields: {
     email: "",
     password: "",
-    websiteUrl: ""
+    websiteUrl: "",
+    referralCode: ""
   }
 };
 
@@ -27,8 +28,18 @@ export const SIGNIN_STATS = [
   { value: "4.8/5", label: "Rating" }
 ];
 
-export function AuthForms() {
+export function AuthForms({
+  inviteId = "",
+  inviteEmail = ""
+}: {
+  inviteId?: string;
+  inviteEmail?: string;
+}) {
   const router = useRouter();
+  const inviteQuery = inviteId
+    ? `?invite=${encodeURIComponent(inviteId)}${inviteEmail ? `&email=${encodeURIComponent(inviteEmail)}` : ""}`
+    : "";
+  const isInviteFlow = Boolean(inviteId);
   const [mode, setMode] = useState<AuthMode>("signin");
   const [localError, setLocalError] = useState<string | null>(null);
   const [successCopy, setSuccessCopy] = useState({
@@ -92,21 +103,31 @@ export function AuthForms() {
 
   return (
     <AuthPageShell
-      heroTitle="Welcome back to Chatting"
-      heroDescription="Connect with your visitors in real-time. Turn conversations into customers."
+      heroTitle={isInviteFlow ? "Join your team's workspace" : "Welcome back to Chatting"}
+      heroDescription={
+        isInviteFlow
+          ? "Sign in with the invited email to accept your workspace access and jump into the inbox."
+          : "Connect with your visitors in real-time. Turn conversations into customers."
+      }
       stats={SIGNIN_STATS}
     >
       {mode === "signin" ? (
         <div>
           <AuthFormIntro
-            title="Sign in"
-            caption="Don't have an account?"
+            title={isInviteFlow ? "Sign in to accept your invite" : "Sign in"}
+            caption={isInviteFlow ? "Need a new account instead?" : "Don't have an account?"}
             actionLabel="Create one"
-            onAction={() => router.push("/signup")}
+            onAction={() => router.push(`/signup${inviteQuery}` as never)}
           />
 
           <form action={loginFormAction} className="mt-8 space-y-5">
             <FormErrorMessage message={loginState.error} />
+            {isInviteFlow ? (
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                Use {inviteEmail || "the invited email"} to join this workspace.
+              </div>
+            ) : null}
+            {isInviteFlow ? <input type="hidden" name="inviteId" value={inviteId} /> : null}
 
             <FormTextField
               label="Email"
@@ -218,7 +239,7 @@ export function AuthForms() {
             <FormButton type="button" onClick={() => handleModeChange("signin")} trailingIcon={<span aria-hidden="true">→</span>}>
               Back to sign in
             </FormButton>
-            <FormButton type="button" variant="secondary" onClick={() => router.push("/signup")}>
+            <FormButton type="button" variant="secondary" onClick={() => router.push(`/signup${inviteQuery}` as never)}>
               Create account
             </FormButton>
           </div>

@@ -1,6 +1,7 @@
 const authMocks = vi.hoisted(() => ({
   setUserSession: vi.fn(),
   signInUser: vi.fn(),
+  signUpInvitedUser: vi.fn(),
   signUpUser: vi.fn()
 }));
 
@@ -12,9 +13,14 @@ const dataMocks = vi.hoisted(() => ({
   getPostAuthPath: vi.fn()
 }));
 
+const workspaceMocks = vi.hoisted(() => ({
+  acceptTeamInvite: vi.fn()
+}));
+
 vi.mock("@/lib/auth", () => authMocks);
 vi.mock("@/lib/chatly-transactional-email-senders", () => emailMocks);
 vi.mock("@/lib/data", () => dataMocks);
+vi.mock("@/lib/workspace-access", () => workspaceMocks);
 
 import { loginAction, signupAction, type AuthActionState } from "./actions";
 
@@ -36,10 +42,12 @@ describe("login actions", () => {
   beforeEach(() => {
     consoleErrorSpy.mockClear();
     authMocks.signInUser.mockReset();
+    authMocks.signUpInvitedUser.mockReset();
     authMocks.signUpUser.mockReset();
     authMocks.setUserSession.mockReset();
     dataMocks.getPostAuthPath.mockReset();
     emailMocks.sendAccountWelcomeEmail.mockReset();
+    workspaceMocks.acceptTeamInvite.mockReset();
     process.env.NEXT_PUBLIC_APP_URL = "https://chatly.example";
   });
 
@@ -103,6 +111,27 @@ describe("login actions", () => {
     expect(result.ok).toBe(true);
     expect(result.nextPath).toBe("/dashboard");
     expect(authMocks.setUserSession).toHaveBeenCalledWith("user_123");
+  });
+
+  it("accepts workspace invites during login", async () => {
+    authMocks.signInUser.mockResolvedValueOnce({
+      id: "user_123",
+      email: "hello@chatly.example"
+    });
+
+    const form = new FormData();
+    form.set("email", "hello@chatly.example");
+    form.set("password", "password123");
+    form.set("inviteId", "invite_123");
+
+    const result = await loginAction(INITIAL_STATE, form);
+
+    expect(workspaceMocks.acceptTeamInvite).toHaveBeenCalledWith({
+      inviteId: "invite_123",
+      userId: "user_123",
+      email: "hello@chatly.example"
+    });
+    expect(result.nextPath).toBe("/dashboard");
   });
 
   it("maps setup failures into readable signup errors", async () => {
@@ -191,6 +220,56 @@ describe("login actions", () => {
       firstName: "new",
       dashboardUrl: "https://chatly.example/dashboard"
     });
+  });
+
+  it("creates invited teammate accounts without onboarding a new workspace", async () => {
+    authMocks.signUpInvitedUser.mockResolvedValueOnce({
+      id: "user_member",
+      email: "teammate@chatly.example"
+    });
+
+    const form = new FormData();
+    form.set("email", "teammate@chatly.example");
+    form.set("password", "password123");
+    form.set("inviteId", "invite_123");
+
+    const result = await signupAction(INITIAL_STATE, form);
+
+    expect(result).toEqual({
+      ok: true,
+      error: null,
+      nextPath: "/dashboard",
+      fields: {
+        email: "teammate@chatly.example",
+        password: "password123",
+        websiteUrl: "",
+        referralCode: ""
+      }
+    });
+    expect(authMocks.signUpInvitedUser).toHaveBeenCalledWith({
+      inviteId: "invite_123",
+      email: "teammate@chatly.example",
+      password: "password123"
+    });
+    expect(emailMocks.sendAccountWelcomeEmail).not.toHaveBeenCalled();
+  });
+
+  it("maps invite-specific login errors cleanly", async () => {
+    authMocks.signInUser.mockResolvedValueOnce({
+      id: "user_123",
+      email: "wrong@chatly.example"
+    });
+    workspaceMocks.acceptTeamInvite.mockRejectedValueOnce(new Error("INVITE_EMAIL_MISMATCH"));
+
+    const form = new FormData();
+    form.set("email", "wrong@chatly.example");
+    form.set("password", "password123");
+    form.set("inviteId", "invite_123");
+
+    const result = await loginAction(INITIAL_STATE, form);
+
+    expect(result.error).toBe("Sign in with the email address that received this invite.");
+    expect(authMocks.setUserSession).not.toHaveBeenCalled();
   });
 
 });
