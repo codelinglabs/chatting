@@ -9,6 +9,11 @@ const emailMocks = vi.hoisted(() => ({
   sendAccountWelcomeEmail: vi.fn()
 }));
 
+const passwordResetMocks = vi.hoisted(() => ({
+  requestPasswordReset: vi.fn(),
+  resetPasswordWithToken: vi.fn()
+}));
+
 const dataMocks = vi.hoisted(() => ({
   getPostAuthPath: vi.fn()
 }));
@@ -18,11 +23,18 @@ const workspaceMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => authMocks);
+vi.mock("@/lib/auth-password-reset", () => passwordResetMocks);
 vi.mock("@/lib/chatly-transactional-email-senders", () => emailMocks);
 vi.mock("@/lib/data", () => dataMocks);
 vi.mock("@/lib/workspace-access", () => workspaceMocks);
 
-import { loginAction, signupAction, type AuthActionState } from "./actions";
+import {
+  forgotPasswordAction,
+  loginAction,
+  resetPasswordAction,
+  signupAction,
+  type AuthActionState
+} from "./actions";
 
 const INITIAL_STATE: AuthActionState = {
   ok: false,
@@ -47,6 +59,8 @@ describe("login actions", () => {
     authMocks.setUserSession.mockReset();
     dataMocks.getPostAuthPath.mockReset();
     emailMocks.sendAccountWelcomeEmail.mockReset();
+    passwordResetMocks.requestPasswordReset.mockReset();
+    passwordResetMocks.resetPasswordWithToken.mockReset();
     workspaceMocks.acceptTeamInvite.mockReset();
     process.env.NEXT_PUBLIC_APP_URL = "https://chatly.example";
   });
@@ -270,6 +284,53 @@ describe("login actions", () => {
 
     expect(result.error).toBe("Sign in with the email address that received this invite.");
     expect(authMocks.setUserSession).not.toHaveBeenCalled();
+  });
+
+  it("returns a generic success message for password reset requests", async () => {
+    const form = new FormData();
+    form.set("email", "hello@chatly.example");
+
+    const result = await forgotPasswordAction(form);
+
+    expect(passwordResetMocks.requestPasswordReset).toHaveBeenCalledWith("hello@chatly.example");
+    expect(result).toEqual({
+      ok: true,
+      error: null,
+      message: "We sent a password reset link to hello@chatly.example."
+    });
+  });
+
+  it("validates reset links and updates the password", async () => {
+    const form = new FormData();
+    form.set("token", "reset-token");
+    form.set("password", "password123");
+    form.set("confirmPassword", "password123");
+
+    const result = await resetPasswordAction(form);
+
+    expect(passwordResetMocks.resetPasswordWithToken).toHaveBeenCalledWith("reset-token", "password123");
+    expect(result).toEqual({
+      ok: true,
+      error: null,
+      message: "Your password has been reset. You can sign in with the new one now."
+    });
+  });
+
+  it("maps invalid reset links into a readable error", async () => {
+    passwordResetMocks.resetPasswordWithToken.mockRejectedValueOnce(new Error("INVALID_RESET_TOKEN"));
+
+    const form = new FormData();
+    form.set("token", "expired-token");
+    form.set("password", "password123");
+    form.set("confirmPassword", "password123");
+
+    const result = await resetPasswordAction(form);
+
+    expect(result).toEqual({
+      ok: false,
+      error: "That reset link is invalid or has expired.",
+      message: null
+    });
   });
 
 });

@@ -28,7 +28,9 @@ async function renderAuthForms(
   });
 
   vi.doMock("./actions", () => ({
+    forgotPasswordAction: vi.fn(),
     loginAction: vi.fn(),
+    resetPasswordAction: vi.fn(),
     signupAction: vi.fn()
   }));
 
@@ -46,7 +48,7 @@ async function renderAuthForms(
           return [mode, vi.fn()];
         }
 
-        if (useStateCalls === 3 && mode === "success") {
+        if (useStateCalls === 4 && mode === "success") {
           return [
             {
               title: "Reset email sent",

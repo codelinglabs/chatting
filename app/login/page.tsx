@@ -2,6 +2,8 @@ import { AuthForms } from "./auth-forms";
 
 type LoginPageProps = {
   searchParams: Promise<{
+    mode?: string;
+    token?: string;
     invite?: string;
     email?: string;
   }>;
@@ -9,6 +11,14 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
+  const initialMode = params.mode === "reset" ? "reset" : "signin";
 
-  return <AuthForms inviteId={params.invite ?? ""} inviteEmail={params.email ?? ""} />;
+  return (
+    <AuthForms
+      initialMode={initialMode}
+      resetToken={params.token ?? ""}
+      inviteId={params.invite ?? ""}
+      inviteEmail={params.email ?? ""}
+    />
+  );
 }

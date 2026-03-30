@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircleIcon } from "../dashboard/dashboard-ui";
 import { FormButton, FormErrorMessage, FormPasswordField, FormSubmitButton, FormTextField } from "../ui/form-controls";
 import { AuthFormIntro, AuthPageShell } from "./auth-shell";
-import { loginAction, type AuthActionState } from "./actions";
+import { forgotPasswordAction, loginAction, resetPasswordAction, type AuthActionState } from "./actions";
 
 type AuthMode = "signin" | "forgot" | "reset" | "success";
 
@@ -29,9 +29,13 @@ export const SIGNIN_STATS = [
 ];
 
 export function AuthForms({
+  initialMode = "signin",
+  resetToken = "",
   inviteId = "",
   inviteEmail = ""
 }: {
+  initialMode?: Exclude<AuthMode, "success">;
+  resetToken?: string;
   inviteId?: string;
   inviteEmail?: string;
 }) {
@@ -40,8 +44,9 @@ export function AuthForms({
     ? `?invite=${encodeURIComponent(inviteId)}${inviteEmail ? `&email=${encodeURIComponent(inviteEmail)}` : ""}`
     : "";
   const isInviteFlow = Boolean(inviteId);
-  const [mode, setMode] = useState<AuthMode>("signin");
+  const [mode, setMode] = useState<AuthMode>(initialMode === "reset" && resetToken ? "reset" : initialMode);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
   const [successCopy, setSuccessCopy] = useState({
     title: "Check your inbox",
     body: "If that email exists in Chatting, we’ve sent instructions to continue."
@@ -59,44 +64,45 @@ export function AuthForms({
     setMode(nextMode);
   }
 
-  function handleForgotSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleForgotSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") ?? "").trim();
+    setPasswordSubmitting(true);
 
-    if (!email) {
-      setLocalError("Enter your work email to continue.");
+    const result = await forgotPasswordAction(formData);
+    setPasswordSubmitting(false);
+
+    if (!result.ok) {
+      setLocalError(result.error);
       return;
     }
 
     setLocalError(null);
     setSuccessCopy({
       title: "Reset email sent",
-      body: `We sent a password reset link to ${email}.`
+      body: result.message ?? "Check your inbox for the reset link."
     });
     setMode("success");
   }
 
-  function handleResetSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleResetSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const password = String(formData.get("password") ?? "").trim();
-    const confirmPassword = String(formData.get("confirmPassword") ?? "").trim();
+    formData.set("token", resetToken);
+    setPasswordSubmitting(true);
 
-    if (!password || password.length < 8) {
-      setLocalError("Use at least 8 characters for the new password.");
-      return;
-    }
+    const result = await resetPasswordAction(formData);
+    setPasswordSubmitting(false);
 
-    if (password !== confirmPassword) {
-      setLocalError("Your password confirmation does not match.");
+    if (!result.ok) {
+      setLocalError(result.error);
       return;
     }
 
     setLocalError(null);
     setSuccessCopy({
       title: "Password updated",
-      body: "Your password has been reset. You can sign in with the new one now."
+      body: result.message ?? "Your password has been reset. You can sign in with the new one now."
     });
     setMode("success");
   }
@@ -189,7 +195,7 @@ export function AuthForms({
               placeholder="you@company.com"
             />
 
-            <FormButton type="submit" fullWidth trailingIcon={<span aria-hidden="true">→</span>}>
+            <FormButton type="submit" fullWidth disabled={passwordSubmitting} trailingIcon={<span aria-hidden="true">→</span>}>
               Send reset link
             </FormButton>
           </form>
@@ -221,7 +227,7 @@ export function AuthForms({
               placeholder="Re-enter your password"
             />
 
-            <FormButton type="submit" fullWidth trailingIcon={<span aria-hidden="true">→</span>}>
+            <FormButton type="submit" fullWidth disabled={passwordSubmitting} trailingIcon={<span aria-hidden="true">→</span>}>
               Reset password
             </FormButton>
           </form>

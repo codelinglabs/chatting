@@ -2,6 +2,7 @@
 
 import { acceptTeamInvite } from "@/lib/workspace-access";
 import { setUserSession, signInUser, signUpInvitedUser, signUpUser } from "@/lib/auth";
+import { requestPasswordReset, resetPasswordWithToken } from "@/lib/auth-password-reset";
 import { sendAccountWelcomeEmail } from "@/lib/chatly-transactional-email-senders";
 import { getPostAuthPath } from "@/lib/data";
 import { getPublicAppUrl } from "@/lib/env";
@@ -16,6 +17,12 @@ export type AuthActionState = {
     websiteUrl: string;
     referralCode: string;
   };
+};
+
+export type PasswordActionState = {
+  ok: boolean;
+  error: string | null;
+  message: string | null;
 };
 
 function formatAuthError(message: string, mode: "login" | "signup") {
@@ -248,6 +255,79 @@ export async function signupAction(
       error: formatAuthError(message, "signup"),
       nextPath: null,
       fields
+    };
+  }
+}
+
+export async function forgotPasswordAction(formData: FormData): Promise<PasswordActionState> {
+  const email = String(formData.get("email") ?? "").trim();
+
+  if (!email) {
+    return {
+      ok: false,
+      error: "Enter your work email to continue.",
+      message: null
+    };
+  }
+
+  try {
+    await requestPasswordReset(email);
+    return {
+      ok: true,
+      error: null,
+      message: `We sent a password reset link to ${email}.`
+    };
+  } catch (error) {
+    console.error("forgotPasswordAction failed", error);
+    return {
+      ok: false,
+      error: "We couldn't send the reset link just now. Check your server setup and try again.",
+      message: null
+    };
+  }
+}
+
+export async function resetPasswordAction(formData: FormData): Promise<PasswordActionState> {
+  const token = String(formData.get("token") ?? "").trim();
+  const password = String(formData.get("password") ?? "").trim();
+  const confirmPassword = String(formData.get("confirmPassword") ?? "").trim();
+
+  if (!password || password.length < 8) {
+    return {
+      ok: false,
+      error: "Use at least 8 characters for the new password.",
+      message: null
+    };
+  }
+
+  if (password !== confirmPassword) {
+    return {
+      ok: false,
+      error: "Your password confirmation does not match.",
+      message: null
+    };
+  }
+
+  try {
+    await resetPasswordWithToken(token, password);
+    return {
+      ok: true,
+      error: null,
+      message: "Your password has been reset. You can sign in with the new one now."
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected password reset error.";
+    if (message !== "INVALID_RESET_TOKEN") {
+      console.error("resetPasswordAction failed", error);
+    }
+
+    return {
+      ok: false,
+      error:
+        message === "INVALID_RESET_TOKEN"
+          ? "That reset link is invalid or has expired."
+          : "We couldn't reset your password just now. Check your server setup and try again.",
+      message: null
     };
   }
 }

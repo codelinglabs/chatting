@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Added forgot-password and reset-password actions with token-backed reset links from the auth flow.
 - Added invite-aware teammate signup, login acceptance, and a dedicated invite landing page for workspace joins.
 - Added referral-aware owner signup with seeded workspace billing, welcome emails, and preserved referral codes through auth forms.
 - Expanded backend route and data coverage across public APIs, Stripe webhook handling, repositories, and growth/billing services.
@@ -50,7 +51,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
 - Landing pricing now mirrors the dashboard billing format with Starter and Growth plans driven by shared pricing helpers.
-- Dedicated login and signup screens with shared form controls, referral-aware owner signup, invite-based teammate access, and direct onboarding handoff.
+- Dedicated login and signup screens with shared form controls, referral-aware owner signup, invite-based teammate access, password reset flows, and direct onboarding handoff.
 
 ### Onboarding
 
