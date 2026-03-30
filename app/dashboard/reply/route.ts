@@ -61,13 +61,13 @@ export async function POST(request: Request) {
       sender: "founder",
       createdAt: message.createdAt
     });
-    publishDashboardLive(user.id, {
+    publishDashboardLive(user.workspaceOwnerId, {
       type: "message.created",
       conversationId,
       sender: "founder",
       createdAt: message.createdAt
     });
-    publishDashboardLive(user.id, {
+    publishDashboardLive(user.workspaceOwnerId, {
       type: "conversation.read",
       conversationId,
       updatedAt: message.createdAt

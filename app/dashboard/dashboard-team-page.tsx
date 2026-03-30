@@ -52,9 +52,11 @@ function statusBadge(status: "online" | "offline" | "pending") {
 }
 
 export function DashboardTeamPage({
+  canManageTeam,
   initialMembers,
   initialInvites
 }: {
+  canManageTeam: boolean;
   initialMembers: DashboardTeamMember[];
   initialInvites: DashboardTeamInvite[];
 }) {
@@ -76,7 +78,7 @@ export function DashboardTeamPage({
     const reservedSeats = teamMembers.length + teamInvites.length;
 
     return {
-      owners: teamMembers.length,
+      owners: teamMembers.filter((member) => member.role === "owner").length,
       online: onlineCount,
       pending: teamInvites.length,
       reservedSeats
@@ -206,7 +208,7 @@ export function DashboardTeamPage({
 
       <div className="space-y-6">
         <section className="rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600">
-          Keep the workspace owner and any pending inbox invites organized in one place.
+          Keep workspace members and pending inbox invites organized in one place.
         </section>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -222,10 +224,12 @@ export function DashboardTeamPage({
             </span>
           </div>
 
-          <button type="button" onClick={() => setInviteModalOpen(true)} className={DASHBOARD_PRIMARY_BUTTON_CLASS}>
-            <PlusIcon className="h-4 w-4" />
-            Invite member
-          </button>
+          {canManageTeam ? (
+            <button type="button" onClick={() => setInviteModalOpen(true)} className={DASHBOARD_PRIMARY_BUTTON_CLASS}>
+              <PlusIcon className="h-4 w-4" />
+              Invite member
+            </button>
+          ) : null}
         </div>
 
         <section className="overflow-visible rounded-xl border border-slate-200 bg-white">
@@ -237,7 +241,9 @@ export function DashboardTeamPage({
                   <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-[0.08em] text-slate-500">Role</th>
                   <th className="px-5 py-3 text-center text-xs font-medium uppercase tracking-[0.08em] text-slate-500">Status</th>
                   <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-[0.08em] text-slate-500">Updated</th>
-                  <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-[0.08em] text-slate-500">Actions</th>
+                  <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-[0.08em] text-slate-500">
+                    {canManageTeam ? "Actions" : ""}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -266,7 +272,7 @@ export function DashboardTeamPage({
                       </td>
                       <td className="px-5 py-4">
                         <span className={classNames("rounded-md px-3 py-1 text-[13px] font-medium", roleBadgeClass(member.role))}>
-                          Owner
+                          {member.role === "owner" ? "Owner" : member.role === "admin" ? "Admin" : "Member"}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-center">
@@ -312,45 +318,47 @@ export function DashboardTeamPage({
                       </td>
                       <td className="px-5 py-4 text-sm text-slate-600">{formatRelativeTime(invite.updatedAt)}</td>
                       <td className="px-5 py-4 text-right">
-                        <div className="relative inline-flex" onClick={(event) => event.stopPropagation()}>
-                          <button
-                            type="button"
-                            onClick={() => setOpenInviteMenuId((current) => (current === invite.id ? null : invite.id))}
-                            className={DASHBOARD_ICON_BUTTON_CLASS}
-                            aria-label={`Manage invite for ${invite.email}`}
-                          >
-                            <DotsVerticalIcon className="h-4 w-4" />
-                          </button>
+                        {canManageTeam ? (
+                          <div className="relative inline-flex" onClick={(event) => event.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => setOpenInviteMenuId((current) => (current === invite.id ? null : invite.id))}
+                              className={DASHBOARD_ICON_BUTTON_CLASS}
+                              aria-label={`Manage invite for ${invite.email}`}
+                            >
+                              <DotsVerticalIcon className="h-4 w-4" />
+                            </button>
 
-                          {openInviteMenuId === invite.id ? (
-                            <div className="absolute right-0 top-10 z-20 min-w-[180px] rounded-lg border border-slate-200 bg-white p-1 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
-                              <button
-                                type="button"
-                                onClick={() => handleInviteAction("role", invite.id, nextRole)}
-                                className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
-                                disabled={inviteActionId === invite.id}
-                              >
-                                Make {nextRole === "admin" ? "admin" : "member"}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleInviteAction("resend", invite.id)}
-                                className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
-                                disabled={inviteActionId === invite.id}
-                              >
-                                Resend invite
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleInviteAction("remove", invite.id)}
-                                className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-red-600 transition hover:bg-red-50"
-                                disabled={inviteActionId === invite.id}
-                              >
-                                Remove from team
-                              </button>
-                            </div>
-                          ) : null}
-                        </div>
+                            {openInviteMenuId === invite.id ? (
+                              <div className="absolute right-0 top-10 z-20 min-w-[180px] rounded-lg border border-slate-200 bg-white p-1 shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                                <button
+                                  type="button"
+                                  onClick={() => handleInviteAction("role", invite.id, nextRole)}
+                                  className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                                  disabled={inviteActionId === invite.id}
+                                >
+                                  Make {nextRole === "admin" ? "admin" : "member"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleInviteAction("resend", invite.id)}
+                                  className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                                  disabled={inviteActionId === invite.id}
+                                >
+                                  Resend invite
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleInviteAction("remove", invite.id)}
+                                  className="flex w-full items-center rounded-md px-3 py-2 text-left text-sm text-red-600 transition hover:bg-red-50"
+                                  disabled={inviteActionId === invite.id}
+                                >
+                                  Remove from team
+                                </button>
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </td>
                     </tr>
                   );
@@ -361,7 +369,7 @@ export function DashboardTeamPage({
         </section>
       </div>
 
-      {inviteModalOpen ? (
+      {inviteModalOpen && canManageTeam ? (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 px-4">
           <div className="w-full max-w-[480px] rounded-2xl bg-white p-6 shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
             <div className="mb-6 flex items-center justify-between gap-4">

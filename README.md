@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Expanded dashboard coverage across shell, inbox, visitors, widget settings, and dashboard route workflows.
 - Renamed the remaining product-facing Chatly references across docs, service labels, invite copy, and pricing-driven blog content to Chatting.
 - Upgraded dashboard email templates with conversation-specific previews, transcript branding controls, and richer test-email rendering.
 - Aligned billing settings and landing pricing around shared Starter and Growth pricing helpers plus the shared app button styling.
@@ -66,6 +67,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Dashboard home now surfaces activation, health, and expansion growth signals for the workspace.
 - Optimistic inbox interactions for replies and tags, plus modularized page components throughout.
 - Dashboard email settings now preview transcript and visitor email layouts with conversation-specific rendering and branding-aware test sends.
+- Dashboard shell, inbox, visitors, widget settings, and route handlers now have broad Vitest coverage across interactive and edge-case flows.
 
 ### Billing & Operations
 

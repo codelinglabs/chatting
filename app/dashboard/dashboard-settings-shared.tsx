@@ -12,10 +12,11 @@ import {
   BellIcon,
   CreditCardIcon,
   MailIcon,
+  StarIcon,
   UserIcon
 } from "./dashboard-ui";
 
-export type SettingsSection = "profile" | "notifications" | "email" | "billing";
+export type SettingsSection = "profile" | "notifications" | "email" | "billing" | "referrals";
 export type EditableSettings = Pick<DashboardSettingsData, "profile" | "notifications" | "email">;
 
 export type SettingsNavItem =
@@ -78,6 +79,13 @@ export const SETTINGS_NAV: Array<{
         label: "Plans & Billing",
         icon: CreditCardIcon,
         description: "Subscription and invoices"
+      },
+      {
+        type: "section",
+        value: "referrals",
+        label: "Referrals",
+        icon: StarIcon,
+        description: "Referral programs and signups"
       }
     ]
   }
@@ -175,7 +183,7 @@ export function billingErrorMessage(code: string) {
     case "stripe_checkout_unavailable":
       return "We couldn't open Stripe Checkout right now.";
     case "proactive_chat_requires_growth":
-      return "Proactive chat is available on Growth and Pro plans.";
+      return "Proactive chat is available on Growth.";
     case "trial_extension_unavailable":
       return "This workspace is not eligible for another trial extension right now.";
     case "billing-portal-session-failed":
@@ -184,6 +192,8 @@ export function billingErrorMessage(code: string) {
       return "We couldn't refresh billing from Stripe right now.";
     case "billing-trial-extension-failed":
       return "We couldn't extend the trial right now.";
+    case "contact_sales_required":
+      return "Teams with 50 or more members need a custom setup right now.";
     default:
       return "We couldn't update billing just now.";
   }

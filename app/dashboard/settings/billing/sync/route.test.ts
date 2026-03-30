@@ -34,14 +34,14 @@ describe("billing sync route", () => {
 
   it("returns refreshed billing summaries", async () => {
     mocks.syncDashboardBillingSummary.mockResolvedValueOnce({
-      planKey: "pro"
+      planKey: "growth"
     });
 
     const response = await POST();
     expect(await response.json()).toEqual({
       ok: true,
       billing: {
-        planKey: "pro"
+        planKey: "growth"
       }
     });
   });

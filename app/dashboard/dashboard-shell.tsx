@@ -172,8 +172,8 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
             )}
           >
             <DashboardHeader
-              isInboxRoute={isInboxRoute}
               headerText={headerText}
+              showUnreadBadge={isInboxRoute}
               unreadCount={unreadCount}
               initials={initials}
               firstName={firstName}

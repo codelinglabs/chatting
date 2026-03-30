@@ -91,6 +91,9 @@ export function widgetSaveErrorMessage(code: string) {
   if (code === "site-domain-required") {
     return "Site URL is required before you can save widget setup.";
   }
+  if (code === "proactive_chat_requires_growth") {
+    return "Proactive chat is available on Growth.";
+  }
   return "Unable to save widget settings.";
 }
 

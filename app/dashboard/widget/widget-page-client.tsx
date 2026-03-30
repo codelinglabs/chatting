@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { DashboardBillingSummary } from "@/lib/data";
 import type { Site } from "@/lib/types";
 
 const DashboardWidgetSettingsPage = dynamic(
@@ -35,8 +36,9 @@ const DashboardWidgetSettingsPage = dynamic(
 
 type DashboardWidgetPageClientProps = {
   initialSites: Site[];
+  initialBilling: DashboardBillingSummary;
 };
 
-export function DashboardWidgetPageClient({ initialSites }: DashboardWidgetPageClientProps) {
-  return <DashboardWidgetSettingsPage initialSites={initialSites} />;
+export function DashboardWidgetPageClient({ initialSites, initialBilling }: DashboardWidgetPageClientProps) {
+  return <DashboardWidgetSettingsPage initialSites={initialSites} initialBilling={initialBilling} />;
 }

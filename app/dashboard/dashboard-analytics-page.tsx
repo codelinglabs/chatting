@@ -16,10 +16,10 @@ import {
 } from "./dashboard-analytics-types";
 import {
   average,
+  averageRatingScore,
   buildStatSummary,
   filterConversations,
   filterReplyEvents,
-  helpfulScore,
   resolveDateRange,
   toDateInputValue,
   addDays
@@ -98,7 +98,7 @@ export function DashboardAnalyticsPage({
   const ratingBreakdown = buildRatingBreakdown(currentConversations);
   const tagBreakdown = buildTagBreakdown(currentConversations);
   const teamRows = buildTeamRows(currentConversations, userEmail);
-  const helpfulAverage = helpfulScore(currentConversations);
+  const averageRating = averageRatingScore(currentConversations);
 
   if (!initialDataset.conversations.length) {
     return (
@@ -226,7 +226,7 @@ export function DashboardAnalyticsPage({
           </div>
 
           <div className="grid gap-6 xl:grid-cols-2">
-            <SatisfactionBreakdown score={helpfulAverage} rows={ratingBreakdown} />
+            <SatisfactionBreakdown score={averageRating} rows={ratingBreakdown} />
             <DonutChart tags={tagBreakdown} />
           </div>
         </>

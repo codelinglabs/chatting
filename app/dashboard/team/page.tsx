@@ -8,6 +8,7 @@ export default async function TeamPage() {
 
   return (
     <DashboardTeamPage
+      canManageTeam={user.workspaceRole !== "member"}
       initialMembers={settings.teamMembers}
       initialInvites={settings.teamInvites}
     />

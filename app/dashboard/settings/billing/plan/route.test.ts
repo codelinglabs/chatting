@@ -49,20 +49,20 @@ describe("billing plan route", () => {
     const response = await POST(
       new Request("http://localhost/dashboard/settings/billing/plan", {
         method: "POST",
-        body: JSON.stringify({ plan: "pro" })
+        body: JSON.stringify({ plan: "growth" })
       })
     );
 
     expect(response.status).toBe(401);
   });
 
-  it("opens stripe checkout for pro upgrades", async () => {
+  it("opens stripe checkout for growth upgrades", async () => {
     mocks.createDashboardBillingCheckoutSession.mockResolvedValueOnce("https://checkout.stripe.com/session");
 
     const response = await POST(
       new Request("http://localhost/dashboard/settings/billing/plan", {
         method: "POST",
-        body: JSON.stringify({ plan: "pro" })
+        body: JSON.stringify({ plan: "growth" })
       })
     );
 
@@ -71,7 +71,7 @@ describe("billing plan route", () => {
       redirectUrl: "https://checkout.stripe.com/session"
     });
     expect(mocks.createDashboardBillingCheckoutSession).toHaveBeenCalledWith("user_123", "hello@chatly.example", {
-      planKey: "pro",
+      planKey: "growth",
       billingInterval: "monthly",
       seatQuantity: 3
     });
@@ -91,7 +91,7 @@ describe("billing plan route", () => {
     const response = await POST(
       new Request("http://localhost/dashboard/settings/billing/plan", {
         method: "POST",
-        body: JSON.stringify({ plan: "pro" })
+        body: JSON.stringify({ plan: "growth" })
       })
     );
 
@@ -136,7 +136,7 @@ describe("billing plan route", () => {
     });
   });
 
-  it("sends paid workspaces to the billing portal for plan changes", async () => {
+  it("sends paid workspaces to the billing portal for interval changes", async () => {
     mocks.getDashboardBillingSummary.mockResolvedValueOnce({
       planKey: "growth",
       usedSeats: 4
@@ -146,7 +146,7 @@ describe("billing plan route", () => {
     const response = await POST(
       new Request("http://localhost/dashboard/settings/billing/plan", {
         method: "POST",
-        body: JSON.stringify({ plan: "pro", interval: "annual" })
+        body: JSON.stringify({ plan: "growth", interval: "annual" })
       })
     );
 
@@ -157,12 +157,33 @@ describe("billing plan route", () => {
     expect(mocks.createDashboardBillingPortalSession).toHaveBeenCalledWith("user_123", "hello@chatly.example");
   });
 
+  it("blocks automatic checkout for 50-plus teams", async () => {
+    mocks.getDashboardBillingSummary.mockResolvedValueOnce({
+      planKey: "starter",
+      usedSeats: 50
+    });
+
+    const response = await POST(
+      new Request("http://localhost/dashboard/settings/billing/plan", {
+        method: "POST",
+        body: JSON.stringify({ plan: "growth" })
+      })
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      ok: false,
+      error: "contact_sales_required"
+    });
+    expect(mocks.createDashboardBillingCheckoutSession).not.toHaveBeenCalled();
+  });
+
   it("maps stripe-specific failures", async () => {
     mocks.createDashboardBillingCheckoutSession.mockRejectedValueOnce(new Error("STRIPE_NOT_CONFIGURED"));
     let response = await POST(
       new Request("http://localhost/dashboard/settings/billing/plan", {
         method: "POST",
-        body: JSON.stringify({ plan: "pro" })
+        body: JSON.stringify({ plan: "growth" })
       })
     );
     expect(await response.json()).toEqual({
@@ -176,7 +197,7 @@ describe("billing plan route", () => {
     response = await POST(
       new Request("http://localhost/dashboard/settings/billing/plan", {
         method: "POST",
-        body: JSON.stringify({ plan: "pro" })
+        body: JSON.stringify({ plan: "growth" })
       })
     );
     expect(await response.json()).toEqual({

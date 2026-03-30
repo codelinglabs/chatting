@@ -35,7 +35,7 @@ describe("dashboard visitors page", () => {
             lastMessageAt: now,
             lastMessagePreview: "Quick question about pricing...",
             unreadCount: 1,
-            helpful: true,
+            rating: 5,
             tags: ["lead", "pricing"]
           },
           {
@@ -58,8 +58,26 @@ describe("dashboard visitors page", () => {
             lastMessageAt: now,
             lastMessagePreview: "Is there a free trial?",
             unreadCount: 0,
-            helpful: null,
+            rating: null,
             tags: []
+          }
+        ]}
+        initialLiveSessions={[
+          {
+            siteId: "site_1",
+            sessionId: "session_3",
+            conversationId: null,
+            email: null,
+            currentPageUrl: "/docs",
+            referrer: "https://google.com",
+            userAgent: "Mozilla/5.0 Chrome Mac OS",
+            country: "United States",
+            region: "California",
+            city: "San Francisco",
+            timezone: "America/Los_Angeles",
+            locale: "en-US",
+            startedAt: now,
+            lastSeenAt: now
           }
         ]}
       />
@@ -70,6 +88,7 @@ describe("dashboard visitors page", () => {
     expect(html).toContain("Alex");
     expect(html).toContain("Emma");
     expect(html).toContain("/pricing");
-    expect(html).toContain("Start conversation");
+    expect(html).toContain("/docs");
+    expect(html).toContain("View visitor");
   });
 });

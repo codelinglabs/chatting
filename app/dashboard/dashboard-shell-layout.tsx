@@ -363,14 +363,14 @@ export function DesktopSidebar({
 }
 
 export function DashboardHeader({
-  isInboxRoute,
   headerText,
+  showUnreadBadge,
   unreadCount,
   initials,
   firstName
 }: {
-  isInboxRoute: boolean;
   headerText: HeaderText;
+  showUnreadBadge: boolean;
   unreadCount: number;
   initials: string;
   firstName: string;
@@ -378,25 +378,19 @@ export function DashboardHeader({
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className={`${DASHBOARD_FRAME_CLASS} ${DASHBOARD_HEADER_PADDING_CLASS}`}>
-        <div className={classNames("flex items-center justify-between gap-4", isInboxRoute ? "h-14" : "py-5")}>
+        <div className="flex items-center justify-between gap-4 py-5">
           <div className="min-w-0">
-            {isInboxRoute ? (
-              <div className="flex min-w-0 items-center gap-3">
-                <h1 className="truncate text-base font-semibold text-slate-900">{headerText.title}</h1>
-                {unreadCount > 0 ? (
-                  <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
-                    {unreadCount} unread
-                  </span>
-                ) : null}
-              </div>
-            ) : (
-              <>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{headerText.title}</h1>
-                {headerText.subtitle ? (
-                  <p className="mt-1 text-base font-normal text-slate-500">{headerText.subtitle}</p>
-                ) : null}
-              </>
-            )}
+            <div className="flex min-w-0 items-center gap-3">
+              <h1 className="truncate text-2xl font-semibold tracking-tight text-slate-900">{headerText.title}</h1>
+              {showUnreadBadge && unreadCount > 0 ? (
+                <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600">
+                  {unreadCount} unread
+                </span>
+              ) : null}
+            </div>
+            {headerText.subtitle ? (
+              <p className="mt-1 text-base font-normal text-slate-500">{headerText.subtitle}</p>
+            ) : null}
           </div>
 
           <HeaderActions unreadCount={unreadCount} initials={initials} firstName={firstName} />

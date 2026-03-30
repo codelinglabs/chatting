@@ -1,5 +1,6 @@
 "use client";
 
+import type { DashboardBillingSummary } from "@/lib/data";
 import type { Site } from "@/lib/types";
 import { classNames } from "@/lib/utils";
 import {
@@ -17,9 +18,10 @@ import { useDashboardWidgetSettings } from "./use-dashboard-widget-settings";
 
 type DashboardWidgetSettingsPageProps = {
   initialSites: Site[];
+  initialBilling: DashboardBillingSummary;
 };
 
-export function DashboardWidgetSettingsPage({ initialSites }: DashboardWidgetSettingsPageProps) {
+export function DashboardWidgetSettingsPage({ initialSites, initialBilling }: DashboardWidgetSettingsPageProps) {
   const {
     activeSite,
     activeSiteId,
@@ -157,7 +159,11 @@ export function DashboardWidgetSettingsPage({ initialSites }: DashboardWidgetSet
             ) : null}
 
             {activeTab === "behavior" ? (
-              <WidgetBehaviorPanel activeSite={activeSite} onUpdateActiveSite={updateActiveSite} />
+              <WidgetBehaviorPanel
+                activeSite={activeSite}
+                proactiveChatUnlocked={initialBilling.features.proactiveChat}
+                onUpdateActiveSite={updateActiveSite}
+              />
             ) : null}
 
             {activeTab === "installation" ? (

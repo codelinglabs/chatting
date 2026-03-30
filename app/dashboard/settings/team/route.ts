@@ -12,13 +12,17 @@ export async function POST(request: Request) {
     return auth.response;
   }
 
+  if (auth.user.workspaceRole === "member") {
+    return jsonError("forbidden", 403);
+  }
+
   try {
     const payload = (await request.json()) as Record<string, unknown>;
     const action = String(payload.action ?? "").trim();
 
     if (action === "invite") {
       const invites = await createTeamInvite({
-        ownerUserId: auth.user.id,
+        ownerUserId: auth.user.workspaceOwnerId,
         email: String(payload.email ?? ""),
         role: payload.role === "admin" ? "admin" : "member",
         message: String(payload.message ?? "")
@@ -32,18 +36,18 @@ export async function POST(request: Request) {
     }
 
     if (action === "resend") {
-      const invites = await resendTeamInvite(auth.user.id, inviteId);
+      const invites = await resendTeamInvite(auth.user.workspaceOwnerId, inviteId);
       return jsonOk({ invites });
     }
 
     if (action === "remove") {
-      const invites = await revokeTeamInvite(auth.user.id, inviteId);
+      const invites = await revokeTeamInvite(auth.user.workspaceOwnerId, inviteId);
       return jsonOk({ invites });
     }
 
     if (action === "role") {
       const invites = await updateTeamInviteRole(
-        auth.user.id,
+        auth.user.workspaceOwnerId,
         inviteId,
         payload.role === "admin" ? "admin" : "member"
       );

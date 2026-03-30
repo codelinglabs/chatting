@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return jsonError("not-found", 404);
   }
 
-  publishDashboardLive(auth.user.id, {
+  publishDashboardLive(auth.user.workspaceOwnerId, {
     type: "conversation.read",
     conversationId,
     updatedAt: new Date().toISOString()

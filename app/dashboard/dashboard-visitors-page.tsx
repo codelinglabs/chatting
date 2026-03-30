@@ -1,17 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ConversationSummary } from "@/lib/types";
-import { classNames } from "@/lib/utils";
+import type { ConversationSummary, VisitorPresenceSession } from "@/lib/types";
 import { useDashboardNavigation } from "./dashboard-shell";
 import {
   buildVisitorRecords,
   DEFAULT_VISITOR_FILTERS,
-  formatDuration,
   type VisitorFilterState,
   type VisitorRecord,
   type VisitorsPrimaryFilter,
-  type VisitorsSourceFilter,
   type VisitorsTimeRange,
   VISITORS_PAGE_SIZE
 } from "./visitors-data";
@@ -26,11 +23,16 @@ import { exportVisitors, filterVisitors, sortVisitors, withinTimeRange } from ".
 
 type DashboardVisitorsPageProps = {
   initialConversations: ConversationSummary[];
+  initialLiveSessions: VisitorPresenceSession[];
 };
 
-export function DashboardVisitorsPage({ initialConversations }: DashboardVisitorsPageProps) {
+export function DashboardVisitorsPage({
+  initialConversations,
+  initialLiveSessions
+}: DashboardVisitorsPageProps) {
   const dashboardNavigation = useDashboardNavigation();
   const [conversations, setConversations] = useState(initialConversations);
+  const [liveSessions, setLiveSessions] = useState(initialLiveSessions);
   const [searchQuery, setSearchQuery] = useState("");
   const [primaryFilter, setPrimaryFilter] = useState<VisitorsPrimaryFilter>("all");
   const [timeRange, setTimeRange] = useState<VisitorsTimeRange>("7d");
@@ -49,7 +51,7 @@ export function DashboardVisitorsPage({ initialConversations }: DashboardVisitor
     }
 
     try {
-      const response = await fetch("/dashboard/conversations", {
+      const response = await fetch("/dashboard/visitors-data", {
         method: "GET",
         cache: "no-store"
       });
@@ -58,8 +60,13 @@ export function DashboardVisitorsPage({ initialConversations }: DashboardVisitor
         return;
       }
 
-      const payload = (await response.json()) as { ok: true; conversations: ConversationSummary[] };
+      const payload = (await response.json()) as {
+        ok: true;
+        conversations: ConversationSummary[];
+        liveSessions: VisitorPresenceSession[];
+      };
       setConversations(payload.conversations);
+      setLiveSessions(payload.liveSessions);
     } catch (error) {
       // Keep the current UI steady if a refresh misses.
     } finally {
@@ -77,7 +84,33 @@ export function DashboardVisitorsPage({ initialConversations }: DashboardVisitor
     return () => window.clearInterval(intervalId);
   }, []);
 
-  const visitors = buildVisitorRecords(conversations);
+  useEffect(() => {
+    const eventSource = new EventSource("/dashboard/live");
+
+    eventSource.onmessage = (messageEvent) => {
+      let event: { type?: string };
+
+      try {
+        event = JSON.parse(messageEvent.data);
+      } catch (error) {
+        return;
+      }
+
+      if (
+        event.type === "visitor.presence.updated" ||
+        event.type === "message.created" ||
+        event.type === "conversation.updated"
+      ) {
+        void refreshVisitors();
+      }
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
+  const visitors = buildVisitorRecords(conversations, liveSessions);
   const filteredVisitors = sortVisitors(
     filterVisitors(visitors, searchQuery, primaryFilter, timeRange, filters),
     sortKey,
@@ -121,6 +154,11 @@ export function DashboardVisitorsPage({ initialConversations }: DashboardVisitor
   }
 
   function openConversation(visitor: VisitorRecord) {
+    if (!visitor.latestConversationId) {
+      setSelectedVisitorId(visitor.id);
+      return;
+    }
+
     dashboardNavigation?.navigate(`/dashboard/inbox?id=${visitor.latestConversationId}`);
   }
 

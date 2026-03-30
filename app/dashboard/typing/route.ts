@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     actor: "team",
     typing
   });
-  publishDashboardLive(auth.user.id, {
+  publishDashboardLive(auth.user.workspaceOwnerId, {
     type: "typing.updated",
     conversationId,
     actor: "team",

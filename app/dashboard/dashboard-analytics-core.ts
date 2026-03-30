@@ -289,15 +289,12 @@ function buildPointsBadge(delta: number | null, digits = 0): StatBadge | null {
   };
 }
 
-export function helpfulScore(conversations: AnalyticsConversationRecord[]) {
-  const feedback = conversations.filter((conversation) => conversation.helpful != null);
-  if (!feedback.length) {
-    return null;
-  }
+export function averageRatingScore(conversations: AnalyticsConversationRecord[]) {
+  const ratings = conversations.flatMap((conversation) =>
+    conversation.rating == null ? [] : [conversation.rating]
+  );
 
-  const positive = feedback.filter((conversation) => conversation.helpful).length;
-  const rate = positive / feedback.length;
-  return 1 + rate * 4;
+  return average(ratings);
 }
 
 export function buildStatSummary(
@@ -327,8 +324,8 @@ export function buildStatSummary(
     ? (previousConversations.filter((conversation) => conversation.status === "resolved").length / previousTotal) * 100
     : null;
 
-  const currentSatisfaction = helpfulScore(currentConversations);
-  const previousSatisfaction = helpfulScore(previousConversations);
+  const currentSatisfaction = averageRatingScore(currentConversations);
+  const previousSatisfaction = averageRatingScore(previousConversations);
 
   return {
     total: {

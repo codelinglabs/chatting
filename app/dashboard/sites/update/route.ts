@@ -1,5 +1,7 @@
 import { updateSiteWidgetSettings, updateSiteWidgetTitle } from "@/lib/data";
+import { getBillingPlanFeatures, normalizeBillingPlanKey } from "@/lib/billing-plans";
 import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
+import { findBillingAccountRow } from "@/lib/repositories/billing-repository";
 import { createDefaultOperatingHours, normalizeSiteDomain } from "@/lib/widget-settings";
 
 export async function POST(request: Request) {
@@ -29,6 +31,16 @@ export async function POST(request: Request) {
         return jsonError("site-domain-required", 400);
       }
 
+      const autoOpenPaths = Array.isArray(parsed.autoOpenPaths)
+        ? parsed.autoOpenPaths.map((entry) => String(entry))
+        : [];
+      const billingAccount = await findBillingAccountRow(user.id);
+      const features = getBillingPlanFeatures(normalizeBillingPlanKey(billingAccount?.plan_key));
+
+      if (autoOpenPaths.length && !features.proactiveChat) {
+        return jsonError("proactive_chat_requires_growth", 403);
+      }
+
       const updated = await updateSiteWidgetSettings(siteId, user.id, {
         domain: normalizedDomain,
         brandColor: String(parsed.brandColor ?? ""),
@@ -40,9 +52,7 @@ export async function POST(request: Request) {
         showOnlineStatus: Boolean(parsed.showOnlineStatus),
         requireEmailOffline: Boolean(parsed.requireEmailOffline),
         soundNotifications: Boolean(parsed.soundNotifications),
-        autoOpenPaths: Array.isArray(parsed.autoOpenPaths)
-          ? parsed.autoOpenPaths.map((entry) => String(entry))
-          : [],
+        autoOpenPaths,
         responseTimeMode:
           parsed.responseTimeMode === "hours" ||
           parsed.responseTimeMode === "day" ||

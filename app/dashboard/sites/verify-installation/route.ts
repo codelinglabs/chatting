@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     const site = await getSiteByPublicId(siteId);
-    if (!site || site.userId !== auth.user.id) {
+    if (!site || site.userId !== auth.user.workspaceOwnerId) {
       return jsonError("site-not-found", 404);
     }
 

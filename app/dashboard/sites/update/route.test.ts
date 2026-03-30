@@ -1,4 +1,5 @@
 const mocks = vi.hoisted(() => ({
+  findBillingAccountRow: vi.fn(),
   updateSiteWidgetSettings: vi.fn(),
   updateSiteWidgetTitle: vi.fn(),
   requireJsonRouteUser: vi.fn()
@@ -7,6 +8,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/data", () => ({
   updateSiteWidgetSettings: mocks.updateSiteWidgetSettings,
   updateSiteWidgetTitle: mocks.updateSiteWidgetTitle
+}));
+
+vi.mock("@/lib/repositories/billing-repository", () => ({
+  findBillingAccountRow: mocks.findBillingAccountRow
 }));
 
 vi.mock("@/lib/route-helpers", () => ({
@@ -21,8 +26,12 @@ import { POST } from "./route";
 
 describe("dashboard sites update route", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     mocks.requireJsonRouteUser.mockResolvedValue({
       user: { id: "user_123", email: "hello@chatly.example", createdAt: "2026-03-27T00:00:00.000Z" }
+    });
+    mocks.findBillingAccountRow.mockResolvedValue({
+      plan_key: "growth"
     });
   });
 
@@ -126,6 +135,28 @@ describe("dashboard sites update route", () => {
 
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ ok: false, error: "site-domain-required" });
+  });
+
+  it("blocks proactive chat for starter workspaces", async () => {
+    mocks.findBillingAccountRow.mockResolvedValueOnce({
+      plan_key: "starter"
+    });
+    const formData = new FormData();
+    formData.set("siteId", "site_1");
+    formData.set(
+      "settings",
+      JSON.stringify({
+        domain: "https://example.com",
+        autoOpenPaths: ["/pricing"]
+      })
+    );
+
+    const response = await POST(
+      new Request("http://localhost/dashboard/sites/update", { method: "POST", body: formData })
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ ok: false, error: "proactive_chat_requires_growth" });
   });
 
   it("falls back to title updates when no settings payload is provided", async () => {

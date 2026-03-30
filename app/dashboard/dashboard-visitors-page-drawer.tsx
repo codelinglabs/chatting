@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDateTime, formatRelativeTime } from "@/lib/utils";
+import { DashboardVisitorNoteEditor } from "./dashboard-visitor-note-editor";
 import { ChevronRightIcon, XIcon } from "./dashboard-ui";
 import { formatDuration, type VisitorRecord } from "./visitors-data";
 
@@ -118,17 +119,25 @@ export function VisitorDetailsDrawer({
           <Rule />
 
           <DetailSection title="Conversations">
-            <button
-              type="button"
-              onClick={onOpenConversation}
-              className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
-            >
-              Open latest conversation
-              <ChevronRightIcon className="h-4 w-4" />
-            </button>
-            <p className="mt-2 text-sm text-slate-500">
-              {visitor.conversationCount} conversation{visitor.conversationCount === 1 ? "" : "s"} recorded
-            </p>
+            {visitor.latestConversationId ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onOpenConversation}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Open latest conversation
+                  <ChevronRightIcon className="h-4 w-4" />
+                </button>
+                <p className="mt-2 text-sm text-slate-500">
+                  {visitor.conversationCount} conversation{visitor.conversationCount === 1 ? "" : "s"} recorded
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-slate-500">
+                This visitor is browsing live, but they haven&apos;t started a conversation yet.
+              </p>
+            )}
           </DetailSection>
 
           <Rule />
@@ -150,9 +159,11 @@ export function VisitorDetailsDrawer({
           <Rule />
 
           <DetailSection title="Notes">
-            <div className="rounded-lg bg-slate-50 px-3 py-3 text-[13px] leading-6 text-slate-600">
-              Notes will land here once visitor-level notes are added. For now, open the conversation to keep context close to the thread.
-            </div>
+            <DashboardVisitorNoteEditor
+              siteId={visitor.siteId}
+              sessionId={visitor.sessionId}
+              email={visitor.email}
+            />
           </DetailSection>
         </div>
       </aside>

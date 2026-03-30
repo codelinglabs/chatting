@@ -1,0 +1,156 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { createMockReactHooks, runMockEffects } from "./test-react-hooks";
+
+async function loadDashboardShell(options?: {
+  pathname?: string;
+  pendingHref?: string | null;
+  isNavigating?: boolean;
+}) {
+  vi.resetModules();
+  const captures: Record<string, unknown> = {};
+  const router = { prefetch: vi.fn(), push: vi.fn() };
+  const reactMocks = createMockReactHooks({
+    stateOverrides: new Map([
+      [0, options?.pendingHref ?? null],
+      [1, null]
+    ]),
+    transitionPending: options?.isNavigating ?? false
+  });
+
+  vi.doMock("react", () => reactMocks.moduleFactory());
+  vi.doMock("next/navigation", () => ({
+    usePathname: () => options?.pathname ?? "/dashboard/inbox",
+    useRouter: () => router
+  }));
+  vi.doMock("./dashboard-notification-center", () => ({
+    DashboardNotificationCenter: (props: unknown) => {
+      captures.notification = props;
+      return <div>notifications</div>;
+    }
+  }));
+  vi.doMock("./dashboard-shell-layout", () => ({
+    DashboardHeader: (props: unknown) => {
+      captures.header = props;
+      return <div>header</div>;
+    },
+    DashboardMain: (props: unknown) => {
+      captures.main = props;
+      return <div>main</div>;
+    },
+    DesktopSidebar: (props: unknown) => {
+      captures.sidebar = props;
+      return <div>sidebar</div>;
+    },
+    MobileChrome: (props: unknown) => {
+      captures.mobile = props;
+      return <div>mobile</div>;
+    },
+    dashboardGreeting: (hour: number | null) => (hour == null ? "Hello" : `Greeting-${hour}`),
+    getDashboardIdentity: () => ({ displayName: "Tina Bauer", firstName: "Tina", initials: "TB" }),
+    routeHeaderText: (pathname: string, firstName: string, greeting: string) => ({
+      title: `${pathname}:${firstName}:${greeting}`,
+      subtitle: "subtitle"
+    })
+  }));
+  vi.doMock("./dashboard-shell-navigation", () => ({
+    DashboardNavigationContext: {
+      Provider: ({ value, children }: { value: unknown; children: unknown }) => {
+        captures.navigation = value;
+        return <>{children}</>;
+      }
+    },
+    PRIMARY_NAV: [{ href: "/dashboard" }, { href: "/dashboard/inbox" }],
+    SETTINGS_NAV: [{ href: "/dashboard/settings" }],
+    pathFromHref: (href: string) => href.split(/[?#]/)[0]
+  }));
+  vi.doMock("@/lib/utils", () => ({
+    classNames: (...values: Array<string | false | null | undefined>) => values.filter(Boolean).join(" ")
+  }));
+
+  const module = await import("./dashboard-shell");
+  return { DashboardShell: module.DashboardShell, captures, reactMocks, router };
+}
+
+describe("dashboard shell", () => {
+  it("renders the inbox shell state and runs its effects", async () => {
+    vi.stubGlobal("document", {
+      body: { style: { overflow: "", overscrollBehavior: "" } },
+      documentElement: { style: { overflow: "", overscrollBehavior: "" } }
+    });
+    vi.stubGlobal("window", {
+      location: { pathname: "/dashboard/inbox", search: "", hash: "" },
+      matchMedia: () => ({
+        matches: true,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn()
+      })
+    });
+    const { DashboardShell, captures, reactMocks, router } = await loadDashboardShell();
+
+    reactMocks.beginRender();
+    renderToStaticMarkup(
+      <DashboardShell
+        userEmail="tina@usechatting.com"
+        unreadCount={3}
+        notificationSettings={{ browserNotifications: true } as never}
+      >
+        <div>content</div>
+      </DashboardShell>
+    );
+    const cleanups = await runMockEffects(reactMocks.effects);
+
+    expect(captures.notification).toEqual({ initialSettings: { browserNotifications: true } });
+    expect(captures.mobile).toEqual({ pathname: "/dashboard/inbox", unreadCount: 3 });
+    expect(captures.header).toEqual(
+      expect.objectContaining({ showUnreadBadge: true, unreadCount: 3, firstName: "Tina" })
+    );
+    expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: true, showPendingOverlay: false }));
+    expect(router.prefetch).toHaveBeenCalledTimes(3);
+    expect((globalThis.document as Document).documentElement.style.overflow).toBe("hidden");
+    cleanups.at(-1)?.();
+    expect((globalThis.document as Document).documentElement.style.overflow).toBe("");
+    vi.unstubAllGlobals();
+  });
+
+  it("navigates through the shared dashboard navigation context", async () => {
+    vi.stubGlobal("window", {
+      location: { pathname: "/dashboard", search: "", hash: "" }
+    });
+    const { DashboardShell, captures, reactMocks, router } = await loadDashboardShell({
+      pathname: "/dashboard",
+      pendingHref: "/dashboard/settings?section=billing",
+      isNavigating: true
+    });
+
+    reactMocks.beginRender();
+    renderToStaticMarkup(
+      <DashboardShell
+        userEmail="tina@usechatting.com"
+        unreadCount={0}
+        notificationSettings={{} as never}
+      >
+        <div>content</div>
+      </DashboardShell>
+    );
+    await runMockEffects(reactMocks.effects);
+
+    expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: false, showPendingOverlay: true }));
+
+    const navigation = captures.navigation as {
+      navigate: (href: string) => void;
+      onLinkNavigate: (event: Record<string, unknown>, href: string) => void;
+    };
+    navigation.navigate("/dashboard/settings");
+    expect(reactMocks.states[0]?.current).toBe("/dashboard/settings");
+    expect(router.push).toHaveBeenCalledWith("/dashboard/settings");
+
+    const prevented = vi.fn();
+    navigation.onLinkNavigate(
+      { defaultPrevented: false, button: 0, metaKey: false, ctrlKey: false, shiftKey: false, altKey: false, preventDefault: prevented },
+      "/dashboard/inbox"
+    );
+    expect(prevented).toHaveBeenCalled();
+    expect(router.push).toHaveBeenCalledWith("/dashboard/inbox");
+    vi.unstubAllGlobals();
+  });
+});

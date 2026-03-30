@@ -20,7 +20,7 @@ describe("dashboard analytics page", () => {
               status: "resolved",
               pageUrl: "/pricing",
               referrer: "google.com",
-              helpful: true,
+              rating: 5,
               firstResponseSeconds: 45,
               resolutionSeconds: 420,
               tags: ["pricing", "lead"]
@@ -32,7 +32,7 @@ describe("dashboard analytics page", () => {
               status: "open",
               pageUrl: "/docs",
               referrer: "direct",
-              helpful: false,
+              rating: 2,
               firstResponseSeconds: 90,
               resolutionSeconds: null,
               tags: ["support"]

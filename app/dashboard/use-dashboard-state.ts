@@ -28,7 +28,7 @@ export function useDashboardState({
   const [activeConversation, setActiveConversation] = useState(initialActiveConversation);
   const [loadingConversationId, setLoadingConversationId] = useState<string | null>(routeConversationId);
   const [answeredConversations, setAnsweredConversations] = useState(initialStats.answeredConversations);
-  const [helpfulResponses, setHelpfulResponses] = useState(initialStats.helpfulResponses);
+  const [ratedConversations, setRatedConversations] = useState(initialStats.ratedConversations);
   const [banner, setBanner] = useState<BannerState>(null);
   const [savingSiteId, setSavingSiteId] = useState<string | null>(null);
   const [savingEmail, setSavingEmail] = useState(false);
@@ -189,7 +189,7 @@ export function useDashboardState({
     setConversations(initialConversations);
     setActiveConversation(initialActiveConversation);
     setAnsweredConversations(initialStats.answeredConversations);
-    setHelpfulResponses(initialStats.helpfulResponses);
+    setRatedConversations(initialStats.ratedConversations);
     setBanner(null);
   }, [initialActiveConversation, initialConversations, initialSites, initialStats]);
 
@@ -298,6 +298,7 @@ export function useDashboardState({
     handleReplyComposerBlur
   } = createDashboardActions({
     activeConversation,
+    conversations,
     sendingReply,
     setSites,
     setConversations,
@@ -352,7 +353,7 @@ export function useDashboardState({
     filteredConversations,
     activeConversation,
     answeredConversations,
-    helpfulResponses,
+    ratedConversations,
     banner,
     savingSiteId,
     savingEmail,

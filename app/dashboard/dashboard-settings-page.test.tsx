@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-type SettingsSection = "profile" | "notifications" | "email" | "billing";
+type SettingsSection = "profile" | "notifications" | "email" | "billing" | "referrals";
 
 async function renderSettingsPage(section: SettingsSection) {
   vi.resetModules();
@@ -165,11 +165,23 @@ describe("dashboard settings page", () => {
     expect(html).toContain("messages sent");
     expect(html).toContain("avg response time");
     expect(html).toContain("Compare plans");
+    expect(html).toContain("How many team members?");
     expect(html).toContain("Current plan");
-    expect(currentPlanMatches).toHaveLength(1);
-    expect(html).toContain("Recommended");
-    expect(html).toContain("Referral programs");
+    expect(currentPlanMatches.length).toBeGreaterThanOrEqual(2);
     expect(html).toContain("50 conversations each month");
+    expect(html).toContain("Advanced analytics");
+    expect(html).toContain("API access");
     expect(html).toContain("Billing history");
+  });
+
+  it("renders the referrals section", async () => {
+    const html = await renderSettingsPage("referrals");
+
+    expect(html).toContain("Track referral programs, signups, and earned rewards");
+    expect(html).toContain("Referral programs");
+    expect(html).toContain("Referred signups");
+    expect(html).toContain("Pending rewards");
+    expect(html).toContain("Earned value tracked");
+    expect(html).toContain("No referred signups yet.");
   });
 });

@@ -26,7 +26,13 @@ import { POST } from "./route";
 describe("dashboard team route", () => {
   beforeEach(() => {
     mocks.requireJsonRouteUser.mockResolvedValue({
-      user: { id: "user_123", email: "hello@chatly.example", createdAt: "2026-03-27T00:00:00.000Z" }
+      user: {
+        id: "user_123",
+        email: "hello@chatly.example",
+        createdAt: "2026-03-27T00:00:00.000Z",
+        workspaceOwnerId: "owner_123",
+        workspaceRole: "admin"
+      }
     });
   });
 
@@ -46,7 +52,7 @@ describe("dashboard team route", () => {
     );
 
     expect(mocks.createTeamInvite).toHaveBeenCalledWith({
-      ownerUserId: "user_123",
+      ownerUserId: "owner_123",
       email: "new@chatly.example",
       role: "admin",
       message: "Welcome"
@@ -74,7 +80,7 @@ describe("dashboard team route", () => {
         body: JSON.stringify({ action: "resend", inviteId: "invite_1" })
       })
     );
-    expect(mocks.resendTeamInvite).toHaveBeenCalledWith("user_123", "invite_1");
+    expect(mocks.resendTeamInvite).toHaveBeenCalledWith("owner_123", "invite_1");
     expect((await response.json()).invites).toEqual([{ id: "invite_resend" }]);
 
     mocks.revokeTeamInvite.mockResolvedValueOnce([{ id: "invite_remove" }]);
@@ -84,7 +90,7 @@ describe("dashboard team route", () => {
         body: JSON.stringify({ action: "remove", inviteId: "invite_1" })
       })
     );
-    expect(mocks.revokeTeamInvite).toHaveBeenCalledWith("user_123", "invite_1");
+    expect(mocks.revokeTeamInvite).toHaveBeenCalledWith("owner_123", "invite_1");
     expect((await response.json()).invites).toEqual([{ id: "invite_remove" }]);
 
     mocks.updateTeamInviteRole.mockResolvedValueOnce([{ id: "invite_role" }]);
@@ -94,8 +100,30 @@ describe("dashboard team route", () => {
         body: JSON.stringify({ action: "role", inviteId: "invite_1", role: "admin" })
       })
     );
-    expect(mocks.updateTeamInviteRole).toHaveBeenCalledWith("user_123", "invite_1", "admin");
+    expect(mocks.updateTeamInviteRole).toHaveBeenCalledWith("owner_123", "invite_1", "admin");
     expect((await response.json()).invites).toEqual([{ id: "invite_role" }]);
+  });
+
+  it("blocks members from managing invites", async () => {
+    mocks.requireJsonRouteUser.mockResolvedValueOnce({
+      user: {
+        id: "user_123",
+        email: "hello@chatly.example",
+        createdAt: "2026-03-27T00:00:00.000Z",
+        workspaceOwnerId: "owner_123",
+        workspaceRole: "member"
+      }
+    });
+
+    const response = await POST(
+      new Request("http://localhost/dashboard/settings/team", {
+        method: "POST",
+        body: JSON.stringify({ action: "invite", email: "new@chatly.example" })
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ ok: false, error: "forbidden" });
   });
 
   it("maps missing-email errors cleanly", async () => {

@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import type { ConversationThread } from "@/lib/types";
 import { formatDateTime, formatRelativeTime } from "@/lib/utils";
 import { DASHBOARD_TAGS } from "./dashboard-client.utils";
+import { DashboardVisitorNoteEditor } from "./dashboard-visitor-note-editor";
 import { pageLabelFromUrl } from "./dashboard-ui";
 import {
   browserLabel,
@@ -149,6 +150,13 @@ export function DashboardThreadDetailSidebar({
             </button>
           ))}
         </div>
+      </section>
+
+      <div className="my-4 h-px bg-slate-200" />
+
+      <section>
+        <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.05em] text-slate-400">Notes</h3>
+        <DashboardVisitorNoteEditor conversationId={activeConversation.id} />
       </section>
 
       {visitorActivity?.otherQuestionsLastMonth ? (

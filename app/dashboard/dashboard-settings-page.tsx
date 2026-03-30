@@ -17,6 +17,7 @@ import type {
   DashboardSettingsNotifications,
   DashboardSettingsProfile
 } from "@/lib/data";
+import { shouldShowTranscriptBranding } from "@/lib/billing-plans";
 import {
   DashboardTopNotice,
   type DashboardNoticeState
@@ -34,6 +35,7 @@ import { DashboardSettingsScaffold } from "./dashboard-settings-scaffold";
 import { SettingsEmailSection, SettingsBillingSection } from "./dashboard-settings-email-billing-sections";
 import { SettingsNotificationsSection } from "./dashboard-settings-notifications-section";
 import { SettingsProfileSection } from "./dashboard-settings-profile-section";
+import { SettingsReferralsSection } from "./dashboard-settings-referrals-section";
 
 export function DashboardSettingsPage({ initialData }: { initialData: DashboardSettingsData }) {
   const searchParams = useSearchParams();
@@ -107,7 +109,8 @@ export function DashboardSettingsPage({ initialData }: { initialData: DashboardS
       section === "profile" ||
       section === "notifications" ||
       section === "email" ||
-      section === "billing"
+      section === "billing" ||
+      section === "referrals"
     ) {
       setActiveSection(section);
     }
@@ -456,6 +459,11 @@ export function DashboardSettingsPage({ initialData }: { initialData: DashboardS
           title: "Plans & Billing",
           subtitle: "Manage your subscription, usage, and billing history"
         };
+      case "referrals":
+        return {
+          title: "Referrals",
+          subtitle: "Track referral programs, signups, and earned rewards"
+        };
     }
   })();
 
@@ -502,7 +510,7 @@ export function DashboardSettingsPage({ initialData }: { initialData: DashboardS
             profileEmail={draftSettings.profile.email}
             profileName={currentProfileName}
             profileAvatarDataUrl={draftSettings.profile.avatarDataUrl}
-            showTranscriptBrandingPreview={billing.planKey !== "pro"}
+            showTranscriptBrandingPreview={shouldShowTranscriptBranding(billing.planKey)}
             onUpdateEmail={updateEmail}
             onNotice={setNotice}
           />
@@ -522,6 +530,13 @@ export function DashboardSettingsPage({ initialData }: { initialData: DashboardS
             onRequestTrialExtension={() => void handleTrialExtensionRequest()}
             onSetSelectedInterval={setSelectedBillingInterval}
             onSyncBilling={() => void syncBillingFromStripe()}
+          />
+        ) : null}
+        {activeSection === "referrals" ? (
+          <SettingsReferralsSection
+            title={pageTitle.title}
+            subtitle={pageTitle.subtitle}
+            referrals={billing.referrals}
           />
         ) : null}
       </DashboardSettingsScaffold>

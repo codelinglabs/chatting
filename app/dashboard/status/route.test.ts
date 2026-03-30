@@ -39,7 +39,13 @@ import { POST } from "./route";
 describe("dashboard status route", () => {
   beforeEach(() => {
     mocks.requireJsonRouteUser.mockResolvedValue({
-      user: { id: "user_123", email: "hello@chatly.example", createdAt: "2026-03-27T00:00:00.000Z" }
+      user: {
+        id: "user_123",
+        email: "hello@chatly.example",
+        createdAt: "2026-03-27T00:00:00.000Z",
+        workspaceOwnerId: "owner_123",
+        workspaceRole: "admin"
+      }
     });
     mocks.getConversationSummaryById.mockResolvedValue({
       updatedAt: "2026-03-27T12:00:00.000Z"
@@ -89,7 +95,7 @@ describe("dashboard status route", () => {
       userId: "user_123"
     });
     expect(liveEventMocks.publishDashboardLive).toHaveBeenCalledWith(
-      "user_123",
+      "owner_123",
       expect.objectContaining({
         type: "conversation.read",
         conversationId: "conv_1"

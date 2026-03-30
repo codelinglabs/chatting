@@ -27,7 +27,13 @@ import { DELETE, POST } from "./route";
 describe("dashboard team-photo route", () => {
   beforeEach(() => {
     mocks.requireJsonRouteUser.mockResolvedValue({
-      user: { id: "user_123", email: "hello@chatly.example", createdAt: "2026-03-27T00:00:00.000Z" }
+      user: {
+        id: "user_123",
+        email: "hello@chatly.example",
+        createdAt: "2026-03-27T00:00:00.000Z",
+        workspaceOwnerId: "owner_123",
+        workspaceRole: "admin"
+      }
     });
     mocks.getTeamPhotoConstraints.mockReturnValue({
       acceptedContentTypes: ["image/png", "image/jpeg"],

@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     status: updatedStatus,
     updatedAt
   });
-  publishDashboardLive(auth.user.id, {
+  publishDashboardLive(auth.user.workspaceOwnerId, {
     type: "conversation.updated",
     conversationId,
     status: updatedStatus,
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   });
 
   if (updatedStatus === "resolved") {
-    publishDashboardLive(auth.user.id, {
+    publishDashboardLive(auth.user.workspaceOwnerId, {
       type: "conversation.read",
       conversationId,
       updatedAt

@@ -3,6 +3,7 @@ import {
   createDashboardBillingPortalSession,
   getDashboardBillingSummary
 } from "@/lib/data";
+import { isGrowthContactSalesTeamSize } from "@/lib/pricing";
 import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
 
 export async function POST(request: Request) {
@@ -17,9 +18,14 @@ export async function POST(request: Request) {
 
   try {
     const payload = (await request.json()) as Record<string, unknown>;
-    const plan = payload.plan === "growth" || payload.plan === "pro" ? payload.plan : "starter";
+    const plan = payload.plan === "growth" ? "growth" : "starter";
     const interval = payload.interval === "annual" ? "annual" : "monthly";
     const billing = await getDashboardBillingSummary(auth.user.id);
+
+    if (plan === "growth" && isGrowthContactSalesTeamSize(billing.usedSeats)) {
+      return jsonError("contact_sales_required", 409);
+    }
+
     const redirectUrl =
       plan !== "starter" && billing.planKey === "starter"
         ? await createDashboardBillingCheckoutSession(auth.user.id, auth.user.email, {

@@ -11,9 +11,11 @@ import {
 
 export function WidgetBehaviorPanel({
   activeSite,
+  proactiveChatUnlocked,
   onUpdateActiveSite
 }: {
   activeSite: Site;
+  proactiveChatUnlocked: boolean;
   onUpdateActiveSite: (updater: (site: Site) => Site) => void;
 }) {
   return (
@@ -37,16 +39,25 @@ export function WidgetBehaviorPanel({
         onToggle={() => onUpdateActiveSite((site) => ({ ...site, soundNotifications: !site.soundNotifications }))}
       />
 
-      <div>
+      <div className={!proactiveChatUnlocked ? "opacity-70" : ""}>
         <ToggleRow
           label="Auto-open on specific pages"
-          description="Automatically open the widget on certain pages."
-          checked={activeSite.autoOpenPaths.length > 0}
+          description={
+            proactiveChatUnlocked
+              ? "Automatically open the widget on certain pages."
+              : "Proactive chat unlocks on Growth."
+          }
+          checked={proactiveChatUnlocked && activeSite.autoOpenPaths.length > 0}
           onToggle={() =>
-            onUpdateActiveSite((site) => ({ ...site, autoOpenPaths: site.autoOpenPaths.length ? [] : ["/pricing"] }))
+            proactiveChatUnlocked
+              ? onUpdateActiveSite((site) => ({
+                  ...site,
+                  autoOpenPaths: site.autoOpenPaths.length ? [] : ["/pricing"]
+                }))
+              : undefined
           }
         />
-        {activeSite.autoOpenPaths.length ? (
+        {proactiveChatUnlocked && activeSite.autoOpenPaths.length ? (
           <div className="mt-3 border-l-2 border-blue-200 pl-4">
             <input
               value={activeSite.autoOpenPaths.join(", ")}
@@ -64,6 +75,11 @@ export function WidgetBehaviorPanel({
             />
             <p className="mt-1.5 text-xs text-slate-400">Comma-separated list of page paths.</p>
           </div>
+        ) : null}
+        {!proactiveChatUnlocked ? (
+          <p className="mt-3 rounded-lg border border-dashed border-slate-200 bg-white px-3 py-3 text-sm text-slate-500">
+            Upgrade to Growth to proactively open the widget on pricing, demo, or comparison pages.
+          </p>
         ) : null}
       </div>
 

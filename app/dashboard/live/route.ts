@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
       send({ type: "connected" });
 
-      const unsubscribe = subscribeDashboardLive(auth.user.id, (event) => {
+      const unsubscribe = subscribeDashboardLive(auth.user.workspaceOwnerId, (event) => {
         send(event);
       });
 

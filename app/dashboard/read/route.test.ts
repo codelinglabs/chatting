@@ -28,7 +28,13 @@ import { POST } from "./route";
 describe("dashboard read route", () => {
   beforeEach(() => {
     mocks.requireJsonRouteUser.mockResolvedValue({
-      user: { id: "user_123", email: "hello@chatly.example", createdAt: "2026-03-27T00:00:00.000Z" }
+      user: {
+        id: "user_123",
+        email: "hello@chatly.example",
+        createdAt: "2026-03-27T00:00:00.000Z",
+        workspaceOwnerId: "owner_123",
+        workspaceRole: "admin"
+      }
     });
   });
 
@@ -69,7 +75,7 @@ describe("dashboard read route", () => {
     );
 
     expect(liveEventMocks.publishDashboardLive).toHaveBeenCalledWith(
-      "user_123",
+      "owner_123",
       expect.objectContaining({
         type: "conversation.read",
         conversationId: "conv_1"

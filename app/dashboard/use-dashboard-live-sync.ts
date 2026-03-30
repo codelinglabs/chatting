@@ -5,6 +5,9 @@ import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } 
 type LiveEvent = {
   type: string;
   conversationId?: string;
+  siteId?: string;
+  sessionId?: string;
+  pageUrl?: string | null;
   sender?: "user" | "founder";
   actor?: "visitor" | "team";
   typing?: boolean;
@@ -55,6 +58,20 @@ export function useDashboardLiveSync({
         setVisitorTypingConversationId((current) =>
           event.typing ? event.conversationId! : current === event.conversationId ? null : current
         );
+        return;
+      }
+
+      if (event.type === "visitor.presence.updated") {
+        if (!event.conversationId) {
+          return;
+        }
+
+        void refreshConversationList();
+
+        if (activeConversationIdRef.current === event.conversationId) {
+          void refreshConversation(event.conversationId);
+        }
+
         return;
       }
 

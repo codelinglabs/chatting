@@ -30,7 +30,13 @@ import { POST } from "./route";
 describe("dashboard typing route", () => {
   beforeEach(() => {
     mocks.requireJsonRouteUser.mockResolvedValue({
-      user: { id: "user_123", email: "hello@chatly.example", createdAt: "2026-03-27T00:00:00.000Z" }
+      user: {
+        id: "user_123",
+        email: "hello@chatly.example",
+        createdAt: "2026-03-27T00:00:00.000Z",
+        workspaceOwnerId: "owner_123",
+        workspaceRole: "admin"
+      }
     });
   });
 
@@ -81,7 +87,7 @@ describe("dashboard typing route", () => {
       actor: "team",
       typing: true
     });
-    expect(liveEventMocks.publishDashboardLive).toHaveBeenCalledWith("user_123", {
+    expect(liveEventMocks.publishDashboardLive).toHaveBeenCalledWith("owner_123", {
       type: "typing.updated",
       conversationId: "conv_1",
       actor: "team",

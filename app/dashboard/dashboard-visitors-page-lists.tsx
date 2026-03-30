@@ -168,7 +168,7 @@ export function LiveVisitorsSection({
                 onClick={() => onOpenConversation(visitor)}
                 className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-lg bg-blue-600 text-[13px] font-medium text-white transition hover:bg-blue-700"
               >
-                Start conversation
+                {visitor.hasConversation ? "Open conversation" : "View visitor"}
               </button>
             </article>
           ))}
@@ -314,7 +314,7 @@ export function RecentVisitorsSection({
                             onOpenConversation(visitor);
                           }}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
-                          aria-label={`Open conversation with ${visitor.name}`}
+                          aria-label={`${visitor.hasConversation ? "Open conversation with" : "View"} ${visitor.name}`}
                         >
                           <ChatBubbleIcon className="h-4 w-4" />
                         </button>
