@@ -73,7 +73,7 @@ function toInvitePreview(row: TeamInviteAccessRow | null): TeamInvitePreview {
       message: "",
       teamName: "Workspace",
       teamDomain: null,
-      inviterName: "Chatly",
+      inviterName: "Chatting",
       state: "missing"
     };
   }

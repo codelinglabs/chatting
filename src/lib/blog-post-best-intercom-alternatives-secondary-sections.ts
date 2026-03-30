@@ -1,4 +1,4 @@
-import { CHATLY_GROWTH_MONTHLY_PRICE, getChatlyPaidStartingPriceCopy } from "@/lib/chatly-pricing-copy";
+import { CHATTING_GROWTH_MONTHLY_PRICE, CHATTING_PAID_PLANS_COPY } from "@/lib/pricing";
 import { comparison, cta, list, paragraph, section } from "@/lib/blog-block-factories";
 import type { BlogSection } from "@/lib/blog-types";
 
@@ -29,7 +29,7 @@ export const bestIntercomAlternativesSecondarySections: BlogSection[] = [
   ]),
   section("quick-comparison-table", "Quick comparison table", [
     comparison(["Tool", "Starting Price", "Best For", "Free Plan"], [
-      { label: "Chatting", values: [CHATLY_GROWTH_MONTHLY_PRICE.replace("/month", ""), "Simplicity", "✓"] },
+      { label: "Chatting", values: [CHATTING_GROWTH_MONTHLY_PRICE.replace("/month", ""), "Simplicity", "✓"] },
       { label: "Crisp", values: ["$25/mo (4 users)", "Free option", "✓"] },
       { label: "Tidio", values: ["$19/operator", "E-commerce", "✓"] },
       { label: "LiveChat", values: ["$20/agent", "Established teams", "✗"] },
@@ -40,7 +40,7 @@ export const bestIntercomAlternativesSecondarySections: BlogSection[] = [
   ]),
   section("our-recommendation", "Our recommendation", [
     paragraph("If you're a small team (under 20 people) who wants live chat without the complexity:"),
-    paragraph(`Start with Chatting. It's free to try, takes 5 minutes to set up, and starts at ${getChatlyPaidStartingPriceCopy().replace("Free – from ", "")} when you're ready to upgrade. You keep the pricing simple and skip the enterprise bloat.`),
+    paragraph(`Start with Chatting. It's free to try, takes 5 minutes to set up, and ${CHATTING_PAID_PLANS_COPY} when you're ready to upgrade. You keep the pricing simple and skip the enterprise bloat.`),
     cta("Try Chatting free", "", "Try Chatting free", "/login")
   ])
 ];

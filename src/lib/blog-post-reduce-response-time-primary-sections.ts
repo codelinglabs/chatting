@@ -1,4 +1,4 @@
-import { CHATLY_GROWTH_MONTHLY_PRICE } from "@/lib/chatly-pricing-copy";
+import { CHATTING_GROWTH_MONTHLY_PRICE } from "@/lib/pricing";
 import { list, paragraph, quote, section } from "@/lib/blog-block-factories";
 import type { BlogSection } from "@/lib/blog-types";
 
@@ -16,7 +16,7 @@ export const reduceResponseTimePrimarySections = [
   ]),
   section("eight-ways", "8 ways to get under 2 minutes", [
     paragraph("1. Enable browser notifications"), paragraph("You can't respond fast if you don't know someone's waiting. Turn on browser notifications and set sounds that cut through the noise. Average time saved: 3-5 minutes."),
-    paragraph("2. Use saved replies (templates)"), list(["Pricing questions", "Feature availability", "How to get started", "Technical requirements", "Refund policy"]), quote(`"Great question! Our Growth plan is ${CHATLY_GROWTH_MONTHLY_PRICE}. Want me to walk you through the features?"`),
+    paragraph("2. Use saved replies (templates)"), list(["Pricing questions", "Feature availability", "How to get started", "Technical requirements", "Refund policy"]), quote(`"Great question! Our Growth plan is ${CHATTING_GROWTH_MONTHLY_PRICE}. Want me to walk you through the features?"`),
     paragraph("Average time saved: 45-60 seconds per response"),
     paragraph("3. Set up typing indicators"), paragraph("When visitors see \"Sarah is typing...\", they wait. They know help is coming. This buys you 30-60 seconds while you formulate your response."),
     paragraph("4. Triage with quick acknowledgments"), quote("\"Good question — let me check on that for you. One sec!\""), paragraph("This resets the clock. The visitor knows you're working on it. Your \"response time\" stays fast even if the full answer takes longer.")

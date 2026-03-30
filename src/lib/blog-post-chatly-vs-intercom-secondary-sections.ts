@@ -1,4 +1,4 @@
-import { CHATLY_GROWTH_MONTHLY_PRICE } from "@/lib/chatly-pricing-copy";
+import { CHATTING_GROWTH_MONTHLY_PRICE } from "@/lib/pricing";
 import type { BlogSection } from "@/lib/blog-types";
 
 export const chatlyVsIntercomSecondarySections: BlogSection[] = [
@@ -31,7 +31,7 @@ export const chatlyVsIntercomSecondarySections: BlogSection[] = [
           "You want to talk to customers, not automate them away",
           "You need live chat, not a \"customer platform\"",
           "You want to be live in 5 minutes, not 5 weeks",
-          `You'd rather pay ${CHATLY_GROWTH_MONTHLY_PRICE} than $500/month for a platform you barely use`
+          `You'd rather pay ${CHATTING_GROWTH_MONTHLY_PRICE} than $500/month for a platform you barely use`
         ]
       }
     ]

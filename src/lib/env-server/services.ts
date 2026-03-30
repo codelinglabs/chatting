@@ -53,7 +53,7 @@ export function getMailFromAddress(source: ServerEnvSource = process.env) {
 }
 
 export function getAppDisplayName(source: ServerEnvSource = process.env) {
-  return getOptionalServerEnv("APP_NAME", source) || "Chatly";
+  return getOptionalServerEnv("APP_NAME", source) || "Chatting";
 }
 
 export function getReplyDomain(source: ServerEnvSource = process.env) {

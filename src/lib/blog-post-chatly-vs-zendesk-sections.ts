@@ -1,4 +1,4 @@
-import { CHATLY_GROWTH_MONTHLY_PRICE, getChatlyMonthlyDifferencePrice } from "@/lib/chatly-pricing-copy";
+import { CHATTING_GROWTH_MONTHLY_PRICE, getChattingMonthlyDifferencePrice } from "@/lib/pricing";
 import { comparison, cta, list, paragraph, section } from "@/lib/blog-block-factories";
 import type { BlogSection } from "@/lib/blog-types";
 
@@ -10,7 +10,7 @@ export const chatlyVsZendeskSections: BlogSection[] = [
     comparison(["Chatting", "Zendesk"], [
       { label: "Core product", values: ["Live chat", "Help desk + ticketing"] },
       { label: "Starting price", values: ["Free", "$19/agent/mo (limited)"] },
-      { label: "Chat pricing", values: [CHATLY_GROWTH_MONTHLY_PRICE.replace("/month", "/mo"), "$55/agent/mo"] },
+      { label: "Chat pricing", values: [CHATTING_GROWTH_MONTHLY_PRICE.replace("/month", "/mo"), "$55/agent/mo"] },
       { label: "Setup time", values: ["5 minutes", "Hours to days"] },
       { label: "Learning curve", values: ["Minimal", "Steep"] },
       { label: "Ticket system", values: ["✗", "✓"] },
@@ -32,8 +32,8 @@ export const chatlyVsZendeskSections: BlogSection[] = [
     list(["Support Team: $19/agent/month (no live chat)", "Suite Team: $55/agent/month (includes chat)", "Suite Growth: $89/agent/month", "Suite Professional: $115/agent/month"]),
     paragraph("For a 5-person team wanting live chat: $275/month minimum."),
     paragraph("Chatting:"),
-    list([`Growth: ${CHATLY_GROWTH_MONTHLY_PRICE}`]),
-    paragraph(`Same 5-person team. ${getChatlyMonthlyDifferencePrice("growth", 5, 27_500)} difference.`)
+    list([`Growth: ${CHATTING_GROWTH_MONTHLY_PRICE}`]),
+    paragraph(`Same 5-person team. ${getChattingMonthlyDifferencePrice(5, 27_500)} difference.`)
   ]),
   section("when-zendesk-wins", "When Zendesk wins", [
     list(["You process 100+ support tickets daily", "You need SLAs, escalations, and complex routing", "Multiple teams handle different request types", "You need help desk + chat + phone in one system", "You have a dedicated support ops person to configure it"]),

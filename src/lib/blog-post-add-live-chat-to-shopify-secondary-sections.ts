@@ -28,7 +28,7 @@ export const addLiveChatToShopifySecondarySections = [
       items: [
         { question: "Will this slow down my store?", answer: "No. The Chatting widget loads asynchronously (that `async` in the code) so it doesn't block your page. Impact on load time is <0.1 seconds." },
         { question: "Does it work on mobile?", answer: "Yes. The widget is fully responsive and works on all devices." },
-        { question: "Can I customize the widget colors more?", answer: "Yes. Chatting lets you customize colors, welcome message, team name, avatar style, and position. Pro plan users can remove the Chatting branding entirely." },
+        { question: "Can I customize the widget colors more?", answer: "Yes. Chatting lets you customize colors, welcome message, team name, avatar style, and position. Growth removes the Chatting branding entirely." },
         { question: "What if I use a page builder like PageFly?", answer: "Same process — add the code to theme.liquid. The widget will appear on all pages, including PageFly pages." },
         { question: "Can I have different messages on different pages?", answer: "Yes, with display rules and triggered messages. Set up page-specific welcome messages in Settings → Automation." }
       ]

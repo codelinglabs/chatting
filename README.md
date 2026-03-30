@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Renamed the remaining product-facing Chatly references across docs, service labels, invite copy, and pricing-driven blog content to Chatting.
 - Upgraded dashboard email templates with conversation-specific previews, transcript branding controls, and richer test-email rendering.
 - Aligned billing settings and landing pricing around shared Starter and Growth pricing helpers plus the shared app button styling.
 - Added backend Growth trial lifecycle handling for owner billing defaults, local trial extensions, and automatic downgrades for expired unpaid trials.
@@ -82,6 +83,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Contributor Docs
 
 - Repo agent guidance, product context, and design-system reference docs live alongside the codebase.
+- Product docs, service labels, and pricing-driven blog copy now use the Chatting brand consistently.
 - The social content generator now enforces lowercase output, `https://usechatting.com`, and Chatting-first branding.
 - The app now includes an internal Chatting distribution playbook markdown file for channel planning and launch messaging.
 

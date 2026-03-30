@@ -1,4 +1,4 @@
-import { CHATLY_GROWTH_MONTHLY_PRICE } from "@/lib/chatly-pricing-copy";
+import { CHATTING_GROWTH_MONTHLY_PRICE } from "@/lib/pricing";
 import { cta, list, paragraph, quote, section } from "@/lib/blog-block-factories";
 import type { BlogSection } from "@/lib/blog-types";
 
@@ -49,7 +49,7 @@ export const reduceResponseTimeSecondarySections = [
   section("what-fast-looks-like", "What \"fast\" looks like in practice", [
     paragraph("Scenario: Visitor on pricing page"),
     paragraph("Bad response (4 minutes later):"), quote("\"Hi there! Thank you for contacting us. How may I assist you today?\""),
-    paragraph("Good response (45 seconds later):"), quote(`"Hey! I see you're checking out our pricing — any questions I can answer? Growth is ${CHATLY_GROWTH_MONTHLY_PRICE}."`),
+    paragraph("Good response (45 seconds later):"), quote(`"Hey! I see you're checking out our pricing — any questions I can answer? Growth is ${CHATTING_GROWTH_MONTHLY_PRICE}."`),
     paragraph("Same outcome. Completely different experience.")
   ]),
   section("bottom-line", "The bottom line", [

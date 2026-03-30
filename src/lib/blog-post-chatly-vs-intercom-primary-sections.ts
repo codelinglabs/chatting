@@ -1,4 +1,10 @@
-import { CHATLY_GROWTH_MONTHLY_PRICE, CHATLY_PRO_MONTHLY_PRICE, CHATLY_STARTER_PRICE_LABEL } from "@/lib/chatly-pricing-copy";
+import {
+  CHATTING_GROWTH_MONTHLY_PRICE,
+  CHATTING_GROWTH_PLAN_LINE,
+  CHATTING_PAID_PLANS_COPY,
+  CHATTING_STARTER_PLAN_LINE,
+  CHATTING_STARTER_PRICE_LABEL
+} from "@/lib/pricing";
 import type { BlogSection } from "@/lib/blog-types";
 
 export const chatlyVsIntercomPrimarySections: BlogSection[] = [
@@ -24,7 +30,7 @@ export const chatlyVsIntercomPrimarySections: BlogSection[] = [
         columns: ["Chatting", "Intercom"],
         highlightedColumn: 0,
         rows: [
-          { label: "Starting price", values: [`${CHATLY_STARTER_PRICE_LABEL} (then ${CHATLY_GROWTH_MONTHLY_PRICE.replace("/month", "/mo")})`, "$74/mo (Essential)"] },
+          { label: "Starting price", values: [`${CHATTING_STARTER_PRICE_LABEL} (then ${CHATTING_GROWTH_MONTHLY_PRICE.replace("/month", "/mo")})`, "$74/mo (Essential)"] },
           { label: "Setup time", values: ["5 minutes", "30+ minutes"] },
           { label: "Unlimited chats", values: ["✓ (Growth plan)", "✓"] },
           { label: "Visitor tracking", values: ["✓", "✓"] },
@@ -34,7 +40,7 @@ export const chatlyVsIntercomPrimarySections: BlogSection[] = [
           { label: "Product tours", values: ["✗", "✓"] },
           { label: "Help desk/ticketing", values: ["✗", "✓"] },
           { label: "AI chatbots", values: ["✗", "✓ (add-on)"] },
-          { label: "Remove branding", values: ["Pro plan", "All plans"] }
+          { label: "Remove branding", values: ["Growth plan", "All plans"] }
         ]
       }
     ]
@@ -57,14 +63,13 @@ export const chatlyVsIntercomPrimarySections: BlogSection[] = [
       {
         type: "list",
         items: [
-          "Starter: 50 conversations/month",
-          `Growth: ${CHATLY_GROWTH_MONTHLY_PRICE}`,
-          `Pro: ${CHATLY_PRO_MONTHLY_PRICE}`
+          CHATTING_STARTER_PLAN_LINE,
+          CHATTING_GROWTH_PLAN_LINE
         ]
       },
       {
         type: "paragraph",
-        text: "That's it. Clear per-seat pricing, no surprise usage fees, and no sales-call pricing games."
+        text: `That's it. ${CHATTING_PAID_PLANS_COPY}. No surprise usage fees, and no sales-call pricing games.`
       },
       {
         type: "quote",

@@ -1,9 +1,8 @@
 import {
-  CHATLY_GROWTH_PLAN_LINE,
-  CHATLY_PRO_PLAN_LINE,
-  CHATLY_STARTER_PLAN_LINE,
-  getChatlyPaidStartingPriceCopy
-} from "@/lib/chatly-pricing-copy";
+  CHATTING_GROWTH_PLAN_LINE,
+  CHATTING_STARTER_PLAN_LINE,
+  getChattingPaidStartingPriceCopy
+} from "@/lib/pricing";
 import { comparison, cta, list, paragraph, section } from "@/lib/blog-block-factories";
 import type { BlogSection } from "@/lib/blog-types";
 
@@ -14,7 +13,7 @@ export const bestIntercomAlternativesPrimarySections: BlogSection[] = [
     paragraph("If that sounds familiar, here are your options.")
   ]),
   section("chatting-best-for-simplicity", "1. Chatting — Best for simplicity", [
-    paragraph(`Price: ${getChatlyPaidStartingPriceCopy()}`),
+    paragraph(`Price: ${getChattingPaidStartingPriceCopy()}`),
     paragraph("Best for: Small teams who want live chat without the bloat"),
     paragraph("Chatting does one thing well: live chat for small teams. No email marketing. No product tours. No AI bots. Just real-time conversations with your website visitors."),
     paragraph("Pros:"),
@@ -22,7 +21,7 @@ export const bestIntercomAlternativesPrimarySections: BlogSection[] = [
     paragraph("Cons:"),
     list(["No email marketing features", "No chatbot automation", "Limited integrations (compared to Intercom)"]),
     paragraph("Pricing:"),
-    list([CHATLY_STARTER_PLAN_LINE, CHATLY_GROWTH_PLAN_LINE, CHATLY_PRO_PLAN_LINE]),
+    list([CHATTING_STARTER_PLAN_LINE, CHATTING_GROWTH_PLAN_LINE]),
     cta("Try Chatting free", "", "Try Chatting free", "/login")
   ]),
   section("crisp-best-free-option", "2. Crisp — Best free option", [

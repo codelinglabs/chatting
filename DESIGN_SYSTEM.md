@@ -1,11 +1,11 @@
-# Chatly UI/UX Design System
+# Chatting UI/UX Design System
 
 ## Design Philosophy
 
 ### Core Principles
 
 1. Conversational, not corporate
-Chatly should feel like talking to a person, not filing a support ticket.
+Chatting should feel like talking to a person, not filing a support ticket.
 
 2. Clarity over cleverness
 Small teams should be able to understand the product instantly.
@@ -21,9 +21,9 @@ Visitor context should support the conversation, never overpower it.
 ### Color Palette
 
 Primary
-- Chatly Blue: `#2563EB`
-- Chatly Blue Dark: `#1D4ED8`
-- Chatly Blue Light: `#DBEAFE`
+- Chatting Blue: `#2563EB`
+- Chatting Blue Dark: `#1D4ED8`
+- Chatting Blue Light: `#DBEAFE`
 
 Neutral
 - Slate 900: `#0F172A`
@@ -100,7 +100,7 @@ Base unit: `4px`
 Collapsed launcher
 - Circular floating button
 - Bottom-right by default with `24px` margin
-- Chatly Blue background
+- Chatting Blue background
 - Hover scale treatment
 
 Expanded chat
