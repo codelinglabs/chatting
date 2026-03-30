@@ -1,6 +1,7 @@
 "use client";
 
 import type { DashboardBillingSummary } from "@/lib/data";
+import { FormButton } from "../ui/form-controls";
 import { billingHasPaymentIssue } from "./dashboard-billing-utils";
 import { WarningIcon } from "./dashboard-ui";
 
@@ -41,18 +42,21 @@ export function DashboardSettingsBillingBanners({
               </p>
             </div>
           </div>
-          <button
+          <FormButton
             type="button"
             onClick={onOpenUpdatePayment}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-red-600 px-4 text-sm font-medium text-white transition hover:bg-red-700"
+            className="bg-red-600 hover:bg-red-700"
           >
             Update now
-          </button>
+          </FormButton>
         </div>
       ) : null}
 
       {billing.subscriptionStatus === "trialing" && billing.trialEndsAt ? (
-        <div className="flex flex-col gap-4 rounded-xl bg-[linear-gradient(135deg,#F59E0B_0%,#F97316_100%)] px-6 py-5 text-white sm:flex-row sm:items-center sm:justify-between">
+        <div
+          className="flex flex-col gap-4 rounded-xl px-6 py-5 text-white sm:flex-row sm:items-center sm:justify-between"
+          style={{ backgroundColor: "#f59e0b", backgroundImage: "none" }}
+        >
           <div className="flex items-start gap-3">
             <WarningIcon className="mt-0.5 h-6 w-6 shrink-0" />
             <div>
@@ -62,22 +66,23 @@ export function DashboardSettingsBillingBanners({
               <p className="mt-1 text-sm text-white/85">
                 {billing.trialExtensionEligible
                   ? `Your workspace is active, so you can extend the trial by 7 days before it ends on ${billing.trialEndsAt}.`
-                  : `Add billing in Stripe before ${billing.trialEndsAt} to keep the current workspace running without interruption.`}
+                  : `Add billing in Stripe by ${billing.trialEndsAt} to avoid interruption.`}
               </p>
             </div>
           </div>
-          <button
+          <FormButton
             type="button"
             onClick={billing.trialExtensionEligible ? onExtendTrial : onOpenBillingPortal}
             disabled={trialExtensionPending}
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-white px-5 text-sm font-medium text-amber-600 transition hover:bg-amber-50 disabled:opacity-60"
+            variant="secondary"
+            className="border-white bg-white text-amber-600 hover:border-amber-100 hover:bg-amber-50 hover:text-amber-600 disabled:opacity-60"
           >
             {billing.trialExtensionEligible
               ? trialExtensionPending
                 ? "Extending..."
                 : "Extend trial"
               : "Open billing"}
-          </button>
+          </FormButton>
         </div>
       ) : null}
     </>

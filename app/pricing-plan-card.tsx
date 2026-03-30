@@ -11,6 +11,7 @@ import { CheckIcon } from "./dashboard/dashboard-ui";
 export function PricingPlanCard({
   planKey,
   interval,
+  displayPriceOverride,
   featuredLabel,
   summaryLabel,
   priceNote,
@@ -19,6 +20,7 @@ export function PricingPlanCard({
 }: {
   planKey: BillingPlanKey;
   interval: BillingInterval;
+  displayPriceOverride?: ReturnType<typeof getBillingDisplayPrice> | null;
   featuredLabel?: string | null;
   summaryLabel?: string | null;
   priceNote?: string | null;
@@ -26,8 +28,9 @@ export function PricingPlanCard({
   action: ReactNode;
 }) {
   const plan = getBillingPlanDefinition(planKey);
-  const displayPrice = getBillingDisplayPrice(planKey, interval);
+  const displayPrice = displayPriceOverride ?? getBillingDisplayPrice(planKey, interval);
   const resolvedPriceNote = priceNote ?? displayPrice.note;
+  const hasSubtitle = Boolean(plan.subtitle);
 
   return (
     <article
@@ -44,8 +47,8 @@ export function PricingPlanCard({
         </div>
       ) : null}
       <h3 className="text-[2rem] font-semibold tracking-tight text-slate-900">{plan.name}</h3>
-      <p className="mt-4 text-[15px] leading-7 text-slate-500">{plan.subtitle}</p>
-      <div className="mt-12 flex flex-wrap items-end gap-x-3 gap-y-2">
+      {plan.subtitle ? <p className="mt-4 text-[15px] leading-7 text-slate-500">{plan.subtitle}</p> : null}
+      <div className={classNames("flex flex-wrap items-end gap-x-3 gap-y-2", hasSubtitle ? "mt-10" : "mt-6")}>
         <span className="display-font text-5xl leading-none text-slate-900 lg:text-6xl">
           {displayPrice.amount}
         </span>

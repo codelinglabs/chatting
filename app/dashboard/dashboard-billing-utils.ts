@@ -49,13 +49,13 @@ export function billingLostFeatures(billing: DashboardBillingSummary) {
   const features = [];
 
   if (billing.features.proactiveChat) {
-    features.push("Proactive chat on high-intent pages");
+    features.push("Proactive chat on high-intent pages", "Visitor tracking");
   }
   if (billing.features.removeBranding) {
     features.push("White-label widget and transcript branding removal");
   }
-  if (billing.planKey === "pro") {
-    features.push("Advanced reporting, API access, and priority onboarding");
+  if (billing.planKey === "growth") {
+    features.push("Advanced analytics", "API access");
   }
 
   return features.length ? features : ["Paid-seat access and unlimited conversations"];

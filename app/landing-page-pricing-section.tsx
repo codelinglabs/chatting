@@ -1,13 +1,19 @@
 "use client";
 
 import { useId, useState } from "react";
-import { LANDING_PRICING_YEARLY_SAVINGS_LABEL, type LandingBillingInterval } from "@/lib/landing-pricing";
+import {
+  LANDING_DEFAULT_TEAM_SIZE,
+  clampLandingTeamSize,
+  type LandingBillingInterval
+} from "@/lib/landing-pricing";
 import { CheckIcon } from "./dashboard/dashboard-ui";
-import { LandingFreePricingCard, LandingProPricingCard, LandingStarterPricingCard } from "./landing-page-pricing-cards";
+import { DashboardSettingsBillingTeamSizeSlider } from "./dashboard/dashboard-settings-billing-team-size-slider";
+import { LandingGrowthPricingCard, LandingStarterPricingCard } from "./landing-page-pricing-cards";
 
 export function LandingPricingSection() {
   const headingId = useId();
   const [interval, setInterval] = useState<LandingBillingInterval>("monthly");
+  const [memberCount, setMemberCount] = useState(LANDING_DEFAULT_TEAM_SIZE);
 
   return (
     <section id="pricing" className="bg-slate-50">
@@ -19,41 +25,22 @@ export function LandingPricingSection() {
           <h2 id={headingId} className="display-font mt-4 text-4xl leading-tight text-slate-900 sm:text-5xl">
             Simple, transparent pricing
           </h2>
-          <p className="mt-4 text-lg leading-8 text-slate-500">Choose the plan that&apos;s right for you</p>
+          <p className="mt-4 text-lg leading-8 text-slate-500">Preview pricing the same way it works in billing.</p>
         </div>
 
-        <div className="mt-10 flex justify-center">
-          <div role="radiogroup" aria-label="Billing frequency" className="inline-flex rounded-[12px] bg-slate-100 p-1">
-            {(["monthly", "yearly"] as LandingBillingInterval[]).map((value) => {
-              const active = interval === value;
+        <div role="group" aria-labelledby={headingId} className="mx-auto mt-12 max-w-[980px] space-y-6">
+          <DashboardSettingsBillingTeamSizeSlider
+            memberCount={memberCount}
+            interval={interval}
+            subtitle={null}
+            onMemberCountChange={(value) => setMemberCount(clampLandingTeamSize(value))}
+            onIntervalChange={setInterval}
+          />
 
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => setInterval(value)}
-                  className={`rounded-[10px] px-5 py-3 text-[15px] font-medium transition focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
-                    active ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
-                  }`}
-                >
-                  <span>{value === "yearly" ? "Yearly" : "Monthly"}</span>
-                  {value === "yearly" ? (
-                    <span className="ml-2 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                      {LANDING_PRICING_YEARLY_SAVINGS_LABEL}
-                    </span>
-                  ) : null}
-                </button>
-              );
-            })}
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)]">
+            <LandingStarterPricingCard interval={interval} />
+            <LandingGrowthPricingCard interval={interval} />
           </div>
-        </div>
-
-        <div role="group" aria-labelledby={headingId} className="mx-auto mt-12 grid max-w-[1120px] gap-6 lg:grid-cols-3">
-          <LandingFreePricingCard />
-          <LandingStarterPricingCard interval={interval} />
-          <LandingProPricingCard interval={interval} />
         </div>
 
         <div className="mt-8 flex items-center justify-center gap-2 text-sm text-slate-500">

@@ -11,7 +11,6 @@ import {
   DashboardSettingsBillingUpdatePaymentModal
 } from "./dashboard-settings-billing-modals";
 import { DashboardSettingsBillingPlanGrid } from "./dashboard-settings-billing-plan-grid";
-import { DashboardSettingsBillingReferralsCard } from "./dashboard-settings-billing-referrals-card";
 import { DashboardSettingsBillingUsageOverviewCard } from "./dashboard-settings-billing-usage-overview-card";
 import { SettingsSectionHeader } from "./dashboard-settings-shared";
 
@@ -55,7 +54,7 @@ export function SettingsBillingSection({
         }
       : {
           label: "Manage",
-          pending: billingPortalPending,
+          pending: false,
           onClick: onOpenBillingPortal
         };
 
@@ -118,8 +117,6 @@ export function SettingsBillingSection({
       />
 
       <DashboardSettingsBillingHistoryCard invoices={billing.invoices} />
-
-      <DashboardSettingsBillingReferralsCard referrals={billing.referrals} />
 
       <DashboardSettingsBillingPlanModal
         billing={billing}

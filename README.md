@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Aligned billing settings and landing pricing around shared Starter and Growth pricing helpers plus the shared app button styling.
 - Added backend Growth trial lifecycle handling for owner billing defaults, local trial extensions, and automatic downgrades for expired unpaid trials.
 - Added a dedicated referrals page in billing settings with shareable signup links, copied codes, and tracked signup and reward states.
 - Added tiered landing-page pricing cards with Free, Starter, and Pro plans plus a Pro team-size slider.
@@ -42,7 +43,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Public Site & Auth
 
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
-- Landing pricing now highlights Free, Starter, and Pro options with usage-based Pro pricing directly on the marketing page.
+- Landing pricing now mirrors the dashboard billing format with Starter and Growth plans driven by shared pricing helpers.
 - Dedicated login and signup screens with shared form controls, referral-code signup support, and direct onboarding handoff.
 
 ### Onboarding
@@ -69,6 +70,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Owner workspaces now default to a backend-seeded Growth trial, support local trial extensions, and automatically downgrade expired unpaid trials to Starter.
 - Scheduled lifecycle nudges now deliver activation, health, and upgrade reminders from the node runtime instead of widget pageviews.
 - Seat-based `Growth` and `Pro` billing with monthly/annual pricing, plan-aware widget gating, and trial-extension support for active workspaces.
+- Billing settings now share the same Starter and Growth pricing presentation as the landing page, backed by shared pricing primitives and button styles.
 - Referral programs with per-workspace codes and paid-conversion reward tracking in billing settings.
 - Billing settings now include a dedicated referrals page with program cards, direct signup links, and referred-signup status tracking.
 - Affiliate commission ledger visibility tied to paid billing activity.

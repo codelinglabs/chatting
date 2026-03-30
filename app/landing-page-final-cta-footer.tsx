@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ButtonLink } from "./components/ui/Button";
 
 const footerGroups = [
   {
@@ -52,13 +53,14 @@ export function LandingFinalCtaFooter() {
               They have a question. Are you going to answer it?
             </p>
             <div className="mt-12 flex flex-col items-center gap-8">
-              <Link
+              <ButtonLink
                 href="/login"
-                className="inline-flex items-center gap-3 rounded-2xl bg-white px-9 py-5 text-center text-lg font-semibold text-blue-700 transition hover:bg-blue-50"
+                variant="secondary"
+                className="border-white bg-white px-9 text-blue-700 hover:border-blue-100 hover:bg-blue-50 hover:text-blue-700"
+                trailingIcon={<span aria-hidden="true">→</span>}
               >
                 Start chatting free
-                <span aria-hidden="true">→</span>
-              </Link>
+              </ButtonLink>
               <p className="text-lg text-blue-100/85">Set up Chatting in 5 minutes. No credit card required.</p>
             </div>
           </div>

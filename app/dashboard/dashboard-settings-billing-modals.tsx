@@ -1,16 +1,16 @@
 "use client";
 
 import {
-  getBillingDisplayPrice,
   getBillingPlanDefinition,
-  getBillingSeatPriceCents,
+  getBillingPreviewDisplayPrice,
+  getBillingTotalCents,
   type BillingInterval,
   type BillingPlanKey
 } from "@/lib/billing-plans";
 import type { DashboardBillingSummary } from "@/lib/data";
+import { FormButton } from "../ui/form-controls";
 import { DashboardModal } from "./dashboard-modal";
 import { billingLostFeatures } from "./dashboard-billing-utils";
-import { DASHBOARD_PRIMARY_BUTTON_CLASS, DASHBOARD_SECONDARY_BUTTON_CLASS } from "./dashboard-controls";
 import { formatMoney } from "./dashboard-settings-shared";
 import { CalendarIcon, CheckIcon, WarningIcon, XIcon } from "./dashboard-ui";
 
@@ -28,9 +28,9 @@ export function DashboardSettingsBillingPlanModal({
   }
 
   const plan = getBillingPlanDefinition(intent.planKey);
-  const displayPrice = getBillingDisplayPrice(intent.planKey, intent.billingInterval);
-  const subtotal = billing.usedSeats * (getBillingSeatPriceCents(intent.planKey, intent.billingInterval) ?? 0);
-
+  const seatCount = billing.billedSeats ?? billing.usedSeats;
+  const displayPrice = getBillingPreviewDisplayPrice(intent.planKey, intent.billingInterval, seatCount);
+  const subtotal = getBillingTotalCents(intent.planKey, intent.billingInterval, seatCount);
   if (intent.mode === "downgrade") {
     return (
       <DashboardModal title="Cancel paid plan" description="Changes are confirmed in Stripe so invoices and proration stay in sync." onClose={onClose}>
@@ -59,10 +59,12 @@ export function DashboardSettingsBillingPlanModal({
             </div>
           ) : null}
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-5">
-            <button type="button" onClick={onClose} className={DASHBOARD_SECONDARY_BUTTON_CLASS}>Keep plan</button>
-            <button type="button" onClick={onConfirm} className="inline-flex h-10 items-center justify-center rounded-lg bg-red-600 px-5 text-sm font-medium text-white transition hover:bg-red-700" disabled={pending}>
+            <FormButton type="button" onClick={onClose} variant="secondary" size="md">
+              Keep plan
+            </FormButton>
+            <FormButton type="button" onClick={onConfirm} size="md" className="bg-red-600 hover:bg-red-700" disabled={pending}>
               {pending ? "Opening..." : "Open Stripe to cancel"}
-            </button>
+            </FormButton>
           </div>
         </div>
       </DashboardModal>
@@ -70,13 +72,13 @@ export function DashboardSettingsBillingPlanModal({
   }
 
   return (
-    <DashboardModal title={intent.mode === "upgrade" ? `Upgrade to ${plan.name}` : `Change to ${plan.name}`} description="Review the seat count and billing summary before continuing." onClose={onClose}>
+    <DashboardModal title={intent.mode === "upgrade" ? `Upgrade to ${plan.name}` : `Change to ${plan.name}`} description="Review the member count and billing summary before continuing." onClose={onClose}>
       <div className="space-y-5 px-6 py-6">
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-4">
           <p className="text-lg font-semibold text-slate-900">{plan.name}</p>
           <p className="mt-1 text-sm text-slate-600">
             {displayPrice.amount}
-            {displayPrice.cadence} · {billing.usedSeats} seat{billing.usedSeats === 1 ? "" : "s"}
+            {displayPrice.cadence || ""} · {seatCount} member{seatCount === 1 ? "" : "s"}
           </p>
           <div className="mt-4 space-y-2">
             {plan.marketingFeatures.slice(0, 4).map((feature) => (
@@ -94,11 +96,7 @@ export function DashboardSettingsBillingPlanModal({
               <p className="text-sm font-semibold text-amber-800">
                 {intent.mode === "upgrade" ? "Trial starts now" : "Stripe will calculate proration"}
               </p>
-              <p className="mt-1 text-sm text-amber-700">
-                {intent.mode === "upgrade"
-                  ? `Your ${plan.trialDays}-day trial starts immediately.`
-                  : "Any credits for unused time, immediate charges, and the next invoice total will be confirmed in Stripe before you approve the change."}
-              </p>
+              <p className="mt-1 text-sm text-amber-700">{intent.mode === "upgrade" ? `Your ${plan.trialDays}-day trial starts immediately.` : "Any credits for unused time, immediate charges, and the next invoice total will be confirmed in Stripe before you approve the change."}</p>
             </div>
           </div>
         </div>
@@ -107,57 +105,64 @@ export function DashboardSettingsBillingPlanModal({
             <span>{plan.name} price</span>
             <span>
               {displayPrice.amount}
-              {displayPrice.cadence}
+              {displayPrice.cadence || ""}
             </span>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
-            <span>Seat count</span>
-            <span>{billing.usedSeats}</span>
+            <span>Member count</span>
+            <span>{seatCount}</span>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
             <span>Billing cadence</span>
             <span className="capitalize">{intent.billingInterval}</span>
           </div>
-          <div className="mt-3 border-t border-slate-200 pt-3">
-            <div className="flex items-center justify-between text-sm text-slate-600">
-              <span>Seat subtotal</span>
-              <span>{formatMoney(subtotal, "USD")}</span>
+          {subtotal === null ? (
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800">
+              Teams with 50 or more members need a custom quote before billing can continue.
             </div>
-            <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
-              <span>{intent.mode === "upgrade" ? "Trial credit" : "Proration"}</span>
-              <span>{intent.mode === "upgrade" ? formatMoney(subtotal, "USD") : "Calculated in Stripe"}</span>
+          ) : (
+            <div className="mt-3 border-t border-slate-200 pt-3">
+              <div className="flex items-center justify-between text-sm text-slate-600">
+                <span>Plan subtotal</span>
+                <span>{formatMoney(subtotal, "USD")}</span>
+              </div>
+              <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
+                <span>{intent.mode === "upgrade" ? "Trial credit" : "Proration"}</span>
+                <span>{intent.mode === "upgrade" ? formatMoney(subtotal, "USD") : "Calculated in Stripe"}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm font-medium text-slate-900">
+                <span>Due today</span>
+                <span>
+                  {intent.mode === "upgrade" ? "$0.00" : "Calculated in Stripe"}
+                </span>
+              </div>
+              {intent.mode === "switch" ? (
+                <p className="mt-2 text-sm text-slate-500">
+                  Stripe will calculate any credits, charges, and renewal timing before you confirm the plan change.
+                </p>
+              ) : null}
             </div>
-            <div className="flex items-center justify-between text-sm font-medium text-slate-900">
-              <span>Due today</span>
-              <span>
-                {intent.mode === "upgrade" ? "$0.00" : "Calculated in Stripe"}
-              </span>
-            </div>
-            {intent.mode === "switch" ? (
-              <p className="mt-2 text-sm text-slate-500">
-                Stripe will calculate any credits, charges, and renewal timing before you confirm the plan change.
-              </p>
-            ) : null}
-          </div>
+          )}
         </div>
         <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-5">
-          <button type="button" onClick={onClose} className={DASHBOARD_SECONDARY_BUTTON_CLASS}>Cancel</button>
-          <button type="button" onClick={onConfirm} className={DASHBOARD_PRIMARY_BUTTON_CLASS} disabled={pending}>
-            {pending ? "Processing..." : billing.planKey === "starter" ? `Confirm ${plan.name}` : "Continue in Stripe"}
-          </button>
+          <FormButton type="button" onClick={onClose} variant="secondary" size="md">
+            Cancel
+          </FormButton>
+          <FormButton type="button" onClick={onConfirm} size="md" disabled={pending || subtotal === null}>
+            {pending
+              ? "Processing..."
+              : subtotal === null
+                ? "Custom quote required"
+                : billing.planKey === "starter"
+                  ? `Confirm ${plan.name}`
+                  : "Continue in Stripe"}
+          </FormButton>
         </div>
       </div>
     </DashboardModal>
   );
 }
-
-export function DashboardSettingsBillingUpdatePaymentModal({
-  billing,
-  open,
-  pending,
-  onClose,
-  onConfirm
-}: { billing: DashboardBillingSummary; open: boolean; pending: boolean; onClose: () => void; onConfirm: () => void }) {
+export function DashboardSettingsBillingUpdatePaymentModal({ billing, open, pending, onClose, onConfirm }: { billing: DashboardBillingSummary; open: boolean; pending: boolean; onClose: () => void; onConfirm: () => void }) {
   if (!open) {
     return null;
   }
@@ -179,10 +184,12 @@ export function DashboardSettingsBillingUpdatePaymentModal({
           )}
         </div>
         <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-5">
-          <button type="button" onClick={onClose} className={DASHBOARD_SECONDARY_BUTTON_CLASS}>Cancel</button>
-          <button type="button" onClick={onConfirm} className={DASHBOARD_PRIMARY_BUTTON_CLASS} disabled={pending}>
+          <FormButton type="button" onClick={onClose} variant="secondary" size="md">
+            Cancel
+          </FormButton>
+          <FormButton type="button" onClick={onConfirm} size="md" disabled={pending}>
             {pending ? "Opening..." : "Open Stripe"}
-          </button>
+          </FormButton>
         </div>
       </div>
     </DashboardModal>

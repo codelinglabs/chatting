@@ -1,8 +1,8 @@
-import Link from "next/link";
+import { Button } from "./components/ui/Button";
 import { CheckIcon } from "./dashboard/dashboard-ui";
-import { codeSnippet, setupSteps, stats, testimonials } from "./landing-page-data";
+import { LandingConversionSections } from "./landing-page-conversion-sections";
 import { LandingFinalCtaFooter } from "./landing-page-final-cta-footer";
-import { LandingPricingSection } from "./landing-page-pricing-section";
+import { LandingProofSections } from "./landing-page-proof-sections";
 import { SectionLabel } from "./landing-page-primitives";
 
 export function LandingBottomSections() {
@@ -139,9 +139,9 @@ export function LandingBottomSections() {
                     <h3 className="mt-4 text-lg font-semibold text-slate-900">{name}</h3>
                     <p className="mt-3 text-sm text-slate-600">📍 {location}</p>
                     <p className="mt-2 text-sm font-medium text-blue-600">📄 {page}</p>
-                    <button className="mt-5 w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700">
+                    <Button type="button" size="md" fullWidth className="mt-5">
                       Start chat
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -165,87 +165,8 @@ export function LandingBottomSections() {
         </div>
       </section>
 
-      <section className="bg-blue-600">
-        <div className="mx-auto w-full max-w-[1240px] px-4 py-10 sm:px-6 lg:px-8">
-          <div className="grid gap-8 px-2 text-white sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map((item) => (
-              <div key={item.label}>
-                <div className="text-4xl font-semibold tracking-tight">{item.value}</div>
-                <p className="mt-2 text-sm text-blue-100">{item.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#FFFBF5]">
-        <div className="mx-auto w-full max-w-[1240px] px-4 py-24 sm:px-6 lg:px-8">
-          <section id="testimonials" className="px-2">
-            <div className="max-w-4xl">
-              <SectionLabel>Testimonials</SectionLabel>
-              <h2 className="display-font mt-5 text-4xl text-slate-900 sm:text-5xl lg:whitespace-nowrap">
-                Teams who switched never looked back
-              </h2>
-            </div>
-
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              {testimonials.map((testimonial) => (
-                <article
-                  key={testimonial.name}
-                  className="hover-lift rounded-[28px] border border-slate-200/80 bg-white/90 p-7"
-                >
-                  <p className="text-base leading-8 text-slate-700">&ldquo;{testimonial.quote}&rdquo;</p>
-                  <div className="mt-8 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
-                      {testimonial.initials}
-                    </div>
-                    <p className="font-semibold text-slate-900">{testimonial.name}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
-      </section>
-
-      <section className="bg-white">
-        <div className="mx-auto w-full max-w-[1240px] px-4 py-24 sm:px-6 lg:px-8">
-          <section id="how-it-works" className="grid gap-14 px-2 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
-            <div>
-              <SectionLabel>Getting Started</SectionLabel>
-              <h2 className="display-font mt-5 text-4xl text-slate-900 sm:text-5xl">Live in 5 minutes. Seriously.</h2>
-
-              <div className="mt-10 space-y-8">
-                {setupSteps.map((step) => (
-                  <div key={step.number} className="flex gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                      {step.number}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-slate-900">{step.title}</h3>
-                      <p className="mt-2 text-sm leading-7 text-slate-600">{step.body}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div id="docs" className="overflow-hidden rounded-[28px] bg-slate-950 p-6 text-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-200">Install snippet</p>
-              <pre className="mt-5 overflow-x-auto rounded-[22px] bg-slate-900 p-5 text-xs leading-7 text-slate-100">
-                <code>{codeSnippet()}</code>
-              </pre>
-              <p className="mt-5 text-sm leading-7 text-slate-300">
-                Add our tiny script to your site. That&apos;s it. Works with any website, WordPress, Webflow,
-                Shopify, custom code.
-              </p>
-            </div>
-          </section>
-        </div>
-      </section>
-
-      <LandingPricingSection />
-
+      <LandingProofSections />
+      <LandingConversionSections />
       <LandingFinalCtaFooter />
     </>
   );

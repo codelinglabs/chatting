@@ -1,7 +1,9 @@
 "use client";
 
-import { getBillingDisplayPrice } from "@/lib/billing-plans";
+import { getBillingPreviewDisplayPrice } from "@/lib/billing-plans";
+import { CHATTING_GROWTH_BASE_TEAM_LIMIT } from "@/lib/pricing";
 import type { DashboardBillingSummary } from "@/lib/data";
+import { FormButton } from "../ui/form-controls";
 import { ChevronRightIcon } from "./dashboard-ui";
 
 function usageMeter({
@@ -12,7 +14,7 @@ function usageMeter({
 }: {
   label: string;
   value: string;
-  helper: string;
+  helper?: string | null;
   progress: number;
 }) {
   return (
@@ -24,7 +26,7 @@ function usageMeter({
       <div className="h-1.5 overflow-hidden rounded-full bg-white/20">
         <div className="h-full rounded-full bg-white" style={{ width: `${progress}%` }} />
       </div>
-      <p className="mt-2 text-xs text-white/65">{helper}</p>
+      {helper ? <p className="mt-2 text-xs text-white/65">{helper}</p> : null}
     </div>
   );
 }
@@ -40,7 +42,11 @@ export function DashboardSettingsBillingHeroCard({
   actionPending: boolean;
   onAction: () => void;
 }) {
-  const displayPrice = getBillingDisplayPrice(billing.planKey, billing.billingInterval ?? "monthly");
+  const displayPrice = getBillingPreviewDisplayPrice(
+    billing.planKey,
+    billing.billingInterval ?? "monthly",
+    billing.billedSeats ?? billing.usedSeats
+  );
   const teamProgress = billing.seatLimit
     ? Math.max(8, Math.min(100, (billing.usedSeats / Math.max(billing.seatLimit, 1)) * 100))
     : 100;
@@ -55,6 +61,11 @@ export function DashboardSettingsBillingHeroCard({
         : billing.planKey === "starter"
           ? "No renewal scheduled"
           : "Billing schedule updates in Stripe";
+  const teamHelper = billing.seatLimit
+    ? `${Math.max(billing.seatLimit - billing.usedSeats, 0)} seats available`
+    : billing.billedSeats && billing.billedSeats > CHATTING_GROWTH_BASE_TEAM_LIMIT
+      ? `${billing.billedSeats} billed seat${billing.billedSeats === 1 ? "" : "s"}`
+      : null;
 
   return (
     <section className="relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#2563EB_0%,#1D4ED8_100%)] p-7 text-white">
@@ -70,33 +81,30 @@ export function DashboardSettingsBillingHeroCard({
             <p className="mt-2 flex flex-wrap items-center gap-2 text-[15px] text-white/80">
               <span>
                 {displayPrice.amount}
-                {displayPrice.cadence}
+                {displayPrice.cadence || ""}
               </span>
               <span className="text-white/40">·</span>
               <span>{renewalLabel}</span>
             </p>
           </div>
 
-          <button
+          <FormButton
             type="button"
             onClick={onAction}
             disabled={actionPending}
-            className="inline-flex h-11 items-center gap-2 self-start rounded-xl border border-white/30 bg-white/15 px-5 text-sm font-medium text-white transition hover:bg-white/25 disabled:opacity-60"
+            variant="secondary"
+            trailingIcon={<ChevronRightIcon className="h-4 w-4" />}
+            className="self-start border-white/30 bg-white/15 text-white hover:border-white/30 hover:bg-white/25 hover:text-white disabled:opacity-60"
           >
             {actionPending ? "Opening..." : actionLabel}
-            <ChevronRightIcon className="h-4 w-4" />
-          </button>
+          </FormButton>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           {usageMeter({
             label: "Team members",
             value: billing.seatLimit ? `${billing.usedSeats} of ${billing.seatLimit}` : `${billing.usedSeats} active`,
-            helper: billing.seatLimit
-              ? `${Math.max(billing.seatLimit - billing.usedSeats, 0)} seats available`
-              : billing.billedSeats
-                ? `${billing.billedSeats} billed seat${billing.billedSeats === 1 ? "" : "s"}`
-                : "Seat-based billing grows with your team",
+            helper: teamHelper,
             progress: teamProgress
           })}
           {usageMeter({

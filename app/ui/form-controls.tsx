@@ -1,65 +1,42 @@
 "use client";
 
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
+import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
+import {
+  Button,
+  ButtonLink,
+  type ButtonSize,
+  type ButtonVariant
+} from "../components/ui/Button";
 import { classNames } from "@/lib/utils";
 import { EyeIcon } from "../dashboard/dashboard-ui";
 
-type FormButtonVariant = "primary" | "secondary";
-type FormButtonSize = "md" | "lg";
-
-type FormButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: FormButtonVariant;
-  size?: FormButtonSize;
-  fullWidth?: boolean;
-  leadingIcon?: ReactNode;
-  trailingIcon?: ReactNode;
-};
-
-const FORM_BUTTON_BASE_CLASS =
-  "inline-flex items-center justify-center gap-3 rounded-2xl font-semibold transition disabled:cursor-not-allowed disabled:opacity-70";
-
-const FORM_BUTTON_VARIANT_CLASS: Record<FormButtonVariant, string> = {
-  primary: "bg-blue-600 text-white hover:bg-blue-700",
-  secondary: "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
-};
-
-const FORM_BUTTON_SIZE_CLASS: Record<FormButtonSize, string> = {
-  md: "h-11 px-5 text-sm",
-  lg: "h-12 px-6 text-base"
-};
+export type FormButtonVariant = ButtonVariant;
+export type FormButtonSize = ButtonSize;
 
 const FORM_TEXT_INPUT_CLASS =
   "h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500";
+const FORM_TEXTAREA_CLASS =
+  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500";
 
-export function FormButton({
-  className,
-  variant = "primary",
-  size = "lg",
-  fullWidth = false,
-  leadingIcon,
-  trailingIcon,
-  children,
-  ...props
-}: FormButtonProps) {
+export function FormInput({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={classNames(FORM_TEXT_INPUT_CLASS, className)} />;
+}
+
+export function FormSelect({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <button
-      {...props}
-      className={classNames(
-        FORM_BUTTON_BASE_CLASS,
-        FORM_BUTTON_VARIANT_CLASS[variant],
-        FORM_BUTTON_SIZE_CLASS[size],
-        fullWidth && "w-full",
-        className
-      )}
-    >
-      {leadingIcon}
+    <select {...props} className={classNames(FORM_TEXT_INPUT_CLASS, "pr-10", className)}>
       {children}
-      {trailingIcon}
-    </button>
+    </select>
   );
 }
+
+export function FormTextarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea {...props} className={classNames(FORM_TEXTAREA_CLASS, className)} />;
+}
+
+export { Button as FormButton, ButtonLink as FormButtonLink };
 
 export function FormSubmitButton({
   idleLabel,
@@ -75,9 +52,9 @@ export function FormSubmitButton({
   const { pending } = useFormStatus();
 
   return (
-    <FormButton type="submit" disabled={pending} variant={variant} size={size} fullWidth trailingIcon={<span aria-hidden="true">→</span>}>
+    <Button type="submit" disabled={pending} variant={variant} size={size} fullWidth trailingIcon={<span aria-hidden="true">→</span>}>
       {pending ? pendingLabel : idleLabel}
-    </FormButton>
+    </Button>
   );
 }
 
@@ -99,11 +76,11 @@ export function FormTextField({ label, value, onChange, className, ...props }: F
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-medium text-slate-700">{label}</span>
-      <input
+      <FormInput
         {...props}
         value={value}
         onChange={onChange ? (event) => onChange(event.target.value) : undefined}
-        className={classNames(FORM_TEXT_INPUT_CLASS, className)}
+        className={className}
       />
     </label>
   );

@@ -1,8 +1,7 @@
 "use client";
 
 import type { DashboardBillingSummary } from "@/lib/data";
-import { classNames } from "@/lib/utils";
-import { DASHBOARD_PRIMARY_BUTTON_CLASS } from "./dashboard-controls";
+import { FormButton } from "../ui/form-controls";
 import { SettingsCard } from "./dashboard-settings-shared";
 
 export function DashboardSettingsBillingTrialCard({
@@ -31,14 +30,14 @@ export function DashboardSettingsBillingTrialCard({
           </p>
         </div>
 
-        <button
+        <FormButton
           type="button"
           onClick={onExtendTrial}
           disabled={trialExtensionPending}
-          className={classNames(DASHBOARD_PRIMARY_BUTTON_CLASS, "min-w-[220px] shadow-sm")}
+          className="min-w-[220px] shadow-sm"
         >
           {trialExtensionPending ? "Extending..." : "Extend trial by 7 days"}
-        </button>
+        </FormButton>
       </div>
     </SettingsCard>
   );

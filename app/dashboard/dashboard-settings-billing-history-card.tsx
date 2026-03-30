@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { getBillingPlanDefinition } from "@/lib/billing-plans";
 import type { DashboardBillingInvoice } from "@/lib/data";
+import { FormButton } from "../ui/form-controls";
 import { formatDateTime } from "@/lib/utils";
 import { billingPeriodLabel, invoiceStatusMeta, type BillingHistorySortKey } from "./dashboard-billing-utils";
 import { formatMoney, SettingsCard } from "./dashboard-settings-shared";
@@ -22,11 +23,7 @@ function invoiceSortValue(invoice: DashboardBillingInvoice, sortKey: BillingHist
   }
 }
 
-export function DashboardSettingsBillingHistoryCard({
-  invoices
-}: {
-  invoices: DashboardBillingInvoice[];
-}) {
+export function DashboardSettingsBillingHistoryCard({ invoices }: { invoices: DashboardBillingInvoice[] }) {
   const [sortKey, setSortKey] = useState<BillingHistorySortKey>("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
@@ -54,7 +51,10 @@ export function DashboardSettingsBillingHistoryCard({
   }
 
   return (
-    <SettingsCard title="Billing history" description={`Sorted ${sortDirection === "asc" ? "ascending" : "descending"} · ${billingPeriodLabel()}`}>
+    <SettingsCard
+      title="Billing history"
+      description={`Sorted ${sortDirection === "asc" ? "ascending" : "descending"} · ${billingPeriodLabel()}`}
+    >
       {invoices.length ? (
         <div className="space-y-4">
           <div className="hidden overflow-hidden rounded-xl border border-slate-200 md:block">
@@ -68,10 +68,10 @@ export function DashboardSettingsBillingHistoryCard({
                     ["status", "Status"]
                   ].map(([value, label]) => (
                     <th key={value} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      <button type="button" onClick={() => toggleSort(value as BillingHistorySortKey)} className="inline-flex items-center gap-1">
+                      <FormButton type="button" onClick={() => toggleSort(value as BillingHistorySortKey)} variant="secondary" size="md" className="h-auto gap-1 rounded-none border-0 bg-transparent px-0 py-0 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 hover:border-0 hover:bg-transparent hover:text-slate-700">
                         {label}
                         <ChevronDownIcon className={`h-3.5 w-3.5 transition ${sortKey === value && sortDirection === "asc" ? "rotate-180" : ""}`} />
-                      </button>
+                      </FormButton>
                     </th>
                   ))}
                   <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Actions</th>
@@ -130,28 +130,8 @@ export function DashboardSettingsBillingHistoryCard({
                   </div>
                   <p className="mt-4 text-lg font-semibold text-slate-900">{formatMoney(invoice.amountCents, invoice.currency)}</p>
                   <div className="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
-                    {invoice.invoicePdfUrl ? (
-                      <a
-                        href={invoice.invoicePdfUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                        aria-label="Download invoice PDF"
-                      >
-                        <DownloadIcon className="h-4 w-4" />
-                      </a>
-                    ) : null}
-                    {invoice.hostedInvoiceUrl ? (
-                      <a
-                        href={invoice.hostedInvoiceUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                        aria-label="View invoice"
-                      >
-                        <ExternalLinkIcon className="h-4 w-4" />
-                      </a>
-                    ) : null}
+                    {invoice.invoicePdfUrl ? <a href={invoice.invoicePdfUrl} target="_blank" rel="noreferrer" className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Download invoice PDF"><DownloadIcon className="h-4 w-4" /></a> : null}
+                    {invoice.hostedInvoiceUrl ? <a href={invoice.hostedInvoiceUrl} target="_blank" rel="noreferrer" className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="View invoice"><ExternalLinkIcon className="h-4 w-4" /></a> : null}
                   </div>
                 </div>
               );
@@ -164,12 +144,12 @@ export function DashboardSettingsBillingHistoryCard({
                 Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, sortedInvoices.length)} of {sortedInvoices.length} invoices
               </span>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} className="rounded-lg border border-slate-200 px-3 py-1.5 text-slate-700" disabled={page === 1}>
+                <FormButton type="button" onClick={() => setPage((current) => Math.max(1, current - 1))} variant="secondary" size="md" className="h-auto rounded-lg px-3 py-1.5 font-medium" disabled={page === 1}>
                   Prev
-                </button>
-                <button type="button" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} className="rounded-lg border border-slate-200 px-3 py-1.5 text-slate-700" disabled={page === totalPages}>
+                </FormButton>
+                <FormButton type="button" onClick={() => setPage((current) => Math.min(totalPages, current + 1))} variant="secondary" size="md" className="h-auto rounded-lg px-3 py-1.5 font-medium" disabled={page === totalPages}>
                   Next
-                </button>
+                </FormButton>
               </div>
             </div>
           ) : null}

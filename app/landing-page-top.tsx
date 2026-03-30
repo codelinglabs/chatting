@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ButtonLink } from "./components/ui/Button";
 import { CheckIcon } from "./dashboard/dashboard-ui";
 import { pillars } from "./landing-page-data";
 import { PillarIcon, SectionLabel } from "./landing-page-primitives";
@@ -22,19 +22,18 @@ export function LandingTopSections() {
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
+                <ButtonLink
                   href="/login"
-                  className="inline-flex items-center justify-center gap-3 rounded-2xl bg-blue-600 px-7 py-4 text-center text-base font-semibold text-white transition hover:scale-[1.02] hover:bg-blue-700"
+                  trailingIcon={<span aria-hidden="true">→</span>}
                 >
                   Start chatting free
-                  <span aria-hidden="true">→</span>
-                </Link>
-                <a
+                </ButtonLink>
+                <ButtonLink
                   href="#features"
-                  className="rounded-full border border-slate-200 bg-white px-6 py-3 text-center text-sm font-semibold text-slate-700 transition hover:scale-[1.02] hover:border-slate-300"
+                  variant="secondary"
                 >
                   See it in action
-                </a>
+                </ButtonLink>
               </div>
 
               <div className="mt-10">

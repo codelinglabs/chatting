@@ -1,8 +1,7 @@
 "use client";
 
 import type { BillingInterval, BillingPlanKey, DashboardBillingSummary } from "@/lib/data";
-import { classNames } from "@/lib/utils";
-import { DASHBOARD_PRIMARY_BUTTON_CLASS } from "./dashboard-controls";
+import { FormButton } from "../ui/form-controls";
 import { SettingsCard } from "./dashboard-settings-shared";
 import { WarningIcon } from "./dashboard-ui";
 
@@ -49,18 +48,18 @@ export function DashboardSettingsBillingUpgradeCard({
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{body}</p>
         </div>
 
-        <button
+        <FormButton
           type="button"
           onClick={() => onChangePlan("growth", selectedInterval)}
           disabled={Boolean(billingPlanPending)}
-          className={classNames(DASHBOARD_PRIMARY_BUTTON_CLASS, "min-w-[180px] shadow-sm")}
+          className="min-w-[180px] shadow-sm"
         >
           {billingPlanPending === pendingKey
             ? "Processing..."
             : billing.limitReached
               ? "Upgrade to reopen"
               : "Upgrade to Growth"}
-        </button>
+        </FormButton>
       </div>
 
       <div className="mt-5">

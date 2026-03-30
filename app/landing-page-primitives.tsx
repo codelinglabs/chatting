@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ButtonLink } from "./components/ui/Button";
 import { ChatBubbleIcon, EyeIcon, UsersIcon } from "./dashboard/dashboard-ui";
 
 export function NavLink({ href, children }: { href: string; children: string }) {
@@ -27,7 +28,7 @@ export function PillarIcon({ icon }: { icon: string }) {
 
 export function LandingHeader() {
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl lg:fixed lg:left-0 lg:right-0 lg:top-0 lg:z-50">
       <div className="mx-auto w-full max-w-[1240px] px-4 py-4 sm:px-6 lg:px-8">
         <div className="grid gap-4 lg:grid-cols-[auto_1fr_auto] lg:items-center">
           <div className="flex items-center gap-3">
@@ -48,12 +49,12 @@ export function LandingHeader() {
           </nav>
 
           <div className="flex justify-center lg:justify-end">
-            <Link
+            <ButtonLink
               href="/login"
-              className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:scale-[1.02] hover:bg-blue-700"
+              size="md"
             >
               Start free trial
-            </Link>
+            </ButtonLink>
           </div>
         </div>
       </div>

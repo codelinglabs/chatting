@@ -1,41 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
-  BILLING_PLAN_ORDER,
-  formatSeatTotalLabel,
-  getBillingPlanDefinition,
-  isPaidPlan,
   type BillingInterval,
   type BillingPlanKey
 } from "@/lib/billing-plans";
-import { CHATLY_ANNUAL_SAVINGS_LABEL, CHATLY_PAID_PLANS_COPY } from "@/lib/pricing";
 import type { DashboardBillingSummary } from "@/lib/data";
-import { classNames } from "@/lib/utils";
+import {
+  CHATTING_GROWTH_CONTACT_TEAM_SIZE,
+  getChattingGrowthPricingSummary
+} from "@/lib/pricing";
+import { FormButton } from "../ui/form-controls";
 import { PricingPlanCard } from "../pricing-plan-card";
 import { SettingsCard } from "./dashboard-settings-shared";
-
-function IntervalButton({
-  active,
-  onClick,
-  label
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={classNames(
-        "rounded-full px-4 py-2 text-sm font-medium transition",
-        active ? "bg-blue-600 text-white shadow-sm" : "text-slate-600"
-      )}
-    >
-      {label}
-    </button>
-  );
-}
+import { DashboardSettingsBillingTeamSizeSlider } from "./dashboard-settings-billing-team-size-slider";
 
 export function DashboardSettingsBillingPlanGrid({
   billing,
@@ -50,63 +28,70 @@ export function DashboardSettingsBillingPlanGrid({
   onSetSelectedInterval: (value: BillingInterval) => void;
   onSelectPlan: (planKey: BillingPlanKey, billingInterval: BillingInterval) => void;
 }) {
-  const intervalToggle = (
-    <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
-      <IntervalButton active={selectedInterval === "monthly"} onClick={() => onSetSelectedInterval("monthly")} label="Monthly" />
-      <IntervalButton active={selectedInterval === "annual"} onClick={() => onSetSelectedInterval("annual")} label="Annual" />
-    </div>
-  );
-  const comparablePlans = BILLING_PLAN_ORDER.filter((planKey) => planKey !== billing.planKey);
+  const [memberCount, setMemberCount] = useState(Math.min(Math.max(billing.usedSeats, 1), CHATTING_GROWTH_CONTACT_TEAM_SIZE));
+
+  useEffect(() => {
+    setMemberCount(Math.min(Math.max(billing.usedSeats, 1), CHATTING_GROWTH_CONTACT_TEAM_SIZE));
+  }, [billing.usedSeats]);
+
+  const preview = getChattingGrowthPricingSummary(selectedInterval, memberCount);
+  const growthPendingKey = `growth:${selectedInterval}`;
+  const starterPendingKey = `starter:${selectedInterval}`;
+  const growthIsCurrentPlan = billing.planKey === "growth";
+  const growthMatchesSelectedInterval = growthIsCurrentPlan && billing.billingInterval === selectedInterval;
+  const starterIsCurrent = billing.planKey === "starter";
 
   return (
-    <SettingsCard
-      title="Compare plans"
-      description={`${CHATLY_PAID_PLANS_COPY} Annual saves ${CHATLY_ANNUAL_SAVINGS_LABEL.toLowerCase()}.`}
-      actions={intervalToggle}
-    >
-      <div className="grid gap-4 md:grid-cols-2">
-        {comparablePlans.map((planKey) => {
-          const plan = getBillingPlanDefinition(planKey);
-          const pendingKey = `${planKey}:${selectedInterval}`;
-          const actionLabel =
-            planKey === "starter"
-              ? "Downgrade"
-              : billing.planKey === "starter"
-                ? `Upgrade to ${plan.name}`
-                : `Change to ${plan.name}`;
+    <SettingsCard title="Compare plans" description="Compare plans by team size.">
+      <div className="space-y-6">
+        <DashboardSettingsBillingTeamSizeSlider
+          memberCount={memberCount}
+          interval={selectedInterval}
+          onMemberCountChange={setMemberCount}
+          onIntervalChange={onSetSelectedInterval}
+        />
 
-          return (
-            <PricingPlanCard
-              key={planKey}
-              planKey={planKey}
-              interval={selectedInterval}
-              featuredLabel={plan.featured ? "Recommended" : null}
-              priceNote={isPaidPlan(planKey) ? plan.savingsLabel : undefined}
-              footerLabel={
-                isPaidPlan(planKey)
-                  ? formatSeatTotalLabel(planKey, selectedInterval, billing.usedSeats)
-                  : null
-              }
-              action={
-                <button
-                  type="button"
-                  onClick={() => onSelectPlan(planKey, selectedInterval)}
-                  disabled={Boolean(billingPlanPending)}
-                  className={classNames(
-                    "inline-flex w-full items-center justify-center rounded-2xl px-5 py-4 text-base font-semibold transition disabled:opacity-60",
-                    plan.featured
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900"
-                  )}
-                >
-                  {billingPlanPending === pendingKey ? "Processing..." : actionLabel}
-                </button>
-              }
-            />
-          );
-        })}
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)]">
+          <PricingPlanCard
+            planKey="starter"
+            interval={selectedInterval}
+            featuredLabel={starterIsCurrent ? "Current plan" : null}
+            action={
+              <FormButton
+                type="button"
+                onClick={() => onSelectPlan("starter", selectedInterval)}
+                disabled={starterIsCurrent || Boolean(billingPlanPending)}
+                variant="secondary"
+                fullWidth
+              >
+                {billingPlanPending === starterPendingKey ? "Processing..." : starterIsCurrent ? "Current plan" : "Downgrade"}
+              </FormButton>
+            }
+          />
+
+          <PricingPlanCard
+            planKey="growth"
+            interval={selectedInterval}
+            featuredLabel={growthIsCurrentPlan ? "Current plan" : null}
+            action={
+              <FormButton
+                type="button"
+                onClick={() => onSelectPlan("growth", selectedInterval)}
+                disabled={growthMatchesSelectedInterval || preview.totalCents === null || Boolean(billingPlanPending)}
+                fullWidth
+              >
+                {billingPlanPending === growthPendingKey
+                  ? "Processing..."
+                  : growthMatchesSelectedInterval
+                    ? "Current plan"
+                    : growthIsCurrentPlan
+                      ? `Switch to ${selectedInterval === "annual" ? "Yearly" : "Monthly"}`
+                      : "Upgrade to Growth"}
+              </FormButton>
+            }
+          />
+        </div>
       </div>
-
     </SettingsCard>
   );
 }
