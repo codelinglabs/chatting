@@ -66,6 +66,7 @@ export function createConversationSummary(
     createdAt: "2026-03-29T10:00:00.000Z",
     updatedAt: "2026-03-29T10:05:00.000Z",
     pageUrl: "https://example.com/pricing",
+    recordedPageUrl: "https://example.com/pricing",
     referrer: null,
     userAgent: null,
     country: "UK",

@@ -44,7 +44,7 @@ export async function upsertConversationMetadataRecord(input: {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       ON CONFLICT (conversation_id)
       DO UPDATE SET
-        page_url = EXCLUDED.page_url,
+        page_url = COALESCE(conversation_metadata.page_url, EXCLUDED.page_url),
         referrer = EXCLUDED.referrer,
         user_agent = EXCLUDED.user_agent,
         country = COALESCE(EXCLUDED.country, conversation_metadata.country),

@@ -40,6 +40,7 @@ export type SummaryRow = {
   created_at: string;
   updated_at: string;
   page_url: string | null;
+  recorded_page_url: string | null;
   referrer: string | null;
   user_agent: string | null;
   country: string | null;
@@ -133,6 +134,7 @@ const CONVERSATION_SUMMARY_SELECT = `
   c.created_at,
   c.updated_at,
   COALESCE(live_visitor.current_page_url, cm.page_url) AS page_url,
+  cm.page_url AS recorded_page_url,
   COALESCE(live_visitor.referrer, cm.referrer) AS referrer,
   COALESCE(live_visitor.user_agent, cm.user_agent) AS user_agent,
   COALESCE(live_visitor.country, cm.country) AS country,

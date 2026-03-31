@@ -2,28 +2,12 @@
 
 import type { ReactNode } from "react";
 import type { ConversationSummary } from "@/lib/types";
-import { displayNameFromEmail, initialsFromLabel } from "@/lib/user-display";
-import { classNames, formatRelativeTime, truncate } from "@/lib/utils";
+import { classNames, truncate } from "@/lib/utils";
+import { conversationRowDetails } from "./dashboard-conversation-display";
 import { DashboardLink } from "./dashboard-shell";
 import type { DashboardThreadsPanelProps } from "./dashboard-threads-panel-header";
-import { CheckIcon, SearchIcon, pageLabelFromUrl } from "./dashboard-ui";
+import { CheckIcon, SearchIcon } from "./dashboard-ui";
 import { DashboardWidgetInstallLink } from "./dashboard-widget-install-link";
-
-function locationLabel(conversation: ConversationSummary) {
-  return [conversation.city, conversation.region, conversation.country].filter(Boolean).join(", ") || null;
-}
-
-function conversationLabel(conversation: ConversationSummary) {
-  return conversation.email ? displayNameFromEmail(conversation.email) : "Visitor";
-}
-
-function conversationSecondaryLabel(conversation: ConversationSummary) {
-  return conversation.email || conversation.siteName;
-}
-
-function conversationTimestamp(conversation: ConversationSummary) {
-  return formatRelativeTime(conversation.lastMessageAt || conversation.updatedAt);
-}
 
 function EmptyThreadsState({
   iconClassName,
@@ -69,15 +53,15 @@ function renderConversationRow({
   const isKeyboardHighlighted = conversation.id === highlightedConversationId && !isActive;
   const isUnread = conversation.unreadCount > 0;
   const isResolved = conversation.status === "resolved";
-  const name = conversationLabel(conversation);
-  const secondary = conversationSecondaryLabel(conversation);
-  const initials = initialsFromLabel(name);
-  const location = locationLabel(conversation);
+  const details = conversationRowDetails(conversation, {
+    secondaryFallback: conversation.siteName,
+    previewFallback: "No messages yet"
+  });
 
   return (
     <DashboardLink
       key={conversation.id}
-      href={`/dashboard/inbox?id=${conversation.id}`}
+      href={details.href}
       onClick={(event) => {
         if (!onSelectConversation || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
           return;
@@ -105,33 +89,23 @@ function renderConversationRow({
             isUnread ? "bg-blue-100 text-blue-600" : isResolved ? "bg-slate-100 text-slate-500" : "bg-slate-100 text-slate-600"
           )}
         >
-          {isResolved ? <CheckIcon className="h-4 w-4" /> : initials}
+          {isResolved ? <CheckIcon className="h-4 w-4" /> : details.initials}
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className={classNames("truncate text-sm", isUnread ? "font-semibold text-slate-900" : "font-normal text-slate-700")}>{name}</p>
-              <p className="truncate text-xs font-normal leading-5 text-slate-400">{secondary}</p>
+              <p className={classNames("truncate text-sm", isUnread ? "font-semibold text-slate-900" : "font-normal text-slate-700")}>{details.name}</p>
+              <p className="truncate text-xs font-normal leading-5 text-slate-400">{details.secondary}</p>
             </div>
-            <span className="shrink-0 pt-0.5 text-xs font-normal leading-5 text-slate-400">{conversationTimestamp(conversation)}</span>
+            <span className="shrink-0 pt-0.5 text-xs font-normal leading-5 text-slate-400">{details.timestamp}</span>
           </div>
 
           <div className="mt-1 flex items-center text-[13px] leading-5">
             {isUnread ? <span className="mr-1.5 h-2 w-2 rounded-full bg-blue-600" /> : null}
             <p className={classNames("truncate", isUnread ? "font-medium text-slate-700" : "font-normal text-slate-500")}>
-              {truncate(conversation.lastMessagePreview || "No messages yet", 48)}
+              {truncate(details.preview, 48)}
             </p>
-          </div>
-
-          <div className="mt-1.5 flex items-center gap-1.5 text-[11px] leading-4 text-slate-400">
-            <span className="rounded bg-slate-100 px-1.5 py-0.5">{pageLabelFromUrl(conversation.pageUrl)}</span>
-            {location ? (
-              <>
-                <span>&bull;</span>
-                <span className="truncate">{location}</span>
-              </>
-            ) : null}
           </div>
         </div>
       </div>

@@ -52,6 +52,7 @@ describe("data shared edge cases", () => {
       created_at: "2026-03-29T10:00:00.000Z",
       updated_at: "2026-03-29T10:01:00.000Z",
       page_url: null,
+      recorded_page_url: null,
       referrer: null,
       user_agent: null,
       country: null,

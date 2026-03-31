@@ -1,16 +1,7 @@
 import type { DashboardHomeData } from "@/lib/data/dashboard-home";
-import { formatRelativeTime, truncate } from "@/lib/utils";
-import { displayNameFromEmail, initialsFromLabel } from "@/lib/user-display";
+import { truncate } from "@/lib/utils";
+import { conversationRowDetails } from "./dashboard-conversation-display";
 import { DashboardLink } from "./dashboard-shell";
-import { pageLabelFromUrl } from "./dashboard-ui";
-
-function conversationLabel(email: string | null, fallback: string) {
-  return email ? displayNameFromEmail(email) : fallback;
-}
-
-function conversationInitials(email: string | null, fallback: string) {
-  return initialsFromLabel(conversationLabel(email, fallback));
-}
 
 export function DashboardHomeRecentConversations({
   conversations
@@ -36,13 +27,16 @@ export function DashboardHomeRecentConversations({
       <div className="divide-y divide-slate-200">
         {hasConversations ? (
           conversations.map((conversation) => {
+            const details = conversationRowDetails(conversation, {
+              secondaryFallback: "Anonymous visitor",
+              previewFallback: "No message preview yet"
+            });
             const unread = conversation.unreadCount > 0;
-            const displayName = conversationLabel(conversation.email, "Visitor");
 
             return (
               <DashboardLink
                 key={conversation.id}
-                href={`/dashboard/inbox?id=${conversation.id}`}
+                href={details.href}
                 className="flex items-start gap-4 px-4 py-4 transition hover:bg-slate-50"
               >
                 <span
@@ -50,7 +44,7 @@ export function DashboardHomeRecentConversations({
                     unread ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-600"
                   }`}
                 >
-                  {conversationInitials(conversation.email, "Visitor")}
+                  {details.initials}
                 </span>
 
                 <div className="min-w-0 flex-1">
@@ -59,27 +53,17 @@ export function DashboardHomeRecentConversations({
                       <div className="flex items-center gap-2">
                         {unread ? <span className="h-2 w-2 rounded-full bg-blue-600" /> : null}
                         <p className={`truncate text-sm ${unread ? "font-semibold text-slate-900" : "font-normal text-slate-700"}`}>
-                          {displayName}
+                          {details.name}
                         </p>
                       </div>
-                      <p className="mt-1 truncate text-xs font-normal text-slate-400">
-                        {conversation.email || "Anonymous visitor"}
-                      </p>
+                      <p className="mt-1 truncate text-xs font-normal text-slate-400">{details.secondary}</p>
                     </div>
-                    <span className="shrink-0 text-xs font-normal text-slate-400">
-                      {formatRelativeTime(conversation.lastMessageAt || conversation.updatedAt)}
-                    </span>
+                    <span className="shrink-0 text-xs font-normal text-slate-400">{details.timestamp}</span>
                   </div>
 
                   <p className={`mt-1.5 truncate text-sm font-normal ${unread ? "text-slate-700" : "text-slate-500"}`}>
-                    {truncate(conversation.lastMessagePreview || "No message preview yet", 88)}
+                    {truncate(details.preview, 88)}
                   </p>
-
-                  <div className="mt-3">
-                    <span className="inline-flex rounded bg-slate-100 px-2 py-1 text-xs font-normal text-slate-400">
-                      {pageLabelFromUrl(conversation.pageUrl)}
-                    </span>
-                  </div>
                 </div>
               </DashboardLink>
             );

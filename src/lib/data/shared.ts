@@ -104,6 +104,7 @@ export function mapSummary(row: SummaryRow): ConversationSummary {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     pageUrl: row.page_url,
+    recordedPageUrl: row.recorded_page_url ?? row.page_url,
     referrer: row.referrer,
     userAgent: row.user_agent,
     country: row.country,

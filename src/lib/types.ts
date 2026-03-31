@@ -65,6 +65,7 @@ export type ConversationSummary = {
   createdAt: string;
   updatedAt: string;
   pageUrl: string | null;
+  recordedPageUrl?: string | null;
   referrer: string | null;
   userAgent: string | null;
   country: string | null;

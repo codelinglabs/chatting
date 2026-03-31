@@ -31,14 +31,6 @@ vi.mock("./dashboard-widget-install-card", () => ({
   )
 }));
 
-vi.mock("./dashboard-ui", async () => {
-  const actual = await vi.importActual<typeof import("./dashboard-ui")>("./dashboard-ui");
-  return {
-    ...actual,
-    pageLabelFromUrl: (url: string | null) => url || "/"
-  };
-});
-
 import { DashboardHome } from "./dashboard-home";
 
 describe("dashboard home", () => {

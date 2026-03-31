@@ -43,6 +43,8 @@ describe("dashboard thread detail sidebar", () => {
       <DashboardThreadDetailSidebar
         activeConversation={createConversationThread({
           email: "alex.stone@example.com",
+          pageUrl: "https://heypond.app/",
+          recordedPageUrl: "https://heypond.app/campaigns/80dfca69-4637-42e0-9171-b6ec33868ab8",
           userAgent: "Mozilla/5.0 (Mac OS X) Chrome/123.0",
           visitorActivity: {
             matchType: "email",
@@ -62,7 +64,7 @@ describe("dashboard thread detail sidebar", () => {
     expect(html).toContain("Current session");
     expect(html).toContain("Chrome on macOS");
     expect(html).toContain("notes:conv_1");
-    expect(html).toContain("pricing");
+    expect(html).toContain("https://heypond.app/campaigns/80dfca69-4637-42e0-9171-b6ec33868ab8");
     expect(html).toContain("This visitor asked 2 other questions last month.");
   });
 

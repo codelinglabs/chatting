@@ -71,6 +71,7 @@ describe("conversation read and write repositories", () => {
     expect(mocks.query).toHaveBeenCalledTimes(7);
     expect(mocks.query.mock.calls[0]?.[0]).toContain("INSERT INTO conversations");
     expect(mocks.query.mock.calls[1]?.[0]).toContain("INSERT INTO conversation_metadata");
+    expect(mocks.query.mock.calls[1]?.[0]).toContain("page_url = COALESCE(conversation_metadata.page_url, EXCLUDED.page_url)");
     expect(mocks.query.mock.calls[2]?.[0]).toContain("INSERT INTO message_attachments");
     expect(mocks.query.mock.calls[4]?.[0]).toContain("ON CONFLICT (conversation_id, tag) DO NOTHING");
     expect(mocks.query.mock.calls[6]?.[0]).toContain("INSERT INTO conversation_reads");

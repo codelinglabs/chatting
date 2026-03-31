@@ -127,7 +127,7 @@ describe("dashboard threads panel", () => {
     expect(html).toContain("Showing 2 of 2 conversations");
     expect(html).toContain("Need help with pricing");
     expect(html).toContain("Main site");
-    expect(html).toContain("/pricing");
+    expect(html).not.toContain("/pricing");
   });
 
   it("forwards filter, search, clear, and select handlers", async () => {

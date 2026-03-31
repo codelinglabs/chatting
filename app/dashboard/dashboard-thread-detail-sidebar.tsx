@@ -4,8 +4,8 @@ import type { FormEvent } from "react";
 import type { ConversationThread } from "@/lib/types";
 import { formatDateTime, formatRelativeTime } from "@/lib/utils";
 import { DASHBOARD_TAGS } from "./dashboard-client.utils";
+import { conversationIdentity, conversationPageUrl } from "./dashboard-conversation-display";
 import { DashboardVisitorNoteEditor } from "./dashboard-visitor-note-editor";
-import { pageLabelFromUrl } from "./dashboard-ui";
 import {
   browserLabel,
   locationLabel,
@@ -24,32 +24,20 @@ export function DashboardThreadDetailSidebar({
   onSaveConversationEmail: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   onToggleTag: (tag: string) => Promise<void>;
 }) {
-  const visitorName = activeConversation.email ? activeConversation.email.split("@")[0] : "Visitor";
-  const visitorDisplayName =
-    visitorName
-      .split(/[._-]+/)
-      .filter(Boolean)
-      .map((segment) => `${segment.charAt(0).toUpperCase()}${segment.slice(1)}`)
-      .join(" ") || "Visitor";
-  const visitorInitials = visitorDisplayName
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
+  const visitor = conversationIdentity(activeConversation.email, "No email saved yet");
   const visitorLocation = locationLabel(activeConversation);
   const visitorActivity = activeConversation.visitorActivity;
   const availableTags = DASHBOARD_TAGS.filter((tag) => !activeConversation.tags.includes(tag));
+  const currentPageUrl = conversationPageUrl(activeConversation);
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto p-5">
       <div className="text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-[22px] font-medium text-blue-700">
-          {visitorInitials || "V"}
+          {visitor.initials}
         </div>
-        <p className="mt-3 text-[15px] font-medium text-slate-900">{visitorDisplayName}</p>
-        <p className="mt-1 text-[13px] font-normal text-slate-500">
-          {activeConversation.email || "No email saved yet"}
-        </p>
+        <p className="mt-3 text-[15px] font-medium text-slate-900">{visitor.name}</p>
+        <p className="mt-1 text-[13px] font-normal text-slate-500">{visitor.secondary}</p>
       </div>
 
       {!activeConversation.email ? (
@@ -79,7 +67,7 @@ export function DashboardThreadDetailSidebar({
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-3 text-[13px]">
             <span className="text-slate-500">Page</span>
-            <span className="text-right text-blue-600">{pageLabelFromUrl(activeConversation.pageUrl)}</span>
+            <span className="max-w-[180px] break-all text-right text-blue-600">{currentPageUrl}</span>
           </div>
           <div className="flex items-start justify-between gap-3 text-[13px]">
             <span className="text-slate-500">Referrer</span>

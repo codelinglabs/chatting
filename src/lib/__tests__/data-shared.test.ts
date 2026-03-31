@@ -57,6 +57,7 @@ describe("data shared mappers", () => {
       created_at: "2026-03-29T10:00:00.000Z",
       updated_at: "2026-03-29T10:01:00.000Z",
       page_url: "https://example.com/pricing",
+      recorded_page_url: "https://example.com/pricing",
       referrer: null,
       user_agent: null,
       country: "UK",
@@ -84,7 +85,12 @@ describe("data shared mappers", () => {
       created_at: "2026-03-29T10:01:00.000Z"
     } as never, [attachment]);
 
-    expect(summary).toMatchObject({ id: "conv_1", unreadCount: 2, tags: ["pricing"] });
+    expect(summary).toMatchObject({
+      id: "conv_1",
+      unreadCount: 2,
+      tags: ["pricing"],
+      recordedPageUrl: "https://example.com/pricing"
+    });
     expect(attachment).toEqual({
       id: "att_1",
       fileName: "screenshot.png",

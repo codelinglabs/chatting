@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent, KeyboardEvent } from "react";
-import type { ConversationStatus, ConversationSummary, ConversationThread, ThreadMessage } from "@/lib/types";
+import type { ConversationStatus, ConversationSummary, ConversationThread } from "@/lib/types";
 import { classNames } from "@/lib/utils";
 import {
   ArrowLeftIcon,
@@ -11,7 +11,7 @@ import {
   WarningIcon,
   XIcon,
 } from "./dashboard-ui";
-import { displayNameFromEmail } from "@/lib/user-display";
+import { conversationIdentity } from "./dashboard-conversation-display";
 import { DashboardThreadDetailSidebar } from "./dashboard-thread-detail-sidebar";
 import {
   groupedMessages,
@@ -71,9 +71,7 @@ export function DashboardThreadDetail({
     loadingConversationSummary &&
     (!activeConversation || activeConversation.id !== loadingConversationSummary.id)
   ) {
-    const loadingVisitorName = loadingConversationSummary.email
-      ? displayNameFromEmail(loadingConversationSummary.email)
-      : "Visitor";
+    const loadingVisitor = conversationIdentity(loadingConversationSummary.email, "Anonymous visitor");
 
     return (
       <>
@@ -92,10 +90,8 @@ export function DashboardThreadDetail({
               ) : null}
 
               <div className="min-w-0">
-                <p className="truncate text-[15px] font-medium text-slate-900">{loadingVisitorName}</p>
-                <p className="truncate text-[13px] font-normal text-slate-500">
-                  {loadingConversationSummary.email || "Anonymous visitor"}
-                </p>
+                <p className="truncate text-[15px] font-medium text-slate-900">{loadingVisitor.name}</p>
+                <p className="truncate text-[13px] font-normal text-slate-500">{loadingVisitor.secondary}</p>
               </div>
             </div>
           </div>
@@ -148,13 +144,7 @@ export function DashboardThreadDetail({
     );
   }
 
-  const visitorName = activeConversation.email ? activeConversation.email.split("@")[0] : "Visitor";
-  const visitorDisplayName =
-    visitorName
-      .split(/[._-]+/)
-      .filter(Boolean)
-      .map((segment) => `${segment.charAt(0).toUpperCase()}${segment.slice(1)}`)
-      .join(" ") || "Visitor";
+  const visitor = conversationIdentity(activeConversation.email, "Anonymous visitor");
   const timeline = groupedMessages(activeConversation.messages);
 
   const handleReplyKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -181,10 +171,8 @@ export function DashboardThreadDetail({
             ) : null}
 
             <div className="min-w-0">
-              <p className="truncate text-[15px] font-medium text-slate-900">{visitorDisplayName}</p>
-              <p className="truncate text-[13px] font-normal text-slate-500">
-                {activeConversation.email || "Anonymous visitor"}
-              </p>
+              <p className="truncate text-[15px] font-medium text-slate-900">{visitor.name}</p>
+              <p className="truncate text-[13px] font-normal text-slate-500">{visitor.secondary}</p>
             </div>
           </div>
 
