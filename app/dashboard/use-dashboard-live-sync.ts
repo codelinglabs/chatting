@@ -29,7 +29,7 @@ export function useDashboardLiveSync({
   recentOptimisticReplyAtRef: MutableRefObject<Map<string, number>>;
   applyReadState: (conversationId: string) => void;
   refreshConversationList: () => Promise<void>;
-  refreshConversationSummary: (conversationId: string, moveToTop?: boolean) => Promise<{ id: string } | null>;
+  refreshConversationSummary: (conversationId: string) => Promise<{ id: string } | null>;
   refreshConversation: (conversationId: string) => Promise<{ id: string } | null>;
   markConversationAsRead: (conversationId: string) => Promise<void>;
   setVisitorTypingConversationId: Dispatch<SetStateAction<string | null>>;
@@ -96,7 +96,7 @@ export function useDashboardLiveSync({
         }
 
         if (event.type === "conversation.updated" && event.conversationId) {
-          void refreshConversationSummary(event.conversationId, true);
+          void refreshConversationSummary(event.conversationId);
           return;
         }
 
@@ -113,7 +113,7 @@ export function useDashboardLiveSync({
           return;
         }
 
-        void refreshConversationSummary(event.conversationId, true);
+        void refreshConversationSummary(event.conversationId);
       },
       onError() {
         setLiveConnectionState("reconnecting");

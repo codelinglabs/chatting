@@ -1,15 +1,63 @@
 import type { FormEvent } from "react";
 import { postDashboardForm } from "./dashboard-client.api";
-import { moveConversationToFront } from "./dashboard-client.utils";
 import {
   createOptimisticAttachmentUrls,
   previewForMessage,
   removeMessageById,
   revokeOptimisticAttachmentUrls,
-  settleOptimisticMessage
+  settleOptimisticMessage,
+  updateConversationSummaryList
 } from "./dashboard-state-helpers";
-import type { ThreadMessage } from "@/lib/types";
+import type { ConversationSummary, ThreadMessage } from "@/lib/types";
 import type { DashboardActionsParams } from "./use-dashboard-actions.types";
+
+type ReplySummaryTarget = Pick<
+  ConversationSummary,
+  "unreadCount" | "updatedAt" | "lastMessageAt" | "lastMessagePreview"
+>;
+
+function applyReplySummary<T extends ReplySummaryTarget>(target: T, createdAt: string, preview: string): T {
+  return {
+    ...target,
+    unreadCount: 0,
+    updatedAt: createdAt,
+    lastMessageAt: createdAt,
+    lastMessagePreview: preview
+  };
+}
+
+function restoreReplySummary<T extends ReplySummaryTarget>(
+  target: T,
+  optimisticCreatedAt: string,
+  optimisticPreview: string,
+  previousSummary: Pick<ReplySummaryTarget, "updatedAt" | "lastMessageAt" | "lastMessagePreview">
+): T {
+  return {
+    ...target,
+    updatedAt: target.updatedAt === optimisticCreatedAt ? previousSummary.updatedAt : target.updatedAt,
+    lastMessageAt:
+      target.lastMessageAt === optimisticCreatedAt ? previousSummary.lastMessageAt : target.lastMessageAt,
+    lastMessagePreview:
+      target.lastMessagePreview === optimisticPreview
+        ? previousSummary.lastMessagePreview
+        : target.lastMessagePreview
+  };
+}
+
+function messageForEmailDelivery(
+  emailDelivery: "sent" | "skipped" | "queued_retry" | "failed"
+) {
+  switch (emailDelivery) {
+    case "sent":
+      return "Reply posted to the chat thread and emailed to the visitor.";
+    case "queued_retry":
+      return "Reply posted to the chat thread. Email delivery queued to retry.";
+    case "failed":
+      return "Reply posted to the chat thread. Email delivery failed.";
+    default:
+      return "Reply posted to the chat thread.";
+  }
+}
 
 export function createDashboardReplyActions({
   activeConversation,
@@ -57,55 +105,40 @@ export function createDashboardReplyActions({
     setActiveConversation((current) =>
       current
         ? {
-            ...current,
-            unreadCount: 0,
-            updatedAt: optimisticCreatedAt,
-            lastMessageAt: optimisticCreatedAt,
-            lastMessagePreview: optimisticPreview,
+            ...applyReplySummary(current, optimisticCreatedAt, optimisticPreview),
             messages: [...current.messages, optimisticMessage]
           }
         : current
     );
     setConversations((current) =>
-      moveConversationToFront(current, activeConversation.id, (conversation) => ({
-        ...conversation,
-        unreadCount: 0,
-        updatedAt: optimisticCreatedAt,
-        lastMessageAt: optimisticCreatedAt,
-        lastMessagePreview: optimisticPreview
-      }))
+      updateConversationSummaryList(current, activeConversation.id, (conversation) =>
+        applyReplySummary(conversation, optimisticCreatedAt, optimisticPreview)
+      )
     );
     form.reset();
     try {
       const payload = await postDashboardForm<{
         conversationId: string;
         message: ThreadMessage;
-        emailDelivery: "sent" | "skipped" | "failed";
+        emailDelivery: "sent" | "skipped" | "queued_retry" | "failed";
       }>(
         "/dashboard/reply",
         formData
       );
       const { message, emailDelivery } = payload;
+      const postedPreview = previewForMessage(message);
       setActiveConversation((current) =>
         current
           ? {
-              ...current,
-              unreadCount: 0,
-              updatedAt: message.createdAt,
-              lastMessageAt: message.createdAt,
-              lastMessagePreview: previewForMessage(message),
+              ...applyReplySummary(current, message.createdAt, postedPreview),
               messages: settleOptimisticMessage(current.messages, optimisticId, message)
             }
           : current
       );
       setConversations((current) =>
-        moveConversationToFront(current, activeConversation.id, (conversation) => ({
-          ...conversation,
-          unreadCount: 0,
-          updatedAt: message.createdAt,
-          lastMessageAt: message.createdAt,
-          lastMessagePreview: previewForMessage(message)
-        }))
+        updateConversationSummaryList(current, activeConversation.id, (conversation) =>
+          applyReplySummary(conversation, message.createdAt, postedPreview)
+        )
       );
 
       if (!hadFounderReply) {
@@ -113,52 +146,19 @@ export function createDashboardReplyActions({
       }
       recentOptimisticReplyAtRef.current.set(activeConversation.id, Date.now());
       revokeOptimisticAttachmentUrls(optimisticMessage);
-      showBanner(
-        "success",
-        emailDelivery === "sent"
-          ? "Reply posted to the chat thread and emailed to the visitor."
-          : emailDelivery === "failed"
-            ? "Reply posted to the chat thread. Email delivery failed."
-            : "Reply posted to the chat thread."
-      );
+      showBanner("success", messageForEmailDelivery(emailDelivery));
     } catch (error) {
       setActiveConversation((current) =>
         current
           ? {
-              ...current,
-              updatedAt:
-                current.updatedAt === optimisticCreatedAt ? previousSummary.updatedAt : current.updatedAt,
-              lastMessageAt:
-                current.lastMessageAt === optimisticCreatedAt
-                  ? previousSummary.lastMessageAt
-                  : current.lastMessageAt,
-              lastMessagePreview:
-                current.lastMessagePreview === optimisticPreview
-                  ? previousSummary.lastMessagePreview
-                  : current.lastMessagePreview,
+              ...restoreReplySummary(current, optimisticCreatedAt, optimisticPreview, previousSummary),
               messages: removeMessageById(current.messages, optimisticId)
             }
           : current
       );
       setConversations((current) =>
-        current.map((conversation) =>
-          conversation.id === activeConversation.id
-            ? {
-                ...conversation,
-                updatedAt:
-                  conversation.updatedAt === optimisticCreatedAt
-                    ? previousSummary.updatedAt
-                    : conversation.updatedAt,
-                lastMessageAt:
-                  conversation.lastMessageAt === optimisticCreatedAt
-                    ? previousSummary.lastMessageAt
-                    : conversation.lastMessageAt,
-                lastMessagePreview:
-                  conversation.lastMessagePreview === optimisticPreview
-                    ? previousSummary.lastMessagePreview
-                    : conversation.lastMessagePreview
-              }
-            : conversation
+        updateConversationSummaryList(current, activeConversation.id, (conversation) =>
+          restoreReplySummary(conversation, optimisticCreatedAt, optimisticPreview, previousSummary)
         )
       );
       revokeOptimisticAttachmentUrls(optimisticMessage);

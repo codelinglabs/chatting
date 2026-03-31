@@ -106,7 +106,7 @@ describe("use dashboard state", () => {
     expect(liveSyncCalls).toHaveLength(1);
   });
 
-  it("opens cached conversations, wires action handlers, and filters threads on rerender", async () => {
+  it("opens cached conversations without reordering older threads above newer ones", async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("window", { history: { replaceState: vi.fn() } });
@@ -127,8 +127,8 @@ describe("use dashboard state", () => {
 
     expect(reactMocks.states[2]?.current).toEqual(expect.objectContaining({ id: "conv_1" }));
     expect((reactMocks.states[1]?.current as Array<{ id: string }>).map(({ id }) => id)).toEqual([
-      "conv_1",
-      "conv_2"
+      "conv_2",
+      "conv_1"
     ]);
     expect(fetchMock).toHaveBeenCalledWith(
       "/dashboard/read",

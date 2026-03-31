@@ -1,6 +1,7 @@
 "use client";
 
 import type { ConversationSummary, ConversationThread, ThreadMessage } from "@/lib/types";
+import { sortConversationSummariesByRecency } from "./dashboard-client.utils";
 
 export function toSummary(conversation: ConversationThread): ConversationSummary {
   const { messages: _messages, visitorActivity: _visitorActivity, ...summary } = conversation;
@@ -44,6 +45,29 @@ export function revokeOptimisticAttachmentUrls(message: ThreadMessage) {
 
 export function removeMessageById(messages: ThreadMessage[], messageId: string) {
   return messages.filter((message) => message.id !== messageId);
+}
+
+export function syncConversationSummaryList(
+  conversations: ConversationSummary[],
+  summary: ConversationSummary
+) {
+  const next = conversations.some((conversation) => conversation.id === summary.id)
+    ? conversations.map((conversation) => (conversation.id === summary.id ? summary : conversation))
+    : [summary, ...conversations];
+
+  return sortConversationSummariesByRecency(next);
+}
+
+export function updateConversationSummaryList(
+  conversations: ConversationSummary[],
+  conversationId: string,
+  updater: (conversation: ConversationSummary) => ConversationSummary
+) {
+  return sortConversationSummariesByRecency(
+    conversations.map((conversation) =>
+      conversation.id === conversationId ? updater(conversation) : conversation
+    )
+  );
 }
 
 export function nextTagsForToggle(tags: string[], tag: string) {

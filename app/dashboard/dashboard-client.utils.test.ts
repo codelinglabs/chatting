@@ -1,7 +1,7 @@
 import {
   DASHBOARD_TAGS,
   errorMessageForCode,
-  moveConversationToFront,
+  sortConversationSummariesByRecency,
   topTagsFromConversations
 } from "./dashboard-client.utils";
 
@@ -25,20 +25,17 @@ describe("dashboard client utils", () => {
     ]);
   });
 
-  it("moves updated conversations to the front", () => {
+  it("sorts conversations by latest message time, then updated time", () => {
     const conversations = [
-      { id: "a", unreadCount: 0 },
-      { id: "b", unreadCount: 1 },
-      { id: "c", unreadCount: 0 }
+      { id: "older", lastMessageAt: "2026-03-31T18:00:00.000Z", updatedAt: "2026-03-31T18:00:00.000Z" },
+      { id: "newer", lastMessageAt: "2026-03-31T21:49:00.000Z", updatedAt: "2026-03-31T21:49:00.000Z" },
+      { id: "no-message", lastMessageAt: null, updatedAt: "2026-03-31T22:00:00.000Z" },
+      { id: "tie-breaker", lastMessageAt: "2026-03-31T21:49:00.000Z", updatedAt: "2026-03-31T21:10:00.000Z" }
     ] as never;
 
-    const moved = moveConversationToFront(conversations, "b", (conversation) => ({
-      ...conversation,
-      unreadCount: 0
-    }));
+    const sorted = sortConversationSummariesByRecency(conversations);
 
-    expect(moved.map((item) => item.id)).toEqual(["b", "a", "c"]);
-    expect(moved[0]?.unreadCount).toBe(0);
+    expect(sorted.map((item) => item.id)).toEqual(["newer", "tie-breaker", "older", "no-message"]);
   });
 
   it("maps known error codes to friendly messages", () => {

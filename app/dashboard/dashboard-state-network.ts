@@ -3,8 +3,7 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { ConversationSummary, ConversationThread } from "@/lib/types";
 import type { BannerState } from "./dashboard-client.types";
-import { sortConversationSummariesByRecency } from "./dashboard-client.utils";
-import { toSummary } from "./dashboard-state-helpers";
+import { syncConversationSummaryList, toSummary } from "./dashboard-state-helpers";
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -22,17 +21,8 @@ export function createDashboardStateNetwork(input: {
     input.setBanner({ tone, text });
   }
 
-  function syncSummary(summary: ConversationSummary, _moveToTop = false) {
-    input.setConversations((current) => {
-      const exists = current.some((conversation) => conversation.id === summary.id);
-      if (!exists) {
-        return sortConversationSummariesByRecency([summary, ...current]);
-      }
-
-      return sortConversationSummariesByRecency(
-        current.map((conversation) => (conversation.id === summary.id ? summary : conversation))
-      );
-    });
+  function syncSummary(summary: ConversationSummary) {
+    input.setConversations((current) => syncConversationSummaryList(current, summary));
   }
 
   function applyReadState(conversationId: string) {
@@ -64,7 +54,7 @@ export function createDashboardStateNetwork(input: {
     }
   }
 
-  async function refreshConversationSummary(conversationId: string, moveToTop = false) {
+  async function refreshConversationSummary(conversationId: string) {
     try {
       const response = await fetch(
         `/dashboard/conversation-summary?conversationId=${encodeURIComponent(conversationId)}`,
@@ -83,7 +73,7 @@ export function createDashboardStateNetwork(input: {
         });
       }
 
-      syncSummary(payload.summary, moveToTop);
+      syncSummary(payload.summary);
       input.setActiveConversation((current) =>
         current && current.id === payload.summary.id ? { ...current, ...payload.summary } : current
       );

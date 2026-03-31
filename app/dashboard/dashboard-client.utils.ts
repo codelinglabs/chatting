@@ -1,8 +1,16 @@
 "use client";
 
 import type { ConversationSummary } from "@/lib/types";
-
 export const DASHBOARD_TAGS = ["pricing", "confusion", "bug", "objection"] as const;
+
+function toTimestamp(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
 
 export function topTagsFromConversations(conversations: ConversationSummary[]) {
   const counts = new Map<string, number>();
@@ -19,21 +27,21 @@ export function topTagsFromConversations(conversations: ConversationSummary[]) {
     .slice(0, 4);
 }
 
-export function moveConversationToFront(
-  conversations: ConversationSummary[],
-  conversationId: string,
-  updater: (conversation: ConversationSummary) => ConversationSummary
-) {
-  const updated = conversations.map((conversation) =>
-    conversation.id === conversationId ? updater(conversation) : conversation
-  );
-  const active = updated.find((conversation) => conversation.id === conversationId);
+export function sortConversationSummariesByRecency(conversations: ConversationSummary[]) {
+  return [...conversations].sort((left, right) => {
+    const leftLastMessageAt = toTimestamp(left.lastMessageAt);
+    const rightLastMessageAt = toTimestamp(right.lastMessageAt);
 
-  if (!active) {
-    return updated;
-  }
+    if (leftLastMessageAt !== rightLastMessageAt) {
+      if (leftLastMessageAt === null) return 1;
+      if (rightLastMessageAt === null) return -1;
+      return rightLastMessageAt - leftLastMessageAt;
+    }
 
-  return [active, ...updated.filter((conversation) => conversation.id !== conversationId)];
+    const leftUpdatedAt = toTimestamp(left.updatedAt) ?? 0;
+    const rightUpdatedAt = toTimestamp(right.updatedAt) ?? 0;
+    return rightUpdatedAt - leftUpdatedAt;
+  });
 }
 
 export function errorMessageForCode(code: string) {

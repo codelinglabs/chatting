@@ -83,7 +83,7 @@ describe("useDashboardLiveSync", () => {
     expect(applyReadState).toHaveBeenCalledWith("conv_2");
     expect(refreshConversationList).toHaveBeenCalledTimes(1);
     expect(refreshConversation).toHaveBeenCalledWith("conv_1");
-    expect(refreshConversationSummary).toHaveBeenCalledWith("conv_2", true);
+    expect(refreshConversationSummary).toHaveBeenCalledWith("conv_2");
     expect(markConversationAsRead).toHaveBeenCalledWith("conv_1");
     expect(recentOptimisticReplyAtRef.current.has("conv_1")).toBe(false);
     expect(eventSource.close).toHaveBeenCalled();

@@ -34,7 +34,7 @@ export function useDashboardStateEffects(input: {
   recentOptimisticReplyAtRef: MutableRefObject<Map<string, number>>;
   applyReadState: (conversationId: string) => void;
   refreshConversationList: () => Promise<void>;
-  refreshConversationSummary: (conversationId: string, moveToTop?: boolean) => Promise<{ id: string } | null>;
+  refreshConversationSummary: (conversationId: string) => Promise<{ id: string } | null>;
   refreshConversation: (conversationId: string) => Promise<{ id: string } | null>;
   openConversation: (conversationId: string) => Promise<{ id: string } | null>;
   clearActiveConversation: () => void;
