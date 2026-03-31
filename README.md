@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Updated the shared app button link typing so route-object hrefs work cleanly across invite and landing actions.
 - Finished the remaining billing settings cleanup so dashboard pricing and referral surfaces no longer carry trial-extension-era fixture shapes.
 - Centralized MiniMax response-tone configuration in the shared env helpers and documented the required API settings in `.env.example`.
 - Finished the hosted conversation handoff with a shared resume-message component and fuller conversation template context.
@@ -65,6 +66,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Landing pricing now mirrors the dashboard billing format with Starter and Growth plans driven by shared pricing helpers.
 - Dedicated login and signup screens with shared form controls, referral-aware owner signup, invite-based teammate access, password reset flows, and direct onboarding handoff.
 - Auth failures now stay in shared toast notifications with generic user-safe copy instead of showing deployment or server setup details in the UI.
+- Shared button-link controls now accept both string and object hrefs so invite and auth flows can pass structured Next.js routes safely.
 
 ### Onboarding
 

@@ -1,7 +1,7 @@
 "use client";
 
-import Link, { type LinkProps } from "next/link";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import Link from "next/link";
+import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from "react";
 import { classNames } from "@/lib/utils";
 
 export type ButtonVariant = "primary" | "secondary";
@@ -14,15 +14,17 @@ type ButtonOptions = {
   fullWidth?: boolean;
 };
 
+type NextLinkProps = ComponentProps<typeof Link>;
+
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
   ButtonOptions & {
     leadingIcon?: ReactNode;
     trailingIcon?: ReactNode;
   };
 
-export type ButtonLinkProps = Omit<LinkProps, "href"> &
+export type ButtonLinkProps = Omit<NextLinkProps, "href"> &
   ButtonOptions & {
-    href: LinkProps["href"];
+    href: NextLinkProps["href"];
     leadingIcon?: ReactNode;
     trailingIcon?: ReactNode;
     children: ReactNode;
