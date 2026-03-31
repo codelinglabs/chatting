@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Synced dashboard unread badges across the inbox, shell header, and sidebar so opening or receiving conversations updates counts immediately without a manual refresh.
 - Hardened Vercel server packaging for Postgres by replacing the opaque `pg` runtime import with a traceable server import and adding a postbuild trace check that fails if `pg` drops out of Next.js server output.
 - Resolved a Vercel Node.js Serverless deployment bug bridging Edge ImageResponse limits by routing font loading through the native fs layer and forcing the postgres driver to bundle natively.
 - Added dynamic Edge ImageResponse generation for customized Open Graph social cards and a brand-aligned SVG favicon.
@@ -105,6 +106,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Dashboard
 
 - Shared dashboard shell with focused pages for inbox, visitors, analytics, team, settings, and widget setup.
+- Dashboard unread badges now clear immediately on thread open and stay live across the shell header and sidebar when visitor messages or read events stream in.
 - Dashboard inbox install prompts now disappear once the widget is live and share the same install-state wiring across the sidebar card and empty conversation list.
 - Dashboard home now uses dedicated metrics, recent-conversations, and sidebar modules with cleaner empty states.
 - Dashboard home now surfaces activation, health, and expansion growth signals for the workspace.

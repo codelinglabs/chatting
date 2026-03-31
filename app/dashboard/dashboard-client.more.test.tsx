@@ -24,6 +24,7 @@ async function loadDashboardClient(stateOverrides: Record<string, unknown> = {})
   vi.resetModules();
   const reactMocks = createMockReactHooks();
   const navigation = { navigate: vi.fn() };
+  const unreadCount = { setUnreadCount: vi.fn() };
   const state = {
     conversations: [createConversationSummary(), createConversationSummary({ id: "conv_2", status: "resolved" })],
     filteredConversations: [createConversationSummary(), createConversationSummary({ id: "conv_2", status: "resolved" })],
@@ -52,6 +53,11 @@ async function loadDashboardClient(stateOverrides: Record<string, unknown> = {})
 
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("./dashboard-shell", () => ({ useDashboardNavigation: () => navigation }));
+  vi.doMock("./dashboard-unread-count", () => ({
+    countUnreadConversations: (conversations: Array<{ unreadCount: number }>) =>
+      conversations.reduce((count, conversation) => count + conversation.unreadCount, 0),
+    useSetDashboardUnreadCount: () => unreadCount.setUnreadCount
+  }));
   vi.doMock("./use-dashboard-state", () => ({ useDashboardState: () => state }));
   vi.doMock("./dashboard-thread-detail", () => ({ DashboardThreadDetail: "dashboard-thread-detail" }));
   vi.doMock("./dashboard-threads-panel", () => ({ DashboardThreadsPanel: "dashboard-threads-panel" }));
@@ -59,7 +65,7 @@ async function loadDashboardClient(stateOverrides: Record<string, unknown> = {})
   vi.doMock("./dashboard-ui", () => ({ SearchIcon: "search-icon" }));
 
   const module = await import("./dashboard-client");
-  return { DashboardClient: module.DashboardClient, navigation, reactMocks, state };
+  return { DashboardClient: module.DashboardClient, navigation, reactMocks, state, unreadCount };
 }
 
 describe("dashboard client more", () => {

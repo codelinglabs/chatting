@@ -1,10 +1,6 @@
 import type { ReactNode, ReactElement } from "react";
 import type { DashboardClientProps } from "./dashboard-client.types";
-import {
-  createConversationSummary,
-  createConversationThread,
-  createSite
-} from "./use-dashboard-actions.test-helpers";
+import { createConversationSummary, createConversationThread, createSite } from "./use-dashboard-actions.test-helpers";
 import { createMockReactHooks, runMockEffects } from "./test-react-hooks";
 
 function createProps(): DashboardClientProps {
@@ -25,10 +21,7 @@ function collectElements(node: ReactNode, predicate: (element: ReactElement) => 
     return node.flatMap((child) => collectElements(child, predicate));
   }
   const element = node as ReactElement;
-  return [
-    ...(predicate(element) ? [element] : []),
-    ...collectElements(element.props?.children, predicate)
-  ];
+  return [...(predicate(element) ? [element] : []), ...collectElements(element.props?.children, predicate)];
 }
 
 function textOf(node: ReactNode): string {
@@ -48,6 +41,7 @@ async function loadDashboardClient() {
   vi.resetModules();
   const reactMocks = createMockReactHooks();
   const navigation = { navigate: vi.fn() };
+  const unreadCount = { setUnreadCount: vi.fn() };
   const state = {
     conversations: [createConversationSummary(), createConversationSummary({ id: "conv_2" })],
     filteredConversations: [createConversationSummary(), createConversationSummary({ id: "conv_2" })],
@@ -75,17 +69,19 @@ async function loadDashboardClient() {
 
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("./dashboard-shell", () => ({ useDashboardNavigation: () => navigation }));
+  vi.doMock("./dashboard-unread-count", () => ({
+    countUnreadConversations: (conversations: Array<{ unreadCount: number }>) =>
+      conversations.reduce((count, conversation) => count + conversation.unreadCount, 0),
+    useSetDashboardUnreadCount: () => unreadCount.setUnreadCount
+  }));
   vi.doMock("./use-dashboard-state", () => ({ useDashboardState: () => state }));
   vi.doMock("./dashboard-thread-detail", () => ({ DashboardThreadDetail: "dashboard-thread-detail" }));
   vi.doMock("./dashboard-threads-panel", () => ({ DashboardThreadsPanel: "dashboard-threads-panel" }));
-  vi.doMock("@/lib/user-display", () => ({
-    displayNameFromEmail: () => "Tina Bauer",
-    initialsFromLabel: () => "TB"
-  }));
+  vi.doMock("@/lib/user-display", () => ({ displayNameFromEmail: () => "Tina Bauer", initialsFromLabel: () => "TB" }));
   vi.doMock("./dashboard-ui", () => ({ SearchIcon: "search-icon" }));
 
   const module = await import("./dashboard-client");
-  return { DashboardClient: module.DashboardClient, navigation, reactMocks, state };
+  return { DashboardClient: module.DashboardClient, navigation, reactMocks, state, unreadCount };
 }
 
 describe("dashboard client", () => {
@@ -112,7 +108,7 @@ describe("dashboard client", () => {
       history: { pushState: vi.fn() }
     });
 
-    const { DashboardClient, reactMocks } = await loadDashboardClient();
+    const { DashboardClient, reactMocks, unreadCount } = await loadDashboardClient();
     reactMocks.beginRender();
     const tree = DashboardClient(createProps());
     const cleanups = await runMockEffects(reactMocks.effects);
@@ -121,6 +117,7 @@ describe("dashboard client", () => {
     const details = collectElements(tree, (element) => element.type === "dashboard-thread-detail");
 
     expect(fetchMock).toHaveBeenCalledWith("/dashboard/presence", expect.objectContaining({ method: "POST" }));
+    expect(unreadCount.setUnreadCount).toHaveBeenCalledWith(2);
     expect((globalThis.window as Window).setInterval).toHaveBeenCalledWith(expect.any(Function), 30000);
     listeners.focus?.();
     expect(fetchMock).toHaveBeenCalledTimes(2);

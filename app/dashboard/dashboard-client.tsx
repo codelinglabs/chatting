@@ -11,6 +11,7 @@ import {
   renderDashboardShortcutsDialog
 } from "./dashboard-client-overlays";
 import { renderDashboardClientPanels } from "./dashboard-client-panels";
+import { countUnreadConversations, useSetDashboardUnreadCount } from "./dashboard-unread-count";
 import { useDashboardNavigation } from "./dashboard-shell";
 import { useDashboardInboxKeyboardShortcuts } from "./use-dashboard-inbox-keyboard-shortcuts";
 import { useDashboardPresenceHeartbeat } from "./use-dashboard-presence-heartbeat";
@@ -20,7 +21,9 @@ const SEARCH_INPUT_ID = "dashboard-inbox-search";
 
 export function DashboardClient(props: DashboardClientProps) {
   const dashboardNavigation = useDashboardNavigation();
+  const setDashboardUnreadCount = useSetDashboardUnreadCount();
   const state = useDashboardState(props);
+  const unreadCount = countUnreadConversations(state.conversations);
   const initialWidgetInstalled = props.initialSites.some((site) => isSiteWidgetInstalled(site));
   const widgetSiteIds = props.initialSites.map((site) => site.id);
   const teamName = displayNameFromEmail(props.userEmail);
@@ -33,6 +36,10 @@ export function DashboardClient(props: DashboardClientProps) {
   const [keyboardConversationId, setKeyboardConversationId] = useState<string | null>(state.activeConversation?.id ?? state.filteredConversations[0]?.id ?? null);
 
   useDashboardPresenceHeartbeat();
+
+  useEffect(() => {
+    setDashboardUnreadCount?.(unreadCount);
+  }, [unreadCount, setDashboardUnreadCount]);
 
   useEffect(() => {
     if (!state.activeConversation) {

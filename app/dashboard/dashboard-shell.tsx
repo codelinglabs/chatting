@@ -12,6 +12,8 @@ import { usePathname, useRouter } from "next/navigation";
 import type { DashboardSettingsNotifications } from "@/lib/data/settings-types";
 import { classNames } from "@/lib/utils";
 import { DashboardNotificationCenter } from "./dashboard-notification-center";
+import { DashboardUnreadCountProvider } from "./dashboard-unread-count";
+import { useDashboardLiveUnreadCount } from "./use-dashboard-live-unread-count";
 import {
   DashboardHeader,
   dashboardGreeting,
@@ -46,6 +48,7 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
   const effectivePath = pendingHref ? pathFromHref(pendingHref) : pathname;
   const isInboxRoute = effectivePath === "/dashboard/inbox";
   const [hour, setHour] = useState<number | null>(null);
+  const { unreadCount: liveUnreadCount, setUnreadCount } = useDashboardLiveUnreadCount(unreadCount);
 
   useEffect(() => {
     setHour(new Date().getHours());
@@ -138,52 +141,57 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
 
   const greeting = dashboardGreeting(hour);
   const headerText = routeHeaderText(effectivePath, firstName, greeting);
-  const showPendingOverlay = Boolean(pendingHref && pathFromHref(pendingHref) !== pathname) || isNavigating;
+  const pendingPath = pendingHref ? pathFromHref(pendingHref) : null;
+  const isQueryOnlyNavigation = Boolean(pendingPath && pendingPath === pathname);
+  const showPendingOverlay =
+    !isQueryOnlyNavigation && (Boolean(pendingPath && pendingPath !== pathname) || isNavigating);
 
   return (
-    <DashboardNavigationContext.Provider value={{ navigate, onLinkNavigate: handleNavigate }}>
-      <div
-        className={classNames(
-          "min-h-screen bg-slate-50 text-slate-900",
-          isInboxRoute && "lg:h-screen lg:overflow-hidden"
-        )}
-      >
-        <DashboardNotificationCenter initialSettings={notificationSettings} />
-        <MobileChrome pathname={effectivePath} unreadCount={unreadCount} />
-
+    <DashboardUnreadCountProvider setUnreadCount={setUnreadCount}>
+      <DashboardNavigationContext.Provider value={{ navigate, onLinkNavigate: handleNavigate }}>
         <div
           className={classNames(
-            "lg:grid lg:grid-cols-[264px_minmax(0,1fr)]",
-            isInboxRoute && "lg:h-screen lg:min-h-0 lg:grid-rows-[minmax(0,1fr)]"
+            "min-h-screen bg-slate-50 text-slate-900",
+            isInboxRoute && "lg:h-screen lg:overflow-hidden"
           )}
         >
-          <DesktopSidebar
-            pathname={effectivePath}
-            unreadCount={unreadCount}
-            initials={initials}
-            displayName={displayName}
-            userEmail={userEmail}
-          />
+          <DashboardNotificationCenter initialSettings={notificationSettings} />
+          <MobileChrome pathname={effectivePath} unreadCount={liveUnreadCount} />
 
           <div
             className={classNames(
-              "min-w-0",
-              isInboxRoute && "lg:flex lg:h-screen lg:min-h-0 lg:flex-col lg:overflow-hidden"
+              "lg:grid lg:grid-cols-[264px_minmax(0,1fr)]",
+              isInboxRoute && "lg:h-screen lg:min-h-0 lg:grid-rows-[minmax(0,1fr)]"
             )}
           >
-            <DashboardHeader
-              headerText={headerText}
-              showUnreadBadge={isInboxRoute}
-              unreadCount={unreadCount}
+            <DesktopSidebar
+              pathname={effectivePath}
+              unreadCount={liveUnreadCount}
               initials={initials}
-              firstName={firstName}
+              displayName={displayName}
+              userEmail={userEmail}
             />
-            <DashboardMain isInboxRoute={isInboxRoute} showPendingOverlay={showPendingOverlay}>
-              {children}
-            </DashboardMain>
+
+            <div
+              className={classNames(
+                "min-w-0",
+                isInboxRoute && "lg:flex lg:h-screen lg:min-h-0 lg:flex-col lg:overflow-hidden"
+              )}
+            >
+              <DashboardHeader
+                headerText={headerText}
+                showUnreadBadge={isInboxRoute}
+                unreadCount={liveUnreadCount}
+                initials={initials}
+                firstName={firstName}
+              />
+              <DashboardMain isInboxRoute={isInboxRoute} showPendingOverlay={showPendingOverlay}>
+                {children}
+              </DashboardMain>
+            </div>
           </div>
         </div>
-      </div>
-    </DashboardNavigationContext.Provider>
+      </DashboardNavigationContext.Provider>
+    </DashboardUnreadCountProvider>
   );
 }
