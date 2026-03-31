@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Added dynamic Edge ImageResponse generation for customized Open Graph social cards and a brand-aligned SVG favicon.
 - Refreshed the shipped `/widget.js` runtime so it carries the latest branding-aware site config, richer site-status payloads, and route-change refresh behavior.
 - Renamed the app-side widget injector from `chatly-script` to `chatting-script` and removed a stale email transport concern from the contributor log.
 - Refreshed contributor docs and planning notes with Chatting branding, a current concerns log, growth strategy notes, and OG image reference guides.
@@ -77,6 +78,8 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Auth failures now stay in shared toast notifications with generic user-safe copy instead of showing deployment or server setup details in the UI.
 - Shared button-link controls now accept both string and object hrefs so invite and auth flows can pass structured Next.js routes safely.
 - Shared layout, auth wrappers, toast plumbing, newsletter actions, and form controls now have dedicated regression coverage.
+- Added dynamic Open Graph image generation via `/api/og` to dynamically support brand-aligned social sharing cards for all marketing and blog routes.
+- Added Edge-rendered SVG favicon via `app/icon.tsx` for crisp browser tab identity.
 
 ### Onboarding
 
