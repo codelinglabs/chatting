@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Hardened Vercel server packaging for Postgres by replacing the opaque `pg` runtime import with a traceable server import and adding a postbuild trace check that fails if `pg` drops out of Next.js server output.
 - Resolved a Vercel Node.js Serverless deployment bug bridging Edge ImageResponse limits by routing font loading through the native fs layer and forcing the postgres driver to bundle natively.
 - Added dynamic Edge ImageResponse generation for customized Open Graph social cards and a brand-aligned SVG favicon.
 - Unified Growth billing around the live `$20 / $6 / $5 / $4` seat pricing, slider-aware landing totals, legacy Pro cleanup, and Stripe tier validation with development-specific Stripe env support.
@@ -117,7 +118,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Billing & Operations
 
-- Next.js serverExternalPackages specifically configures Vercel's Node File Trace to preserve and bundle the native `pg` database driver securely, resolving deployment NOT_FOUND errors.
+- Postgres server packaging now uses a traceable `pg` import plus a postbuild trace verification step so Vercel deploys fail fast if Next.js stops tracing the database driver into server output.
 - Stripe-backed billing flows for checkout, portal access, invoice sync, and webhook handling.
 - Growth billing now runs from a shared seat-pricing config, validates Stripe's tiered Growth price shape before checkout, and prefers `STRIPE_DEV_*` billing credentials and price ids outside production.
 - Billing price resolution now relies only on the current Growth Stripe price ids.

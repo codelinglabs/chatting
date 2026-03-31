@@ -19,7 +19,7 @@ const SCHEMA_VERSION = "2026-03-30-weekly-performance-schema";
 
 async function createPool() {
   const config = getDatabaseConfig();
-  const { Pool } = await import(/* webpackIgnore: true */ "pg");
+  const { Pool } = await import("pg");
 
   return new Pool({
     connectionString: config.connectionString
