@@ -146,4 +146,28 @@ describe("use dashboard state", () => {
     expect(reactMocks.states[2]?.current).toBeNull();
     expect(reactMocks.states[3]?.current).toBeNull();
   });
+
+  it("does not keep a server-loaded routed conversation marked as loading", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("window", { history: { replaceState: vi.fn() } });
+
+    const { reactMocks, useDashboardState } = await loadDashboardState({
+      search: "id=conv_1"
+    });
+
+    reactMocks.beginRender();
+    useDashboardState(
+      createProps({
+        initialActiveConversation: createConversationThread({ id: "conv_1" })
+      })
+    );
+    await runMockEffects(reactMocks.effects);
+
+    expect(reactMocks.states[3]?.current).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      "/dashboard/conversation?conversationId=conv_1",
+      expect.anything()
+    );
+  });
 });

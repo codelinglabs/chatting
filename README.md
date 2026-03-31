@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Removed the dashboard’s custom pending overlays so navigation now relies on the shared route skeleton, while tightening inbox thread loading state to avoid stale loading flashes.
 - Preserved the original page URL where a visitor started a conversation in the dashboard thread detail, removed page/location badges from preview lists, and consolidated shared conversation display formatting across inbox and home cards.
 - Synced dashboard unread badges across the inbox, shell header, and sidebar so opening or receiving conversations updates counts immediately without a manual refresh.
 - Hardened Vercel server packaging for Postgres by replacing the opaque `pg` runtime import with a traceable server import and adding a postbuild trace check that fails if `pg` drops out of Next.js server output.
@@ -107,6 +108,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Dashboard
 
 - Shared dashboard shell with focused pages for inbox, visitors, analytics, team, settings, and widget setup.
+- Dashboard navigation now relies on the route-level skeleton only, and inbox thread selection clears stale loading state without the extra shell overlay layer.
 - Dashboard conversation previews now stay message-only, and the thread detail sidebar preserves the original visitor page URL from when the conversation started instead of drifting with later navigation.
 - Dashboard unread badges now clear immediately on thread open and stay live across the shell header and sidebar when visitor messages or read events stream in.
 - Dashboard inbox install prompts now disappear once the widget is live and share the same install-state wiring across the sidebar card and empty conversation list.

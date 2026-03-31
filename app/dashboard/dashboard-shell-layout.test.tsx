@@ -28,7 +28,6 @@ import {
   DashboardMain,
   DesktopSidebar,
   MobileChrome,
-  PendingOverlay,
   dashboardGreeting,
   getDashboardIdentity,
   routeHeaderText
@@ -52,16 +51,6 @@ describe("dashboard shell layout", () => {
     expect(routeHeaderText("/dashboard/unknown", "Tina", "Hello").title).toBe("Dashboard");
     expect(dashboardGreeting(null)).toBe("Hello");
     expect(dashboardGreeting(9)).toBe("Good morning");
-  });
-
-  it("renders both pending overlay variants", () => {
-    const inboxHtml = renderToStaticMarkup(<PendingOverlay isInboxRoute />);
-    const pageHtml = renderToStaticMarkup(<PendingOverlay isInboxRoute={false} />);
-
-    expect(inboxHtml).toContain("pointer-events-none absolute inset-0 z-10 bg-white");
-    expect(inboxHtml).toContain("lg:grid-cols-[280px_minmax(0,1fr)_300px]");
-    expect(pageHtml).toContain("pointer-events-none absolute inset-0 z-10 bg-slate-50");
-    expect(pageHtml).toContain("xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]");
   });
 
   it("renders mobile and desktop navigation chrome", () => {
@@ -113,18 +102,17 @@ describe("dashboard shell layout", () => {
 
   it("renders inbox and standard main layouts", () => {
     const inboxHtml = renderToStaticMarkup(
-      <DashboardMain isInboxRoute showPendingOverlay>
+      <DashboardMain isInboxRoute>
         <section>Inbox content</section>
       </DashboardMain>
     );
     const pageHtml = renderToStaticMarkup(
-      <DashboardMain isInboxRoute={false} showPendingOverlay={false}>
+      <DashboardMain isInboxRoute={false}>
         <section>Settings content</section>
       </DashboardMain>
     );
 
     expect(inboxHtml).toContain("lg:flex-1 lg:min-h-0 lg:overflow-hidden");
-    expect(inboxHtml).toContain("pointer-events-none opacity-0");
     expect(inboxHtml).toContain("Inbox content");
     expect(pageHtml).toContain("px-4 py-6 sm:px-6 lg:px-8");
     expect(pageHtml).toContain("Settings content");

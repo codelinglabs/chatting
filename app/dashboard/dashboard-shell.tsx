@@ -3,7 +3,6 @@
 import {
   useEffect,
   useState,
-  useTransition,
   type MouseEvent,
   type ReactNode
 } from "react";
@@ -25,7 +24,6 @@ import {
 } from "./dashboard-shell-layout";
 import {
   DashboardNavigationContext,
-  pathFromHref,
   PRIMARY_NAV,
   SETTINGS_NAV
 } from "./dashboard-shell-navigation";
@@ -42,11 +40,8 @@ type DashboardShellProps = {
 export function DashboardShell({ children, userEmail, unreadCount, notificationSettings }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isNavigating, startNavigation] = useTransition();
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
   const { displayName, firstName, initials } = getDashboardIdentity(userEmail);
-  const effectivePath = pendingHref ? pathFromHref(pendingHref) : pathname;
-  const isInboxRoute = effectivePath === "/dashboard/inbox";
+  const isInboxRoute = pathname === "/dashboard/inbox";
   const [hour, setHour] = useState<number | null>(null);
   const { unreadCount: liveUnreadCount, setUnreadCount } = useDashboardLiveUnreadCount(unreadCount);
 
@@ -61,12 +56,6 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
       router.prefetch(href);
     }
   }, [router]);
-
-  useEffect(() => {
-    if (pendingHref && pathFromHref(pendingHref) === pathname) {
-      setPendingHref(null);
-    }
-  }, [pathname, pendingHref]);
 
   useEffect(() => {
     if (!isInboxRoute) {
@@ -117,10 +106,7 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
       return;
     }
 
-    setPendingHref(href);
-    startNavigation(() => {
-      router.push(href as Route);
-    });
+    router.push(href as Route);
   }
 
   function handleNavigate(event: MouseEvent<HTMLElement>, href: string) {
@@ -140,11 +126,7 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
   }
 
   const greeting = dashboardGreeting(hour);
-  const headerText = routeHeaderText(effectivePath, firstName, greeting);
-  const pendingPath = pendingHref ? pathFromHref(pendingHref) : null;
-  const isQueryOnlyNavigation = Boolean(pendingPath && pendingPath === pathname);
-  const showPendingOverlay =
-    !isQueryOnlyNavigation && (Boolean(pendingPath && pendingPath !== pathname) || isNavigating);
+  const headerText = routeHeaderText(pathname, firstName, greeting);
 
   return (
     <DashboardUnreadCountProvider setUnreadCount={setUnreadCount}>
@@ -156,7 +138,7 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
           )}
         >
           <DashboardNotificationCenter initialSettings={notificationSettings} />
-          <MobileChrome pathname={effectivePath} unreadCount={liveUnreadCount} />
+          <MobileChrome pathname={pathname} unreadCount={liveUnreadCount} />
 
           <div
             className={classNames(
@@ -165,7 +147,7 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
             )}
           >
             <DesktopSidebar
-              pathname={effectivePath}
+              pathname={pathname}
               unreadCount={liveUnreadCount}
               initials={initials}
               displayName={displayName}
@@ -185,7 +167,7 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
                 initials={initials}
                 firstName={firstName}
               />
-              <DashboardMain isInboxRoute={isInboxRoute} showPendingOverlay={showPendingOverlay}>
+              <DashboardMain isInboxRoute={isInboxRoute}>
                 {children}
               </DashboardMain>
             </div>

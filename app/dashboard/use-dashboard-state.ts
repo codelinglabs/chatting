@@ -23,10 +23,12 @@ export function useDashboardState({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const routeConversationId = searchParams?.get("id")?.trim() || null;
+  const initialLoadingConversationId =
+    routeConversationId && routeConversationId !== initialActiveConversation?.id ? routeConversationId : null;
   const [sites, setSites] = useState(initialSites);
   const [conversations, setConversations] = useState(initialConversations);
   const [activeConversation, setActiveConversation] = useState(initialActiveConversation);
-  const [loadingConversationId, setLoadingConversationId] = useState<string | null>(routeConversationId);
+  const [loadingConversationId, setLoadingConversationId] = useState<string | null>(initialLoadingConversationId);
   const [answeredConversations, setAnsweredConversations] = useState(initialStats.answeredConversations);
   const [ratedConversations, setRatedConversations] = useState(initialStats.ratedConversations);
   const [banner, setBanner] = useState<BannerState>(null);
@@ -118,14 +120,18 @@ export function useDashboardState({
     }
   }
 
+  function syncActiveConversation(conversation: ConversationThread) {
+    setActiveConversation(conversation);
+    syncSummary(toSummary(conversation), true);
+  }
+
   async function refreshConversation(conversationId: string) {
     const conversation = await fetchConversationById(conversationId);
     if (!conversation) {
       return null;
     }
 
-    setActiveConversation(conversation);
-    syncSummary(toSummary(conversation), true);
+    syncActiveConversation(conversation);
     return conversation;
   }
 
@@ -134,22 +140,13 @@ export function useDashboardState({
     setLoadingConversationId(conversationId);
 
     const cached = conversationCacheRef.current.get(conversationId);
-    if (cached) {
-      setActiveConversation(cached);
-      syncSummary(toSummary(cached), true);
-      setLoadingConversationId(null);
-      void markConversationAsRead(conversationId);
-      return cached;
-    }
-
-    const conversation = await fetchConversationById(conversationId);
-    if (openRequestIdRef.current !== requestId) {
+    const conversation = cached ?? await fetchConversationById(conversationId);
+    if (!cached && openRequestIdRef.current !== requestId) {
       return conversation;
     }
 
     if (conversation) {
-      setActiveConversation(conversation);
-      syncSummary(toSummary(conversation), true);
+      syncActiveConversation(conversation);
       void markConversationAsRead(conversationId);
     }
 
@@ -225,15 +222,19 @@ export function useDashboardState({
       return;
     }
 
-    if (
-      routeConversationId === activeConversationIdRef.current ||
-      routeConversationId === loadingConversationId
-    ) {
+    if (routeConversationId === activeConversation?.id) {
+      if (loadingConversationId) {
+        setLoadingConversationId(null);
+      }
+      return;
+    }
+
+    if (routeConversationId === loadingConversationId) {
       return;
     }
 
     void openConversation(routeConversationId);
-  }, [pathname, routeConversationId, loadingConversationId]);
+  }, [pathname, routeConversationId, activeConversation?.id, loadingConversationId]);
 
   useEffect(() => {
     const currentTypingConversationId = activeTypingConversationIdRef.current;

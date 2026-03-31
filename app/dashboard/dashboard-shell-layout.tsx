@@ -78,106 +78,6 @@ export function dashboardGreeting(hour: number | null) {
   return hour == null ? "Hello" : greetingForHour(hour);
 }
 
-export function PendingOverlay({ isInboxRoute }: { isInboxRoute: boolean }) {
-  if (isInboxRoute) {
-    return (
-      <div className="pointer-events-none absolute inset-0 z-10 bg-white">
-        <div className="grid h-full min-h-0 lg:grid-cols-[280px_minmax(0,1fr)_300px]">
-          <div className="hidden border-r border-slate-200 bg-white lg:block">
-            <div className="space-y-3 p-4">
-              {Array.from({ length: 6 }, (_, index) => (
-                <div key={index} className="rounded-lg bg-slate-50 p-3">
-                  <div className="flex items-start gap-3">
-                    <div className="h-9 w-9 rounded-full bg-slate-100" />
-                    <div className="min-w-0 flex-1">
-                      <div className="h-3 w-24 rounded-full bg-slate-100" />
-                      <div className="mt-2 h-3 w-36 rounded-full bg-slate-100" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex min-h-0 flex-col bg-white">
-            <div className="border-b border-slate-200 px-5 py-4">
-              <div className="h-4 w-40 rounded-full bg-slate-100" />
-              <div className="mt-2 h-3 w-56 rounded-full bg-slate-100" />
-            </div>
-            <div className="flex-1 space-y-5 p-5">
-              {Array.from({ length: 5 }, (_, index) => (
-                <div key={index} className={index % 2 ? "flex justify-end" : "flex justify-start"}>
-                  <div className="max-w-[70%] rounded-xl bg-slate-100 px-4 py-3">
-                    <div className="h-3 w-28 rounded-full bg-white/80" />
-                    <div className="mt-2 h-3 w-44 rounded-full bg-white/80" />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="border-t border-slate-200 p-4">
-              <div className="h-24 rounded-xl bg-slate-50" />
-            </div>
-          </div>
-
-          <div className="hidden bg-white p-5 xl:block">
-            <div className="rounded-xl border border-slate-200 p-5">
-              <div className="mx-auto h-16 w-16 rounded-full bg-slate-100" />
-              <div className="mx-auto mt-4 h-4 w-24 rounded-full bg-slate-100" />
-              <div className="mt-6 space-y-3">
-                {Array.from({ length: 7 }, (_, index) => (
-                  <div key={index} className="h-3 rounded-full bg-slate-100" />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="pointer-events-none absolute inset-0 z-10 bg-slate-50">
-      <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }, (_, index) => (
-            <div key={index} className="rounded-xl border border-slate-200 bg-white p-5">
-              <div className="h-3 w-24 rounded-full bg-slate-100" />
-              <div className="mt-4 h-8 w-20 rounded-full bg-slate-100" />
-            </div>
-          ))}
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-          <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <div className="h-4 w-40 rounded-full bg-slate-100" />
-            <div className="mt-6 space-y-4">
-              {Array.from({ length: 5 }, (_, index) => (
-                <div key={index} className="h-16 rounded-xl bg-slate-50" />
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="rounded-xl border border-slate-200 bg-white p-6">
-              <div className="h-4 w-28 rounded-full bg-slate-100" />
-              <div className="mt-5 space-y-3">
-                {Array.from({ length: 4 }, (_, index) => (
-                  <div key={index} className="h-12 rounded-lg bg-slate-50" />
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-slate-200 bg-white p-6">
-              <div className="h-4 w-32 rounded-full bg-slate-100" />
-              <div className="mt-5 h-40 rounded-xl bg-slate-50" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function AppLogo() {
   return (
     <DashboardLink href="/dashboard" className="flex items-center gap-3">
@@ -402,12 +302,10 @@ export function DashboardHeader({
 
 export function DashboardMain({
   isInboxRoute,
-  children,
-  showPendingOverlay
+  children
 }: {
   isInboxRoute: boolean;
   children: ReactNode;
-  showPendingOverlay: boolean;
 }) {
   if (isInboxRoute) {
     return (
@@ -420,12 +318,7 @@ export function DashboardMain({
               "lg:overflow-hidden lg:rounded-xl lg:border lg:border-slate-200 lg:bg-white"
             )}
           >
-            <div className="relative h-full min-h-0">
-              <div className={classNames("h-full min-h-0", showPendingOverlay && "pointer-events-none opacity-0")}>
-                {children}
-              </div>
-              {showPendingOverlay ? <PendingOverlay isInboxRoute /> : null}
-            </div>
+            {children}
           </div>
         </div>
       </main>
@@ -434,10 +327,7 @@ export function DashboardMain({
 
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
-      <div className={classNames(DASHBOARD_FRAME_CLASS, "relative")}>
-        <div className={classNames(showPendingOverlay && "pointer-events-none opacity-0")}>{children}</div>
-        {showPendingOverlay ? <PendingOverlay isInboxRoute={false} /> : null}
-      </div>
+      <div className={DASHBOARD_FRAME_CLASS}>{children}</div>
     </main>
   );
 }

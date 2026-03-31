@@ -3,17 +3,12 @@ import { createMockReactHooks, runMockEffects } from "./test-react-hooks";
 
 async function loadDashboardShell(options?: {
   pathname?: string;
-  pendingHref?: string | null;
-  isNavigating?: boolean;
   liveUnreadCount?: number;
 }) {
   vi.resetModules();
   const captures: Record<string, unknown> = {};
   const router = { prefetch: vi.fn(), push: vi.fn() };
-  const reactMocks = createMockReactHooks({
-    stateOverrides: new Map([[0, options?.pendingHref ?? null], [1, null]]),
-    transitionPending: options?.isNavigating ?? false
-  });
+  const reactMocks = createMockReactHooks();
 
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("next/navigation", () => ({
@@ -67,8 +62,7 @@ async function loadDashboardShell(options?: {
       }
     },
     PRIMARY_NAV: [{ href: "/dashboard" }, { href: "/dashboard/inbox" }],
-    SETTINGS_NAV: [{ href: "/dashboard/settings" }],
-    pathFromHref: (href: string) => href.split(/[?#]/)[0]
+    SETTINGS_NAV: [{ href: "/dashboard/settings" }]
   }));
   vi.doMock("@/lib/utils", () => ({
     classNames: (...values: Array<string | false | null | undefined>) => values.filter(Boolean).join(" ")
@@ -111,7 +105,7 @@ describe("dashboard shell", () => {
     expect(captures.header).toEqual(
       expect.objectContaining({ showUnreadBadge: true, unreadCount: 3, firstName: "Tina" })
     );
-    expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: true, showPendingOverlay: false }));
+    expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: true }));
     expect(router.prefetch).toHaveBeenCalledTimes(3);
     expect((globalThis.document as Document).documentElement.style.overflow).toBe("hidden");
     cleanups.at(-1)?.();
@@ -124,9 +118,7 @@ describe("dashboard shell", () => {
       location: { pathname: "/dashboard", search: "", hash: "" }
     });
     const { DashboardShell, captures, reactMocks, router } = await loadDashboardShell({
-      pathname: "/dashboard",
-      pendingHref: "/dashboard/settings?section=billing",
-      isNavigating: true
+      pathname: "/dashboard"
     });
 
     reactMocks.beginRender();
@@ -141,11 +133,11 @@ describe("dashboard shell", () => {
     );
     await runMockEffects(reactMocks.effects);
 
-    expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: false, showPendingOverlay: true }));
+    expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: false }));
+    expect(captures.mobile).toEqual({ pathname: "/dashboard", unreadCount: 0 });
 
     const navigation = captures.navigation as { navigate: (href: string) => void; onLinkNavigate: (event: Record<string, unknown>, href: string) => void };
     navigation.navigate("/dashboard/settings");
-    expect(reactMocks.states[0]?.current).toBe("/dashboard/settings");
     expect(router.push).toHaveBeenCalledWith("/dashboard/settings");
 
     const prevented = vi.fn();
@@ -169,29 +161,6 @@ describe("dashboard shell", () => {
     expect(captures.mobile).toEqual({ pathname: "/dashboard/visitors", unreadCount: 5 });
     expect(captures.sidebar).toEqual(expect.objectContaining({ unreadCount: 5 }));
     expect(captures.header).toEqual(expect.objectContaining({ unreadCount: 5 }));
-    vi.unstubAllGlobals();
-  });
-
-  it("skips the pending overlay for same-path inbox query transitions", async () => {
-    vi.stubGlobal("document", {
-      body: { style: { overflow: "", overscrollBehavior: "" } },
-      documentElement: { style: { overflow: "", overscrollBehavior: "" } }
-    });
-    vi.stubGlobal("window", {
-      location: { pathname: "/dashboard/inbox", search: "?id=conv_1", hash: "" },
-      matchMedia: () => ({
-        matches: true,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn()
-      })
-    });
-    const { DashboardShell, captures, reactMocks } = await loadDashboardShell({ pathname: "/dashboard/inbox", pendingHref: "/dashboard/inbox?id=conv_2", isNavigating: true });
-
-    reactMocks.beginRender();
-    renderToStaticMarkup(<DashboardShell userEmail="tina@usechatting.com" unreadCount={1} notificationSettings={{} as never}><div>content</div></DashboardShell>);
-    await runMockEffects(reactMocks.effects);
-
-    expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: true, showPendingOverlay: false }));
     vi.unstubAllGlobals();
   });
 });
