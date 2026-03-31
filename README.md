@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Added shared app-shell, public auth wrapper, toast, newsletter, and form-control regression coverage.
 - Added broad onboarding regression coverage across flow actions, shared helpers, page entry, team setup, and screen states.
 - Added focused regression coverage for the free-tool export gate plus the response-time, response-tone, and welcome-message tools.
 - Aligned the public landing and pricing surfaces with Chatting copy, shared section typing, and route-level marketing page coverage.
@@ -72,6 +73,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Dedicated login and signup screens with shared form controls, referral-aware owner signup, invite-based teammate access, password reset flows, and direct onboarding handoff.
 - Auth failures now stay in shared toast notifications with generic user-safe copy instead of showing deployment or server setup details in the UI.
 - Shared button-link controls now accept both string and object hrefs so invite and auth flows can pass structured Next.js routes safely.
+- Shared layout, auth wrappers, toast plumbing, newsletter actions, and form controls now have dedicated regression coverage.
 
 ### Onboarding
 
