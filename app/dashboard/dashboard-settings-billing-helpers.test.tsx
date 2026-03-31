@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { DashboardBillingSummary } from "@/lib/data";
 import type { DashboardReferralSummary } from "@/lib/referrals";
 import { DashboardSettingsBillingBanners } from "./dashboard-settings-billing-banners";
-import { DashboardSettingsBillingTrialCard } from "./dashboard-settings-billing-trial-card";
 import { SettingsReferralsSection } from "./dashboard-settings-referrals-section";
 
 const referrals: DashboardReferralSummary = {
@@ -36,14 +35,11 @@ const baseBilling = {
   limitReached: false,
   nextBillingDate: "12 April 2026",
   trialEndsAt: "12 April 2026",
-  trialExtensionEligible: false,
-  trialExtensionUsedAt: null,
-  activityQualifiedForTrialExtension: false,
   subscriptionStatus: "trialing",
   customerId: "cus_123",
   portalAvailable: true,
   checkoutAvailable: true,
-  features: { billedPerSeat: true, proactiveChat: true, removeBranding: true, trialExtensions: true },
+  features: { billedPerSeat: true, proactiveChat: true, removeBranding: true },
   paymentMethod: null,
   invoices: [],
   referrals
@@ -54,18 +50,14 @@ describe("dashboard billing helper cards", () => {
     const paymentIssueHtml = renderToStaticMarkup(
       <DashboardSettingsBillingBanners
         billing={{ ...baseBilling, subscriptionStatus: "past_due" }}
-        trialExtensionPending={false}
         onOpenUpdatePayment={() => {}}
-        onExtendTrial={() => {}}
         onOpenBillingPortal={() => {}}
       />
     );
     const trialHtml = renderToStaticMarkup(
       <DashboardSettingsBillingBanners
-        billing={{ ...baseBilling, subscriptionStatus: "trialing", trialExtensionEligible: true }}
-        trialExtensionPending
+        billing={{ ...baseBilling, subscriptionStatus: "trialing" }}
         onOpenUpdatePayment={() => {}}
-        onExtendTrial={() => {}}
         onOpenBillingPortal={() => {}}
       />
     );
@@ -73,32 +65,8 @@ describe("dashboard billing helper cards", () => {
     expect(paymentIssueHtml).toContain("Payment failed");
     expect(paymentIssueHtml).toContain("Update now");
     expect(trialHtml).toContain("left in your trial");
-    expect(trialHtml).toContain("extend the trial by 7 days");
-    expect(trialHtml).toContain("Extending...");
-  });
-
-  it("hides the trial card when ineligible and shows the support copy when eligible", () => {
-    expect(
-      renderToStaticMarkup(
-        <DashboardSettingsBillingTrialCard
-          billing={{ ...baseBilling, trialExtensionEligible: false, trialEndsAt: null }}
-          trialExtensionPending={false}
-          onExtendTrial={() => {}}
-        />
-      )
-    ).toBe("");
-
-    const html = renderToStaticMarkup(
-      <DashboardSettingsBillingTrialCard
-        billing={{ ...baseBilling, trialExtensionEligible: true }}
-        trialExtensionPending={false}
-        onExtendTrial={() => {}}
-      />
-    );
-
-    expect(html).toContain("Need a little more time?");
-    expect(html).toContain("Extend trial by 7 days");
-    expect(html).toContain("12 April 2026");
+    expect(trialHtml).toContain("Add billing in Stripe by 12 April 2026 to avoid interruption.");
+    expect(trialHtml).toContain("Open billing");
   });
 
   it("renders the referrals section wrapper copy around the billing referrals card", () => {

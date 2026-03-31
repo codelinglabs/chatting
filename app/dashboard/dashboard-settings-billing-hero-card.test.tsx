@@ -22,9 +22,6 @@ const baseBilling = {
   limitReached: false,
   nextBillingDate: null,
   trialEndsAt: "12 April 2026",
-  trialExtensionEligible: false,
-  trialExtensionUsedAt: null,
-  activityQualifiedForTrialExtension: false,
   subscriptionStatus: "trialing",
   customerId: null,
   portalAvailable: true,
@@ -32,8 +29,7 @@ const baseBilling = {
   features: {
     billedPerSeat: true,
     proactiveChat: true,
-    removeBranding: true,
-    trialExtensions: true
+    removeBranding: true
   },
   paymentMethod: null,
   invoices: [],

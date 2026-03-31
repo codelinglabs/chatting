@@ -1,6 +1,6 @@
 "use client";
 
-import type { BillingInterval, BillingPlanKey, DashboardBillingSummary } from "@/lib/data";
+import type { BillingInterval, BillingPlanKey, DashboardBillingSummary } from "@/lib/data/billing-types";
 import { FormButton } from "../ui/form-controls";
 import { SettingsCard } from "./dashboard-settings-shared";
 import { WarningIcon } from "./dashboard-ui";

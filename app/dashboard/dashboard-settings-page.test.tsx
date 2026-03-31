@@ -95,9 +95,6 @@ async function renderSettingsPage(section: SettingsSection) {
       limitReached: false,
       nextBillingDate: null,
       trialEndsAt: null,
-      trialExtensionEligible: false,
-      trialExtensionUsedAt: null,
-      activityQualifiedForTrialExtension: false,
       subscriptionStatus: null,
       customerId: null,
       portalAvailable: false,
@@ -105,8 +102,7 @@ async function renderSettingsPage(section: SettingsSection) {
       features: {
         billedPerSeat: false,
         proactiveChat: false,
-        removeBranding: false,
-        trialExtensions: false
+        removeBranding: false
       },
       paymentMethod: null,
       invoices: [],

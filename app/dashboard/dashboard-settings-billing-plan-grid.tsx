@@ -5,7 +5,7 @@ import {
   type BillingInterval,
   type BillingPlanKey
 } from "@/lib/billing-plans";
-import type { DashboardBillingSummary } from "@/lib/data";
+import type { DashboardBillingSummary } from "@/lib/data/billing-types";
 import {
   CHATTING_GROWTH_CONTACT_TEAM_SIZE,
   getChattingGrowthPricingSummary

@@ -22,14 +22,11 @@ const baseBilling = {
   limitReached: false,
   nextBillingDate: null,
   trialEndsAt: null,
-  trialExtensionEligible: false,
-  trialExtensionUsedAt: null,
-  activityQualifiedForTrialExtension: false,
   subscriptionStatus: null,
   customerId: null,
   portalAvailable: true,
   checkoutAvailable: true,
-  features: { billedPerSeat: false, proactiveChat: false, removeBranding: false, trialExtensions: false },
+  features: { billedPerSeat: false, proactiveChat: false, removeBranding: false },
   paymentMethod: null,
   invoices: [],
   referrals: { programs: [], attributedSignups: [], rewards: [], pendingRewardCount: 0, earnedRewardCount: 0, earnedFreeMonths: 0, earnedDiscountCents: 0, earnedCommissionCents: 0 }
@@ -66,7 +63,6 @@ function renderSection(Component: (props: Record<string, unknown>) => JSX.Elemen
       selectedInterval="annual"
       billingPortalPending={false}
       billingSyncPending={false}
-      trialExtensionPending={false}
       {...handlers}
     />
   );
@@ -79,11 +75,11 @@ describe("settings billing section", () => {
     const onSetSelectedInterval = vi.fn();
     const { SettingsBillingSection, captures, reactMocks } = await loadBillingSection();
 
-    renderSection(SettingsBillingSection, reactMocks, baseBilling, { onOpenBillingPortal, onChangePlan, onRequestTrialExtension: vi.fn(), onSetSelectedInterval, onSyncBilling: vi.fn() });
+    renderSection(SettingsBillingSection, reactMocks, baseBilling, { onOpenBillingPortal, onChangePlan, onSetSelectedInterval, onSyncBilling: vi.fn() });
     expect((captures.hero as { actionLabel: string }).actionLabel).toBe("Start Growth");
     (captures.grid as { onSetSelectedInterval: (value: string) => void }).onSetSelectedInterval("monthly");
     (captures.hero as { onAction: () => void }).onAction();
-    renderSection(SettingsBillingSection, reactMocks, baseBilling, { onOpenBillingPortal, onChangePlan, onRequestTrialExtension: vi.fn(), onSetSelectedInterval, onSyncBilling: vi.fn() });
+    renderSection(SettingsBillingSection, reactMocks, baseBilling, { onOpenBillingPortal, onChangePlan, onSetSelectedInterval, onSyncBilling: vi.fn() });
     (captures.planModal as { onConfirm: () => void; intent: { mode: string; planKey: string; billingInterval: string } }).onConfirm();
 
     expect(onSetSelectedInterval).toHaveBeenCalledWith("monthly");
@@ -101,13 +97,13 @@ describe("settings billing section", () => {
     const growthBilling = { ...baseBilling, planKey: "growth", billingInterval: "monthly", priceLabel: "$29/month" } as DashboardBillingSummary;
     const { SettingsBillingSection, captures, reactMocks } = await loadBillingSection();
 
-    renderSection(SettingsBillingSection, reactMocks, growthBilling, { onOpenBillingPortal, onChangePlan: vi.fn(), onRequestTrialExtension: vi.fn(), onSetSelectedInterval: vi.fn(), onSyncBilling: vi.fn() });
+    renderSection(SettingsBillingSection, reactMocks, growthBilling, { onOpenBillingPortal, onChangePlan: vi.fn(), onSetSelectedInterval: vi.fn(), onSyncBilling: vi.fn() });
     (captures.hero as { onAction: () => void }).onAction();
     (captures.grid as { onSelectPlan: (plan: "starter", interval: "monthly") => void }).onSelectPlan("starter", "monthly");
-    renderSection(SettingsBillingSection, reactMocks, growthBilling, { onOpenBillingPortal, onChangePlan: vi.fn(), onRequestTrialExtension: vi.fn(), onSetSelectedInterval: vi.fn(), onSyncBilling: vi.fn() });
+    renderSection(SettingsBillingSection, reactMocks, growthBilling, { onOpenBillingPortal, onChangePlan: vi.fn(), onSetSelectedInterval: vi.fn(), onSyncBilling: vi.fn() });
     (captures.planModal as { onConfirm: () => void; intent: { mode: string } }).onConfirm();
     (captures.banners as { onOpenUpdatePayment: () => void }).onOpenUpdatePayment();
-    renderSection(SettingsBillingSection, reactMocks, growthBilling, { onOpenBillingPortal, onChangePlan: vi.fn(), onRequestTrialExtension: vi.fn(), onSetSelectedInterval: vi.fn(), onSyncBilling: vi.fn() });
+    renderSection(SettingsBillingSection, reactMocks, growthBilling, { onOpenBillingPortal, onChangePlan: vi.fn(), onSetSelectedInterval: vi.fn(), onSyncBilling: vi.fn() });
     (captures.paymentModal as { onConfirm: () => void; open: boolean }).onConfirm();
 
     expect((captures.planModal as { intent: { mode: string } }).intent.mode).toBe("downgrade");

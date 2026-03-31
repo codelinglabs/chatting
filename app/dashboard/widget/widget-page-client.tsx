@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { DashboardBillingSummary } from "@/lib/data";
+import type { DashboardBillingSummary } from "@/lib/data/billing-types";
 import type { Site } from "@/lib/types";
 
 const DashboardWidgetSettingsPage = dynamic(

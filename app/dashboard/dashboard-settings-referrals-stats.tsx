@@ -1,6 +1,6 @@
 "use client";
 
-import type { DashboardReferralSummary } from "@/lib/data";
+import type { DashboardReferralSummary } from "@/lib/referral-types";
 import { classNames } from "@/lib/utils";
 import {
   earnedValueLabel,
