@@ -5,18 +5,20 @@ import type { DashboardEmailTemplateKey } from "@/lib/email-templates";
 export async function findConversationTemplateContext(conversationId: string) {
   const result = await query<{
     conversation_id: string;
+    site_id: string;
+    session_id: string;
     user_id: string;
     site_name: string;
-    domain: string | null;
     email: string | null;
     plan_key: BillingPlanKey | null;
   }>(
     `
       SELECT
         c.id AS conversation_id,
+        c.site_id,
+        c.session_id,
         s.user_id,
         s.name AS site_name,
-        s.domain,
         c.email,
         ba.plan_key
       FROM conversations c
