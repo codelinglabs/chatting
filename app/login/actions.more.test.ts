@@ -31,7 +31,7 @@ describe("login actions more", () => {
     passwordResetMocks.requestPasswordReset.mockRejectedValueOnce(new Error("boom"));
     expect(await forgotPasswordAction(authForm({ email: "a@b.com" }))).toEqual({
       ok: false,
-      error: "We couldn't send the reset link just now. Check your server setup and try again.",
+      error: "We couldn't send the reset link right now. Please try again in a moment.",
       message: null
     });
 
@@ -49,7 +49,7 @@ describe("login actions more", () => {
     passwordResetMocks.resetPasswordWithToken.mockRejectedValueOnce(new Error("boom"));
     expect(await resetPasswordAction(authForm({ token: "t", password: "password123", confirmPassword: "password123" }))).toEqual({
       ok: false,
-      error: "We couldn't reset your password just now. Check your server setup and try again.",
+      error: "We couldn't reset your password right now. Please try again in a moment.",
       message: null
     });
   });

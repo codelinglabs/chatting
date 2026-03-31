@@ -26,6 +26,7 @@ async function renderSignupForm(searchParams?: Record<string, string>) {
   vi.doMock("../login/actions", () => ({
     signupAction: vi.fn()
   }));
+  vi.doMock("../ui/toast-provider", () => ({ useToast: () => ({ showToast: vi.fn() }) }));
 
   vi.doMock("react", async () => {
     const actual = await vi.importActual<typeof import("react")>("react");

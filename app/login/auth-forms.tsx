@@ -1,11 +1,16 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircleIcon } from "../dashboard/dashboard-ui";
-import { FormButton, FormErrorMessage, FormPasswordField, FormSubmitButton, FormTextField } from "../ui/form-controls";
-import { AuthFormIntro, AuthPageShell } from "./auth-shell";
+import { useToast } from "../ui/toast-provider";
+import {
+  AuthSuccessView,
+  ForgotPasswordView,
+  ResetPasswordView,
+  SignInAuthView
+} from "./auth-form-views";
+import { AuthPageShell } from "./auth-shell";
 import { forgotPasswordAction, loginAction, resetPasswordAction, type AuthActionState } from "./actions";
 
 type AuthMode = "signin" | "forgot" | "reset" | "success";
@@ -40,18 +45,19 @@ export function AuthForms({
   inviteEmail?: string;
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const inviteQuery = inviteId
     ? `?invite=${encodeURIComponent(inviteId)}${inviteEmail ? `&email=${encodeURIComponent(inviteEmail)}` : ""}`
     : "";
   const isInviteFlow = Boolean(inviteId);
   const [mode, setMode] = useState<AuthMode>(initialMode === "reset" && resetToken ? "reset" : initialMode);
-  const [localError, setLocalError] = useState<string | null>(null);
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
   const [successCopy, setSuccessCopy] = useState({
     title: "Check your inbox",
     body: "If that email exists in Chatting, we’ve sent instructions to continue."
   });
   const [loginState, loginFormAction] = useActionState(loginAction, INITIAL_AUTH_STATE);
+  const lastLoginToastErrorRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (loginState.ok) {
@@ -59,8 +65,21 @@ export function AuthForms({
     }
   }, [loginState.nextPath, loginState.ok, router]);
 
+  useEffect(() => {
+    if (!loginState.error || lastLoginToastErrorRef.current === loginState.error) {
+      return;
+    }
+
+    lastLoginToastErrorRef.current = loginState.error;
+    showToast("error", loginState.error);
+  }, [loginState, showToast]);
+
+  function handleLoginAction(formData: FormData) {
+    lastLoginToastErrorRef.current = null;
+    return loginFormAction(formData);
+  }
+
   function handleModeChange(nextMode: AuthMode) {
-    setLocalError(null);
     setMode(nextMode);
   }
 
@@ -73,11 +92,12 @@ export function AuthForms({
     setPasswordSubmitting(false);
 
     if (!result.ok) {
-      setLocalError(result.error);
+      if (result.error) {
+        showToast("error", result.error);
+      }
       return;
     }
 
-    setLocalError(null);
     setSuccessCopy({
       title: "Reset email sent",
       body: result.message ?? "Check your inbox for the reset link."
@@ -95,11 +115,12 @@ export function AuthForms({
     setPasswordSubmitting(false);
 
     if (!result.ok) {
-      setLocalError(result.error);
+      if (result.error) {
+        showToast("error", result.error);
+      }
       return;
     }
 
-    setLocalError(null);
     setSuccessCopy({
       title: "Password updated",
       body: result.message ?? "Your password has been reset. You can sign in with the new one now."
@@ -118,138 +139,38 @@ export function AuthForms({
       stats={SIGNIN_STATS}
     >
       {mode === "signin" ? (
-        <div>
-          <AuthFormIntro
-            title={isInviteFlow ? "Sign in to accept your invite" : "Sign in"}
-            caption={isInviteFlow ? "Need a new account instead?" : "Don't have an account?"}
-            actionLabel="Create one"
-            onAction={() => router.push(`/signup${inviteQuery}` as never)}
-          />
-
-          <form action={loginFormAction} className="mt-8 space-y-5">
-            <FormErrorMessage message={loginState.error} />
-            {isInviteFlow ? (
-              <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-                Use {inviteEmail || "the invited email"} to join this workspace.
-              </div>
-            ) : null}
-            {isInviteFlow ? <input type="hidden" name="inviteId" value={inviteId} /> : null}
-
-            <FormTextField
-              label="Email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              defaultValue={loginState.fields.email}
-              placeholder="you@company.com"
-            />
-
-            <FormPasswordField
-              label="Password"
-              name="password"
-              required
-              autoComplete="current-password"
-              defaultValue={loginState.fields.password}
-              placeholder="Enter your password"
-            />
-
-            <div className="flex items-center justify-between gap-4 text-sm">
-              <label className="inline-flex items-center gap-3 text-slate-700">
-                <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600" />
-                Remember me
-              </label>
-              <button
-                type="button"
-                onClick={() => handleModeChange("forgot")}
-                className="font-semibold text-blue-600"
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            <FormSubmitButton idleLabel="Sign in" pendingLabel="Signing in..." />
-          </form>
-        </div>
+        <SignInAuthView
+          email={loginState.fields.email}
+          inviteEmail={inviteEmail}
+          inviteId={inviteId}
+          isInviteFlow={isInviteFlow}
+          onCreateAccount={() => router.push(`/signup${inviteQuery}` as never)}
+          onForgotPassword={() => handleModeChange("forgot")}
+          password={loginState.fields.password}
+          submitAction={handleLoginAction}
+        />
       ) : null}
 
       {mode === "forgot" ? (
-        <div>
-          <AuthFormIntro
-            title="Forgot password"
-            caption="Remembered it?"
-            actionLabel="Back to sign in"
-            onAction={() => handleModeChange("signin")}
-          />
-
-          <form onSubmit={handleForgotSubmit} className="mt-10 space-y-5">
-            <FormErrorMessage message={localError} />
-
-            <FormTextField
-              label="Email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              defaultValue={loginState.fields.email}
-              placeholder="you@company.com"
-            />
-
-            <FormButton type="submit" fullWidth disabled={passwordSubmitting} trailingIcon={<span aria-hidden="true">→</span>}>
-              Send reset link
-            </FormButton>
-          </form>
-        </div>
+        <ForgotPasswordView
+          email={loginState.fields.email}
+          isSubmitting={passwordSubmitting}
+          onBackToSignIn={() => handleModeChange("signin")}
+          onSubmit={handleForgotSubmit}
+        />
       ) : null}
 
       {mode === "reset" ? (
-        <div>
-          <AuthFormIntro title="Reset password" caption="Set a new password for your account." />
-
-          <form onSubmit={handleResetSubmit} className="mt-10 space-y-5">
-            <FormErrorMessage message={localError} />
-
-            <FormPasswordField
-              label="New password"
-              name="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              placeholder="Enter a new password"
-            />
-
-            <FormPasswordField
-              label="Confirm password"
-              name="confirmPassword"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              placeholder="Re-enter your password"
-            />
-
-            <FormButton type="submit" fullWidth disabled={passwordSubmitting} trailingIcon={<span aria-hidden="true">→</span>}>
-              Reset password
-            </FormButton>
-          </form>
-        </div>
+        <ResetPasswordView isSubmitting={passwordSubmitting} onSubmit={handleResetSubmit} />
       ) : null}
 
       {mode === "success" ? (
-        <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-            <CheckCircleIcon className="h-8 w-8" />
-          </div>
-          <h1 className="display-font mt-8 text-5xl text-slate-900">{successCopy.title}</h1>
-          <p className="mt-5 text-lg leading-8 text-slate-500">{successCopy.body}</p>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <FormButton type="button" onClick={() => handleModeChange("signin")} trailingIcon={<span aria-hidden="true">→</span>}>
-              Back to sign in
-            </FormButton>
-            <FormButton type="button" variant="secondary" onClick={() => router.push(`/signup${inviteQuery}` as never)}>
-              Create account
-            </FormButton>
-          </div>
-        </div>
+        <AuthSuccessView
+          body={successCopy.body}
+          onBackToSignIn={() => handleModeChange("signin")}
+          onCreateAccount={() => router.push(`/signup${inviteQuery}` as never)}
+          title={successCopy.title}
+        />
       ) : null}
     </AuthPageShell>
   );

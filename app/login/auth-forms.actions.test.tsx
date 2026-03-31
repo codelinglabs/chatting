@@ -6,7 +6,9 @@ function collectElements(node: ReactNode, predicate: (element: ReactElement) => 
   if (!node || typeof node === "string" || typeof node === "number" || typeof node === "boolean") return [];
   if (Array.isArray(node)) return node.flatMap((child) => collectElements(child, predicate));
   const element = node as ReactElement;
-  return [...(predicate(element) ? [element] : []), ...collectElements(element.props?.children, predicate)];
+  const renderedChildren =
+    typeof element.type === "function" ? (element.type as (props: Record<string, unknown>) => ReactNode)(element.props) : element.props?.children;
+  return [...(predicate(element) ? [element] : []), ...collectElements(renderedChildren, predicate)];
 }
 
 function textContent(node: ReactNode): string {
@@ -42,6 +44,7 @@ async function loadAuthForms(options: { loginState?: Record<string, unknown> } =
   const router = { replace: vi.fn(), push: vi.fn(), refresh: vi.fn() };
   const forgotPasswordAction = vi.fn();
   const resetPasswordAction = vi.fn();
+  const showToast = vi.fn();
 
   vi.doMock("next/navigation", () => ({ useRouter: () => router }));
   vi.doMock("react-dom", async () => {
@@ -65,17 +68,18 @@ async function loadAuthForms(options: { loginState?: Record<string, unknown> } =
     };
   });
   vi.doMock("./actions", () => ({ loginAction: vi.fn(), forgotPasswordAction, resetPasswordAction }));
+  vi.doMock("../ui/toast-provider", () => ({ useToast: () => ({ showToast }) }));
 
   const module = await import("./auth-forms");
-  return { AuthForms: module.AuthForms, reactMocks, router, forgotPasswordAction, resetPasswordAction };
+  return { AuthForms: module.AuthForms, reactMocks, router, forgotPasswordAction, resetPasswordAction, showToast };
 }
 
 describe("auth forms actions", () => {
   beforeEach(() => vi.stubGlobal("FormData", MockFormData as unknown as typeof FormData));
   afterEach(() => vi.unstubAllGlobals());
 
-  it("redirects successful logins and handles forgot-password retries", async () => {
-    const { AuthForms, reactMocks, router } = await loadAuthForms({
+  it("redirects successful logins, toasts login errors, and handles forgot-password retries", async () => {
+    const { AuthForms, reactMocks, router, showToast } = await loadAuthForms({
       loginState: { ok: true, nextPath: "/dashboard" }
     });
 
@@ -83,9 +87,25 @@ describe("auth forms actions", () => {
     AuthForms({});
     await runMockEffects(reactMocks.effects);
     expect(router.replace).toHaveBeenCalledWith("/dashboard");
+    expect(showToast).not.toHaveBeenCalled();
+
+    const loginErrorFlow = await loadAuthForms({
+      loginState: { error: "Work email is required." }
+    });
+    const { AuthForms: LoginErrorForms, reactMocks: loginErrorReactMocks, showToast: loginErrorToast } = loginErrorFlow;
+
+    loginErrorReactMocks.beginRender();
+    LoginErrorForms({});
+    await runMockEffects(loginErrorReactMocks.effects);
+    expect(loginErrorToast).toHaveBeenCalledWith("error", "Work email is required.");
+
+    loginErrorReactMocks.beginRender();
+    LoginErrorForms({});
+    await runMockEffects(loginErrorReactMocks.effects);
+    expect(loginErrorToast).toHaveBeenCalledTimes(1);
 
     const forgotFlow = await loadAuthForms();
-    const { AuthForms: ForgotAuthForms, reactMocks: forgotReactMocks, forgotPasswordAction } = forgotFlow;
+    const { AuthForms: ForgotAuthForms, reactMocks: forgotReactMocks, forgotPasswordAction, showToast: forgotToast } = forgotFlow;
     forgotPasswordAction
       .mockResolvedValueOnce({ ok: false, error: "Email missing." })
       .mockResolvedValueOnce({ ok: true, error: null, message: "Reset sent." });
@@ -100,7 +120,8 @@ describe("auth forms actions", () => {
 
     forgotReactMocks.beginRender();
     tree = ForgotAuthForms({ initialMode: "forgot" });
-    expect(renderToStaticMarkup(tree)).toContain("Email missing.");
+    expect(renderToStaticMarkup(tree)).not.toContain("Email missing.");
+    expect(forgotToast).toHaveBeenCalledWith("error", "Email missing.");
 
     collectElements(tree, (element) => element.type === "form")[0]?.props.onSubmit({
       preventDefault: vi.fn(),

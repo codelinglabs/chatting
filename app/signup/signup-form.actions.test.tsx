@@ -34,6 +34,7 @@ async function loadSignupForm(searchParams?: Record<string, string>) {
   const reactMocks = createMockReactHooks();
   const router = { replace: vi.fn(), push: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() };
   const signupAction = vi.fn();
+  const showToast = vi.fn();
 
   vi.doMock("next/navigation", () => ({
     useRouter: () => router,
@@ -41,9 +42,10 @@ async function loadSignupForm(searchParams?: Record<string, string>) {
   }));
   vi.doMock("react", async () => ({ ...(await reactMocks.moduleFactory()) }));
   vi.doMock("../login/actions", () => ({ signupAction }));
+  vi.doMock("../ui/toast-provider", () => ({ useToast: () => ({ showToast }) }));
 
   const module = await import("./signup-form");
-  return { SignupForm: module.SignupForm, reactMocks, router, signupAction };
+  return { SignupForm: module.SignupForm, reactMocks, router, signupAction, showToast };
 }
 
 describe("signup form actions", () => {
@@ -82,8 +84,8 @@ describe("signup form actions", () => {
     expect(router.replace).toHaveBeenCalledWith("/dashboard");
   });
 
-  it("keeps invite signup routing intact and surfaces submit failures", async () => {
-    const { SignupForm, reactMocks, router, signupAction } = await loadSignupForm({
+  it("keeps invite signup routing intact and toasts submit failures", async () => {
+    const { SignupForm, reactMocks, router, signupAction, showToast } = await loadSignupForm({
       invite: "invite_123",
       email: "teammate@example.com"
     });
@@ -102,7 +104,42 @@ describe("signup form actions", () => {
     tree = SignupForm();
     const html = renderToStaticMarkup(tree);
     expect(router.push).toHaveBeenCalledWith("/login?invite=invite_123&email=teammate%40example.com");
-    expect(html).toContain("server setup error");
+    expect(html).not.toContain("We couldn&#x27;t create your account right now. Please try again in a moment.");
+    expect(showToast).toHaveBeenCalledWith("error", "We couldn't create your account right now. Please try again in a moment.");
     expect(html).toContain("Join workspace");
+  });
+
+  it("toasts returned signup errors without rendering them inline", async () => {
+    const { SignupForm, reactMocks, signupAction, showToast } = await loadSignupForm();
+    signupAction.mockResolvedValue({
+      ok: false,
+      error: "That email already has an account.",
+      nextPath: null,
+      fields: {
+        email: "hello@example.com",
+        password: "Password123!",
+        websiteUrl: "https://example.com",
+        referralCode: ""
+      }
+    });
+
+    reactMocks.beginRender();
+    let tree = SignupForm();
+    collectElements(tree, (element) => element.type === "form")[0]?.props.onSubmit({
+      preventDefault: vi.fn(),
+      currentTarget: {
+        __data: {
+          email: "hello@example.com",
+          password: "Password123!",
+          websiteUrl: "https://example.com"
+        }
+      }
+    });
+    await flushAsyncWork();
+
+    reactMocks.beginRender();
+    tree = SignupForm();
+    expect(renderToStaticMarkup(tree)).not.toContain("That email already has an account.");
+    expect(showToast).toHaveBeenCalledWith("error", "That email already has an account.");
   });
 });

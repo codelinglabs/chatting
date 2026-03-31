@@ -33,6 +33,7 @@ async function renderAuthForms(
     resetPasswordAction: vi.fn(),
     signupAction: vi.fn()
   }));
+  vi.doMock("../ui/toast-provider", () => ({ useToast: () => ({ showToast: vi.fn() }) }));
 
   vi.doMock("react", async () => {
     const actual = await vi.importActual<typeof import("react")>("react");
@@ -48,7 +49,7 @@ async function renderAuthForms(
           return [mode, vi.fn()];
         }
 
-        if (useStateCalls === 4 && mode === "success") {
+        if (useStateCalls === 3 && mode === "success") {
           return [
             {
               title: "Reset email sent",

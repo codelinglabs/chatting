@@ -4,7 +4,9 @@ import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormButton, FormErrorMessage, FormPasswordField, FormTextField } from "../ui/form-controls";
+import { FormButton, FormPasswordField, FormTextField } from "../ui/form-controls";
+import { useToast } from "../ui/toast-provider";
+import { getGenericAuthErrorMessage } from "../login/auth-error-messages";
 import { AuthFormIntro, AuthPageShell } from "../login/auth-shell";
 import { signupAction, type AuthActionState } from "../login/actions";
 
@@ -30,6 +32,7 @@ const SIGNUP_ONBOARDING_PATH = "/onboarding?step=customize";
 
 export function SignupForm() {
   const router = useRouter();
+  const { showToast } = useToast();
   const searchParams = useSearchParams();
   const [signupState, setSignupState] = useState<AuthActionState>(INITIAL_AUTH_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,20 +41,17 @@ export function SignupForm() {
   const emailFromQuery = String(searchParams.get("email") ?? "").trim();
   const isInviteSignup = Boolean(inviteIdFromQuery);
   const nextPath = isInviteSignup ? "/dashboard" : SIGNUP_ONBOARDING_PATH;
-
   useEffect(() => {
     router.prefetch(nextPath);
   }, [nextPath, router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
     const websiteUrl = String(formData.get("websiteUrl") ?? "").trim();
     const referralCode = String(formData.get("referralCode") ?? referralCodeFromQuery).trim().toUpperCase();
-
     setIsSubmitting(true);
     setSignupState({
       error: null,
@@ -64,28 +64,28 @@ export function SignupForm() {
         referralCode
       }
     });
-
     if (referralCode) {
       formData.set("referralCode", referralCode);
     }
-
     if (inviteIdFromQuery) {
       formData.set("inviteId", inviteIdFromQuery);
     }
-
     try {
       const result = await signupAction(INITIAL_AUTH_STATE, formData);
       setSignupState(result);
-
       if (result.ok) {
         router.replace((result.nextPath ?? nextPath) as never);
       } else {
         setIsSubmitting(false);
+        if (result.error) {
+          showToast("error", result.error);
+        }
       }
     } catch {
+      const error = getGenericAuthErrorMessage("signup");
       setIsSubmitting(false);
       setSignupState({
-        error: "Account creation failed because of a server setup error. Check your local .env file and the server logs.",
+        error,
         ok: false,
         nextPath: null,
         fields: {
@@ -95,6 +95,7 @@ export function SignupForm() {
           referralCode
         }
       });
+      showToast("error", error);
     }
   }
 
@@ -121,7 +122,6 @@ export function SignupForm() {
         />
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-          <FormErrorMessage message={signupState.error} />
           {isInviteSignup ? (
             <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
               Create this account with {emailFromQuery || "the invited email"} to join the workspace.

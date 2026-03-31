@@ -182,7 +182,7 @@ describe("login actions", () => {
     form.set("websiteUrl", "https://chatly.example");
 
     const result = await signupAction(INITIAL_STATE, form);
-    expect(result.error).toContain("server setup error");
+    expect(result.error).toBe("We couldn't create your account right now. Please try again in a moment.");
   });
 
   it("maps invalid referral codes into a readable signup error", async () => {

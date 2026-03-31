@@ -6,6 +6,11 @@ import { requestPasswordReset, resetPasswordWithToken } from "@/lib/auth-passwor
 import { sendAccountWelcomeEmail } from "@/lib/chatly-transactional-email-senders";
 import { getPostAuthPath } from "@/lib/data";
 import { getPublicAppUrl } from "@/lib/env";
+import {
+  FORGOT_PASSWORD_ERROR_MESSAGE,
+  getGenericAuthErrorMessage,
+  RESET_PASSWORD_ERROR_MESSAGE
+} from "./auth-error-messages";
 
 export type AuthActionState = {
   error: string | null;
@@ -26,11 +31,6 @@ export type PasswordActionState = {
 };
 
 function formatAuthError(message: string, mode: "login" | "signup") {
-  const envLabel =
-    process.env.NODE_ENV === "production"
-      ? "your deployment environment"
-      : "your local .env file";
-
   if (message === "EMAIL_TAKEN") {
     return "That email already has an account.";
   }
@@ -83,27 +83,7 @@ function formatAuthError(message: string, mode: "login" | "signup") {
     return "This account already owns another workspace, so it can't join this one yet.";
   }
 
-  if (message.includes("DATABASE_URL")) {
-    return `DATABASE_URL is missing or invalid in ${envLabel}.`;
-  }
-
-  if (message.includes("AUTH_SECRET")) {
-    return `AUTH_SECRET is missing in ${envLabel}.`;
-  }
-
-  if (
-    message.includes("connect") ||
-    message.includes("ECONN") ||
-    message.includes("getaddrinfo") ||
-    message.includes("password authentication failed") ||
-    message.includes("connection")
-  ) {
-    return `Database connection failed. Check the Neon DATABASE_URL in ${envLabel}.`;
-  }
-
-  return mode === "signup"
-    ? `Account creation failed because of a server setup error. Check ${envLabel} and the server logs.`
-    : `Sign in failed because of a server setup error. Check ${envLabel} and the server logs.`;
+  return getGenericAuthErrorMessage(mode);
 }
 
 function isExpectedAuthError(message: string) {
@@ -281,7 +261,7 @@ export async function forgotPasswordAction(formData: FormData): Promise<Password
     console.error("forgotPasswordAction failed", error);
     return {
       ok: false,
-      error: "We couldn't send the reset link just now. Check your server setup and try again.",
+      error: FORGOT_PASSWORD_ERROR_MESSAGE,
       message: null
     };
   }
@@ -326,7 +306,7 @@ export async function resetPasswordAction(formData: FormData): Promise<PasswordA
       error:
         message === "INVALID_RESET_TOKEN"
           ? "That reset link is invalid or has expired."
-          : "We couldn't reset your password just now. Check your server setup and try again.",
+          : RESET_PASSWORD_ERROR_MESSAGE,
       message: null
     };
   }

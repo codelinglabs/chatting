@@ -55,7 +55,7 @@ describe("login actions edge cases", () => {
 
     authMocks.signInUser.mockRejectedValueOnce(new Error("password authentication failed"));
     expect(await loginAction(INITIAL_STATE, authForm({ email: "a@b.com", password: "password123" }))).toMatchObject({
-      error: "Database connection failed. Check the Neon DATABASE_URL in your local .env file."
+      error: "We couldn't sign you in right now. Please try again in a moment."
     });
   });
 
@@ -69,7 +69,7 @@ describe("login actions edge cases", () => {
         authForm({ email: "a@b.com", password: "password123", websiteUrl: "https://example.com" })
       )
     ).toMatchObject({
-      error: "AUTH_SECRET is missing in your deployment environment."
+      error: "We couldn't create your account right now. Please try again in a moment."
     });
 
     authMocks.signUpUser.mockResolvedValueOnce({ id: "user_1", email: "alex@example.com" });

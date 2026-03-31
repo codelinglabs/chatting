@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Kept auth failures user-safe by moving login and signup errors to shared toasts, removing deployment-detail copy from auth screens, and splitting the login auth container into smaller modules.
 - Hardened node runtime startup and env loading so server-only services boot in development without leaking into browser bundles.
 - Removed the manual trial-extension flow and its related billing route, helpers, and email path.
 - Split dashboard settings state into dedicated hooks and aligned notices and navigation with the shared settings scaffold.
@@ -59,6 +60,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
 - Landing pricing now mirrors the dashboard billing format with Starter and Growth plans driven by shared pricing helpers.
 - Dedicated login and signup screens with shared form controls, referral-aware owner signup, invite-based teammate access, password reset flows, and direct onboarding handoff.
+- Auth failures now stay in shared toast notifications with generic user-safe copy instead of showing deployment or server setup details in the UI.
 
 ### Onboarding
 
