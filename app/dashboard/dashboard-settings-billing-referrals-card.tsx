@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { DashboardReferralSummary } from "@/lib/data";
+import type { DashboardReferralSummary } from "@/lib/referral-types";
 import { useToast } from "../ui/toast-provider";
 import { DashboardSettingsReferralPrograms } from "./dashboard-settings-referrals-programs";
 import { DashboardSettingsReferralSignups } from "./dashboard-settings-referrals-signups";

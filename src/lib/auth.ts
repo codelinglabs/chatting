@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ensureOwnerGrowthTrialBillingAccount } from "@/lib/billing-default-account";
 import { createSiteForUser } from "@/lib/data/sites";
+import { getAuthSecret } from "@/lib/env.server";
 import { applyReferralCodeForSignup, validateReferralCodeForSignup } from "@/lib/referrals";
 import {
   type AuthSessionUserRecord,
@@ -25,19 +26,7 @@ const AUTH_COOKIE_NAME = "chatly_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 const scrypt = promisify(nodeScrypt);
 
-function getAuthSecret() {
-  return process.env.AUTH_SECRET?.trim() || (isProductionRuntime() ? "" : "chatly-dev-secret");
-}
-
-function requireAuthSecret() {
-  const secret = getAuthSecret();
-
-  if (!secret) {
-    throw new Error("AUTH_SECRET is not configured.");
-  }
-
-  return secret;
-}
+type AuthIdentity = Pick<CurrentUser, "id" | "email" | "createdAt">;
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -45,13 +34,13 @@ function normalizeEmail(email: string) {
 
 function hashSessionToken(token: string) {
   return createHash("sha256")
-    .update(`${requireAuthSecret()}:${token}`)
+    .update(`${getAuthSecret()}:${token}`)
     .digest("hex");
 }
 
 function mapUser(
-  row: Pick<CurrentUser, "id" | "email" | "createdAt"> | AuthSessionUserRecord
-): CurrentUser {
+  row: AuthIdentity | AuthSessionUserRecord
+): AuthIdentity {
   return {
     id: row.id,
     email: row.email,
@@ -61,7 +50,7 @@ function mapUser(
 
 async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
-  const derived = (await scrypt(`${requireAuthSecret()}:${password}`, salt, 64)) as Buffer;
+  const derived = (await scrypt(`${getAuthSecret()}:${password}`, salt, 64)) as Buffer;
   return `scrypt:${salt}:${derived.toString("hex")}`;
 }
 
@@ -72,7 +61,7 @@ async function verifyPasswordHash(password: string, storedHash: string) {
     return false;
   }
 
-  const derived = (await scrypt(`${requireAuthSecret()}:${password}`, salt, 64)) as Buffer;
+  const derived = (await scrypt(`${getAuthSecret()}:${password}`, salt, 64)) as Buffer;
   const expected = Buffer.from(hash, "hex");
 
   if (derived.length !== expected.length) {
@@ -265,7 +254,7 @@ export async function setUserSession(userId: string) {
   cookieStore.set(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: isProductionRuntime(),
     path: "/",
     maxAge: SESSION_TTL_SECONDS
   });

@@ -2,7 +2,7 @@
 
 import { getBillingPreviewDisplayPrice } from "@/lib/billing-plans";
 import { CHATTING_GROWTH_BASE_TEAM_LIMIT } from "@/lib/pricing";
-import type { DashboardBillingSummary } from "@/lib/data";
+import type { DashboardBillingSummary } from "@/lib/data/billing-types";
 import { FormButton } from "../ui/form-controls";
 import { ChevronRightIcon } from "./dashboard-ui";
 

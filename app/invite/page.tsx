@@ -31,6 +31,15 @@ function inviteStateCopy(state: Awaited<ReturnType<typeof getTeamInvitePreview>>
   return "Choose how you'd like to continue.";
 }
 
+type InviteLinkQuery = {
+  invite: string;
+  email?: string;
+};
+
+function buildInviteAuthHref(pathname: "/login" | "/signup", query: InviteLinkQuery | null) {
+  return query ? { pathname, query } : pathname;
+}
+
 export default async function InvitePage({ searchParams }: InvitePageProps) {
   const params = await searchParams;
   const inviteId = String(params.invite ?? "").trim();
@@ -69,9 +78,12 @@ export default async function InvitePage({ searchParams }: InvitePageProps) {
     redirect("/dashboard");
   }
 
-  const inviteQuery = inviteId
-    ? `?invite=${encodeURIComponent(inviteId)}${invite.email ? `&email=${encodeURIComponent(invite.email)}` : ""}`
-    : "";
+  const inviteLinkQuery = inviteId
+    ? {
+        invite: inviteId,
+        ...(invite.email ? { email: invite.email } : {})
+      }
+    : null;
 
   return (
     <AuthPageShell
@@ -108,16 +120,27 @@ export default async function InvitePage({ searchParams }: InvitePageProps) {
 
         {invite.state === "pending" ? (
           <div className="flex flex-col gap-3">
-            <FormButtonLink href={`/signup${inviteQuery}`} fullWidth>
+            <FormButtonLink
+              href={buildInviteAuthHref("/signup", inviteLinkQuery)}
+              fullWidth
+            >
               Create account
             </FormButtonLink>
-            <FormButtonLink href={`/login${inviteQuery}`} variant="secondary" fullWidth>
+            <FormButtonLink
+              href={buildInviteAuthHref("/login", inviteLinkQuery)}
+              variant="secondary"
+              fullWidth
+            >
               Sign in
             </FormButtonLink>
           </div>
         ) : (
           <FormButtonLink
-            href={invite.state === "accepted" ? `/login${inviteQuery}` : "/login"}
+            href={
+              invite.state === "accepted" && inviteLinkQuery
+                ? buildInviteAuthHref("/login", inviteLinkQuery)
+                : "/login"
+            }
             variant="secondary"
             fullWidth
           >

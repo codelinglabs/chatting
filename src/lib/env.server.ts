@@ -6,10 +6,16 @@ export {
   getRequiredServerEnv
 } from "@/lib/env-server/core";
 export {
+  getMissingEnvVarsForGroup,
+  getMissingMiniMaxEnvVars,
+  getMissingSesEnvVars
+} from "@/lib/env-server/groups";
+export {
   getAppDisplayName,
   getAuthSecret,
   getDatabaseConfig,
   getMailFromAddress,
+  getMiniMaxConfig,
   getReplyDomain,
   getSesClientConfig,
   getSesInboundTopicArnSet

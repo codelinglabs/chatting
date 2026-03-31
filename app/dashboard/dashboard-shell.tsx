@@ -9,7 +9,7 @@ import {
 } from "react";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
-import type { DashboardSettingsNotifications } from "@/lib/data/settings";
+import type { DashboardSettingsNotifications } from "@/lib/data/settings-types";
 import { classNames } from "@/lib/utils";
 import { DashboardNotificationCenter } from "./dashboard-notification-center";
 import {

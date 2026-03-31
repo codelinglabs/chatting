@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent, RefObject } from "react";
-import type { DashboardSettingsProfile } from "@/lib/data";
+import type { DashboardSettingsProfile } from "@/lib/data/settings-types";
 import { initialsFromLabel } from "@/lib/user-display";
 import { classNames } from "@/lib/utils";
 import { CameraIcon } from "./dashboard-ui";

@@ -1,39 +1,8 @@
 import "server-only";
 
 import { getRuntimeEnvironment, type RuntimeEnvironment } from "@/lib/env";
-import {
-  getMissingRequiredEnvVars,
-  type ServerEnvSource
-} from "@/lib/env-server/core";
-
-const STARTUP_PRODUCTION_CORE_ENV_VARS = [
-  "DATABASE_URL",
-  "AUTH_SECRET",
-  "NEXT_PUBLIC_APP_URL"
-] as const;
-
-const R2_ENV_VARS = [
-  "R2_ACCOUNT_ID",
-  "R2_ACCESS_KEY_ID",
-  "R2_SECRET_ACCESS_KEY",
-  "R2_BUCKET_NAME",
-  "R2_PUBLIC_BASE_URL"
-] as const;
-
-const STRIPE_CHECKOUT_ENV_VARS = [
-  "STRIPE_SECRET_KEY",
-  "STRIPE_PRICE_GROWTH_MONTHLY",
-  "STRIPE_PRICE_GROWTH_ANNUAL",
-  "NEXT_PUBLIC_APP_URL"
-] as const;
-
-const STRIPE_BILLING_ENV_VARS = [
-  "STRIPE_SECRET_KEY",
-  "STRIPE_WEBHOOK_SECRET",
-  "STRIPE_PRICE_GROWTH_MONTHLY",
-  "STRIPE_PRICE_GROWTH_ANNUAL",
-  "NEXT_PUBLIC_APP_URL"
-] as const;
+import { getMissingEnvVarsForGroup } from "@/lib/env-server/groups";
+import { type ServerEnvSource } from "@/lib/env-server/core";
 
 let validatedStartupCoreEnvironment = false;
 let validatedR2Environment: RuntimeEnvironment | null = null;
@@ -49,28 +18,25 @@ export function getMissingStartupProductionCoreEnvVars(params?: {
     return [] as string[];
   }
 
-  return getMissingRequiredEnvVars(
-    STARTUP_PRODUCTION_CORE_ENV_VARS,
-    params?.source || process.env
-  );
+  return getMissingEnvVarsForGroup("startup-production-core", params?.source || process.env);
 }
 
 export function getMissingStripeCheckoutEnvVars(params?: {
   source?: ServerEnvSource;
 }) {
-  return getMissingRequiredEnvVars(STRIPE_CHECKOUT_ENV_VARS, params?.source || process.env);
+  return getMissingEnvVarsForGroup("stripe-checkout", params?.source || process.env);
 }
 
 export function getMissingStripeBillingEnvVars(params?: {
   source?: ServerEnvSource;
 }) {
-  return getMissingRequiredEnvVars(STRIPE_BILLING_ENV_VARS, params?.source || process.env);
+  return getMissingEnvVarsForGroup("stripe-billing", params?.source || process.env);
 }
 
 export function getMissingR2EnvVars(params?: {
   source?: ServerEnvSource;
 }) {
-  return getMissingRequiredEnvVars(R2_ENV_VARS, params?.source || process.env);
+  return getMissingEnvVarsForGroup("r2", params?.source || process.env);
 }
 
 export function isStripeConfigured(source: ServerEnvSource = process.env) {

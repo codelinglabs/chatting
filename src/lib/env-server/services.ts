@@ -2,6 +2,10 @@ import "server-only";
 
 import { getRuntimeEnvironment, type RuntimeEnvironment } from "@/lib/env";
 import {
+  getMissingMiniMaxEnvVars,
+  getMissingSesEnvVars
+} from "@/lib/env-server/groups";
+import {
   getOptionalServerEnv,
   getRequiredServerEnv,
   type ServerEnvSource
@@ -15,6 +19,12 @@ type SesClientConfig = {
         secretAccessKey: string;
       }
     | undefined;
+};
+
+type MiniMaxConfig = {
+  apiKey: string;
+  model: string;
+  baseUrl: string;
 };
 
 export function getAuthSecret(params?: {
@@ -41,19 +51,16 @@ export function getDatabaseConfig(params?: {
   const source = params?.source || process.env;
 
   return {
-    connectionString: getRequiredServerEnv("DATABASE_URL", { source }),
-    ssl: getOptionalServerEnv("DATABASE_SSL", source) === "require"
-      ? { rejectUnauthorized: false as const }
-      : undefined
+    connectionString: getRequiredServerEnv("DATABASE_URL", { source })
   };
 }
 
 export function getMailFromAddress(source: ServerEnvSource = process.env) {
-  return getOptionalServerEnv("MAIL_FROM", source) || "Chatting <hello@example.com>";
+  return getOptionalServerEnv("MAIL_FROM", source)!;
 }
 
 export function getAppDisplayName(source: ServerEnvSource = process.env) {
-  return getOptionalServerEnv("APP_NAME", source) || "Chatting";
+  return getOptionalServerEnv("APP_NAME", source)!;
 }
 
 export function getReplyDomain(source: ServerEnvSource = process.env) {
@@ -61,18 +68,20 @@ export function getReplyDomain(source: ServerEnvSource = process.env) {
 }
 
 export function getSesClientConfig(source: ServerEnvSource = process.env): SesClientConfig {
-  const region = getOptionalServerEnv("AWS_REGION", source);
-
-  if (!region) {
+  const missing = getMissingSesEnvVars({ source });
+  if (missing.includes("AWS_REGION")) {
     throw new Error("AWS_REGION is not configured.");
   }
-
-  const accessKeyId = getOptionalServerEnv("AWS_ACCESS_KEY_ID", source);
-  const secretAccessKey = getOptionalServerEnv("AWS_SECRET_ACCESS_KEY", source);
-
-  if ((accessKeyId && !secretAccessKey) || (!accessKeyId && secretAccessKey)) {
+  if (
+    missing.includes("AWS_ACCESS_KEY_ID") ||
+    missing.includes("AWS_SECRET_ACCESS_KEY")
+  ) {
     throw new Error("AWS SES credentials are incomplete.");
   }
+
+  const region = getOptionalServerEnv("AWS_REGION", source)!;
+  const accessKeyId = getOptionalServerEnv("AWS_ACCESS_KEY_ID", source);
+  const secretAccessKey = getOptionalServerEnv("AWS_SECRET_ACCESS_KEY", source);
 
   return {
     region,
@@ -86,13 +95,22 @@ export function getSesClientConfig(source: ServerEnvSource = process.env): SesCl
 }
 
 export function getSesInboundTopicArnSet(source: ServerEnvSource = process.env) {
-  const raw =
-    getOptionalServerEnv("SES_INBOUND_SNS_TOPIC_ARN", source) ||
-    getOptionalServerEnv("AWS_SES_INBOUND_SNS_TOPIC_ARN", source);
-
+  const raw = getOptionalServerEnv("SES_INBOUND_SNS_TOPIC_ARN", source);
   if (!raw) {
     return new Set<string>();
   }
 
   return new Set(raw.split(",").map((item) => item.trim()).filter(Boolean));
+}
+
+export function getMiniMaxConfig(source: ServerEnvSource = process.env): MiniMaxConfig {
+  if (getMissingMiniMaxEnvVars({ source }).length > 0) {
+    throw new Error("MINIMAX_NOT_CONFIGURED");
+  }
+
+  return {
+    apiKey: getOptionalServerEnv("MINIMAX_API_KEY", source)!,
+    model: getOptionalServerEnv("MINIMAX_MODEL", source)!,
+    baseUrl: getOptionalServerEnv("MINIMAX_BASE_URL", source)!.replace(/\/+$/, "")
+  };
 }

@@ -1,4 +1,6 @@
-import { Pool, type QueryResultRow } from "pg";
+import "server-only";
+
+import type { Pool, QueryResultRow } from "pg";
 import { getDatabaseConfig } from "@/lib/env.server";
 import { runSchemaInitialization } from "@/lib/db-schema";
 
@@ -6,32 +8,42 @@ declare global {
   // eslint-disable-next-line no-var
   var __chatlyPool: Pool | undefined;
   // eslint-disable-next-line no-var
+  var __chatlyPoolReady: Promise<Pool> | undefined;
+  // eslint-disable-next-line no-var
   var __chatlySchemaReady: Promise<void> | undefined;
   // eslint-disable-next-line no-var
   var __chatlySchemaVersion: string | undefined;
 }
 
-const SCHEMA_VERSION = "2026-03-29-visitor-presence-schema";
+const SCHEMA_VERSION = "2026-03-30-weekly-performance-schema";
 
-function createPool() {
+async function createPool() {
   const config = getDatabaseConfig();
+  const { Pool } = await import(/* webpackIgnore: true */ "pg");
 
   return new Pool({
-    connectionString: config.connectionString,
-    ssl: config.ssl
+    connectionString: config.connectionString
   });
 }
 
-export function getPool() {
-  if (!global.__chatlyPool) {
-    global.__chatlyPool = createPool();
+export async function getPool() {
+  if (global.__chatlyPool) {
+    return global.__chatlyPool;
   }
 
-  return global.__chatlyPool;
-}
+  if (!global.__chatlyPoolReady) {
+    global.__chatlyPoolReady = createPool()
+      .then((pool) => {
+        global.__chatlyPool = pool;
+        return pool;
+      })
+      .catch((error) => {
+        global.__chatlyPoolReady = undefined;
+        throw error;
+      });
+  }
 
-async function initSchema() {
-  await runSchemaInitialization(getPool());
+  return global.__chatlyPoolReady;
 }
 
 export async function ensureSchema() {
@@ -40,7 +52,9 @@ export async function ensureSchema() {
     global.__chatlySchemaVersion !== SCHEMA_VERSION
   ) {
     global.__chatlySchemaVersion = SCHEMA_VERSION;
-    global.__chatlySchemaReady = initSchema().catch((error) => {
+    global.__chatlySchemaReady = (async () => {
+      await runSchemaInitialization(await getPool());
+    })().catch((error) => {
       if (global.__chatlySchemaVersion === SCHEMA_VERSION) {
         global.__chatlySchemaReady = undefined;
       }
@@ -54,5 +68,5 @@ export async function ensureSchema() {
 
 export async function query<T extends QueryResultRow>(text: string, values?: unknown[]) {
   await ensureSchema();
-  return getPool().query<T>(text, values);
+  return (await getPool()).query<T>(text, values);
 }

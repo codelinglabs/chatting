@@ -1,6 +1,6 @@
 "use client";
 
-import type { DashboardBillingSummary } from "@/lib/data";
+import type { DashboardBillingSummary } from "@/lib/data/billing-types";
 import type { Site } from "@/lib/types";
 import { classNames } from "@/lib/utils";
 import {

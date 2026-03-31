@@ -1,11 +1,9 @@
+import { normalizeEnvValue, readEnvValue, type EnvSource } from "@/lib/env-core";
+
 export type RuntimeEnvironment = "development" | "production" | "test";
 
-function normalize(value: unknown) {
-  return String(value || "").trim();
-}
-
 export function getRuntimeEnvironment(value: unknown = process.env.NODE_ENV): RuntimeEnvironment {
-  const normalized = normalize(value);
+  const normalized = normalizeEnvValue(value);
 
   if (normalized === "production") {
     return "production";
@@ -22,6 +20,14 @@ export function isProductionRuntime(value: unknown = process.env.NODE_ENV) {
   return getRuntimeEnvironment(value) === "production";
 }
 
-export function getPublicAppUrl() {
-  return normalize(process.env.NEXT_PUBLIC_APP_URL) || "http://localhost:3000";
+export function getRuntimeEnvironmentLabel(value: unknown = process.env.NODE_ENV) {
+  return isProductionRuntime(value) ? "your deployment environment" : "your local .env file";
+}
+
+export function isNodeRuntime(value: unknown = process.env.NEXT_RUNTIME) {
+  return normalizeEnvValue(value) === "nodejs";
+}
+
+export function getPublicAppUrl(source: EnvSource = process.env) {
+  return readEnvValue("NEXT_PUBLIC_APP_URL", source)!;
 }

@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Hardened node runtime startup and env loading so server-only services boot in development without leaking into browser bundles.
 - Removed the manual trial-extension flow and its related billing route, helpers, and email path.
 - Split dashboard settings state into dedicated hooks and aligned notices and navigation with the shared settings scaffold.
 - Added signed conversation resume links for visitor emails plus inbox deeplinks for teammate mention notifications.
@@ -103,6 +104,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Product docs, service labels, and pricing-driven blog copy now use the Chatting brand consistently.
 - The social content generator now enforces lowercase output, `https://usechatting.com`, and Chatting-first branding.
 - The app now includes an internal Chatting distribution playbook markdown file for channel planning and launch messaging.
+- Env definitions and runtime guards now keep node-only startup and service config isolated from client bundles.
 
 ## Ops Note
 

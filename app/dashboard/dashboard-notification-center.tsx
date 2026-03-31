@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { DashboardSettingsNotifications } from "@/lib/data/settings";
+import type { DashboardSettingsNotifications } from "@/lib/data/settings-types";
 import type { DashboardLiveEvent } from "@/lib/live-events";
 import { pageLabelFromUrl, XIcon } from "./dashboard-ui";
 import { useDashboardNavigation } from "./dashboard-shell";

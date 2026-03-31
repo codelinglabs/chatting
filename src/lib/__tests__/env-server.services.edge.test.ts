@@ -15,10 +15,9 @@ describe("env-server services edge cases", () => {
     expect(() => getAuthSecret({ source: { NODE_ENV: "production" } })).toThrow("AUTH_SECRET is not configured.");
   });
 
-  it("returns database config without ssl unless require is set", () => {
+  it("returns database config from the centralized database url only", () => {
     expect(getDatabaseConfig({ source: { DATABASE_URL: "postgres://db" } })).toEqual({
-      connectionString: "postgres://db",
-      ssl: undefined
+      connectionString: "postgres://db"
     });
   });
 

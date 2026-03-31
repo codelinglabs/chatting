@@ -1,6 +1,6 @@
 "use client";
 
-import type { DashboardSettingsNotifications } from "@/lib/data";
+import type { DashboardSettingsNotifications } from "@/lib/data/settings-types";
 import { SettingsCard, SettingsSectionHeader, ToggleRow } from "./dashboard-settings-shared";
 
 export function SettingsNotificationsSection({

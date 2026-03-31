@@ -1,23 +1,21 @@
 import "server-only";
 
-export type ServerEnvSource = Record<string, string | undefined>;
+import { getMissingEnvVarNames, readEnvValue, type EnvSource } from "@/lib/env-core";
 
-function normalize(value: unknown) {
-  return String(value || "").trim();
-}
+export type ServerEnvSource = EnvSource;
 
 export function getMissingRequiredEnvVars(
   requiredEnvVarNames: readonly string[],
   source: ServerEnvSource
 ) {
-  return requiredEnvVarNames.filter((envVarName) => !normalize(source[envVarName]));
+  return getMissingEnvVarNames(requiredEnvVarNames, source);
 }
 
 export function getOptionalServerEnv(
   name: string,
   source: ServerEnvSource = process.env
 ) {
-  const value = normalize(source[name]);
+  const value = readEnvValue(name, source);
   return value || null;
 }
 
@@ -29,7 +27,7 @@ export function getRequiredServerEnv(
   }
 ) {
   const source = options?.source || process.env;
-  const value = normalize(source[name]);
+  const value = readEnvValue(name, source, { includeDefault: false });
 
   if (!value) {
     throw new Error(options?.errorCode || `${name}_NOT_CONFIGURED`);

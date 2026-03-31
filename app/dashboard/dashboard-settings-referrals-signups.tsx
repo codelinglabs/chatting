@@ -1,6 +1,6 @@
 "use client";
 
-import type { DashboardReferralAttribution } from "@/lib/data";
+import type { DashboardReferralAttribution } from "@/lib/referral-types";
 import { classNames } from "@/lib/utils";
 import {
   formatReferralDate,

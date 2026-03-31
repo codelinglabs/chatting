@@ -1,6 +1,6 @@
 "use client";
 
-import type { DashboardBillingSummary } from "@/lib/data";
+import type { DashboardBillingSummary } from "@/lib/data/billing-types";
 import { billingPeriodLabel, formatResponseTime } from "./dashboard-billing-utils";
 import { SettingsCard } from "./dashboard-settings-shared";
 

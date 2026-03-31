@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { getBillingPlanDefinition } from "@/lib/billing-plans";
-import type { DashboardBillingInvoice } from "@/lib/data";
+import type { DashboardBillingInvoice } from "@/lib/data/billing-types";
 import { FormButton } from "../ui/form-controls";
 import { formatDateTime } from "@/lib/utils";
 import { billingPeriodLabel, invoiceStatusMeta, type BillingHistorySortKey } from "./dashboard-billing-utils";

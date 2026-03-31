@@ -1,7 +1,7 @@
 "use client";
 
 import { SettingsEmailTemplates } from "./settings-email-templates";
-import type { DashboardSettingsEmail } from "@/lib/data";
+import type { DashboardSettingsEmail } from "@/lib/data/settings-types";
 import {
   DASHBOARD_INPUT_CLASS,
   type DashboardNoticeState

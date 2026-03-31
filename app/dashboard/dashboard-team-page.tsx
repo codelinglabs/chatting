@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { DashboardTeamInvite, DashboardTeamMember } from "@/lib/data/settings";
+import type { DashboardTeamInvite, DashboardTeamMember } from "@/lib/data/settings-types";
 import { displayNameFromEmail, initialsFromLabel } from "@/lib/user-display";
 import { classNames, formatRelativeTime } from "@/lib/utils";
 import { DotsVerticalIcon, PlusIcon, XIcon } from "./dashboard-ui";

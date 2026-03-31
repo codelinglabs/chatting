@@ -7,7 +7,7 @@ import {
   type BillingInterval,
   type BillingPlanKey
 } from "@/lib/billing-plans";
-import type { DashboardBillingSummary } from "@/lib/data";
+import type { DashboardBillingSummary } from "@/lib/data/billing-types";
 import { FormButton } from "../ui/form-controls";
 import { DashboardModal } from "./dashboard-modal";
 import { billingLostFeatures } from "./dashboard-billing-utils";

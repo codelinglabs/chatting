@@ -1,13 +1,11 @@
 const mocks = vi.hoisted(() => ({
-  getOptionalServerEnv: vi.fn(),
-  getRequiredServerEnv: vi.fn(),
+  getMiniMaxConfig: vi.fn(),
   normalizeResponseToneContext: vi.fn(() => "Pricing reply"),
   parseResponseToneAnalysis: vi.fn(() => ({ overall_score: 9 }))
 }));
 
 vi.mock("@/lib/env.server", () => ({
-  getOptionalServerEnv: mocks.getOptionalServerEnv,
-  getRequiredServerEnv: mocks.getRequiredServerEnv
+  getMiniMaxConfig: mocks.getMiniMaxConfig
 }));
 vi.mock("@/lib/response-tone-checker", () => ({
   normalizeResponseToneContext: mocks.normalizeResponseToneContext,
@@ -19,11 +17,10 @@ import { analyzeResponseToneWithClaude } from "@/lib/response-tone-checker-servi
 describe("response tone checker service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.getRequiredServerEnv.mockReturnValue("api-key");
-    mocks.getOptionalServerEnv.mockImplementation((key: string) => {
-      if (key === "MINIMAX_MODEL") return " custom-model ";
-      if (key === "MINIMAX_BASE_URL") return "https://api.example.com///";
-      return undefined;
+    mocks.getMiniMaxConfig.mockReturnValue({
+      apiKey: "api-key",
+      model: "custom-model",
+      baseUrl: "https://api.example.com"
     });
   });
 

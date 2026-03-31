@@ -27,7 +27,12 @@ import {
   rewardKindForProgramType,
   summarizeReferralRewards
 } from "@/lib/referral-reward-utils";
-export type { DashboardReferralAttribution, DashboardReferralProgram, DashboardReferralReward, DashboardReferralSummary } from "@/lib/referral-definitions";
+export type {
+  DashboardReferralAttribution,
+  DashboardReferralProgram,
+  DashboardReferralReward,
+  DashboardReferralSummary
+} from "@/lib/referral-types";
 export { normalizeReferralCode } from "@/lib/referral-definitions";
 export { syncReferralRewardsForUser } from "@/lib/referral-sync";
 

@@ -36,13 +36,11 @@ describe("env.server", () => {
     expect(
       getDatabaseConfig({
         source: {
-          DATABASE_URL: "postgres://localhost/chatly",
-          DATABASE_SSL: "require"
+          DATABASE_URL: "postgres://localhost/chatly"
         }
       })
     ).toEqual({
-      connectionString: "postgres://localhost/chatly",
-      ssl: { rejectUnauthorized: false }
+      connectionString: "postgres://localhost/chatly"
     });
 
     expect(
@@ -107,7 +105,7 @@ describe("env.server", () => {
           NEXT_PUBLIC_APP_URL: "https://chatly.example"
         }
       })
-    ).toEqual(["STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_GROWTH_MONTHLY"]);
+    ).toEqual(["STRIPE_PRICE_GROWTH_MONTHLY", "STRIPE_WEBHOOK_SECRET"]);
 
     expect(
       getMissingStripeCheckoutEnvVars({
@@ -151,7 +149,7 @@ describe("env.server", () => {
           R2_PUBLIC_BASE_URL: ""
         }
       })
-    ).toEqual(["R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_PUBLIC_BASE_URL"]);
+    ).toEqual(["R2_ACCESS_KEY_ID", "R2_PUBLIC_BASE_URL", "R2_SECRET_ACCESS_KEY"]);
   });
 
   it("asserts production startup env safely", () => {

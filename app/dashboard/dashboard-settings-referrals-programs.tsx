@@ -1,6 +1,6 @@
 "use client";
 
-import type { DashboardReferralProgram } from "@/lib/data";
+import type { DashboardReferralProgram } from "@/lib/referral-types";
 import { classNames } from "@/lib/utils";
 import { CheckIcon, CopyIcon, ExternalLinkIcon } from "./dashboard-ui";
 import {
