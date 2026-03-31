@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Added scheduled daily digests and weekly performance emails with per-user delivery tracking from the node runtime.
 - Removed legacy Stripe Pro price-id fallbacks so billing now resolves only against the active Growth monthly and annual prices.
 - Added forgot-password and reset-password actions with token-backed reset links from the auth flow.
 - Added invite-aware teammate signup, login acceptance, and a dedicated invite landing page for workspace joins.
@@ -78,6 +79,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - Stripe-backed billing flows for checkout, portal access, invoice sync, and webhook handling.
 - Billing price resolution now relies only on the current Growth Stripe price ids instead of retired Pro-era fallbacks.
+- Scheduled daily digests and weekly performance reports now send from the node runtime with persisted delivery windows.
 - Owner workspaces now default to a backend-seeded Growth trial, support local trial extensions, and automatically downgrade expired unpaid trials to Starter.
 - Scheduled lifecycle nudges now deliver activation, health, and upgrade reminders from the node runtime instead of widget pageviews.
 - Seat-based `Growth` and `Pro` billing with monthly/annual pricing, plan-aware widget gating, and trial-extension support for active workspaces.

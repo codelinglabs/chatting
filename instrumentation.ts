@@ -1,6 +1,8 @@
 export async function register() {
-  if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { startNodeRuntimeServices } = await import("@/lib/runtime/startup-orchestrator");
-    await startNodeRuntimeServices();
+  if (process.env.NEXT_RUNTIME !== "nodejs") {
+    return;
   }
+
+  const { registerNodeInstrumentation } = await import("./instrumentation-node");
+  await registerNodeInstrumentation();
 }

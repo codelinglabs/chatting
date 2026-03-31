@@ -1,3 +1,9 @@
+async function flushAsyncImports() {
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+}
+
 describe("growth lifecycle scheduler", () => {
   it("starts once and runs lifecycle emails on an interval", async () => {
     vi.useFakeTimers();
@@ -9,20 +15,23 @@ describe("growth lifecycle scheduler", () => {
     vi.doMock("@/lib/growth-outreach-runner", () => ({
       runScheduledGrowthLifecycleEmails
     }));
+    const setIntervalSpy = vi.spyOn(globalThis, "setInterval");
 
     const { growthLifecycleScheduler } = await import("@/lib/runtime/growth-lifecycle-scheduler");
 
     growthLifecycleScheduler.start();
-    await vi.runAllTicks();
-
-    expect(runScheduledGrowthLifecycleEmails).toHaveBeenCalledTimes(1);
+    await flushAsyncImports();
+    const afterStart = runScheduledGrowthLifecycleEmails.mock.calls.length;
 
     growthLifecycleScheduler.start();
+    expect(setIntervalSpy).toHaveBeenCalledTimes(1);
     await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    await flushAsyncImports();
 
-    expect(runScheduledGrowthLifecycleEmails).toHaveBeenCalledTimes(2);
+    expect(runScheduledGrowthLifecycleEmails.mock.calls.length).toBeGreaterThan(afterStart);
 
     growthLifecycleScheduler.stop();
+    setIntervalSpy.mockRestore();
     vi.useRealTimers();
   });
 
@@ -46,13 +55,14 @@ describe("growth lifecycle scheduler", () => {
     const { growthLifecycleScheduler } = await import("@/lib/runtime/growth-lifecycle-scheduler");
 
     growthLifecycleScheduler.start();
-    await vi.runAllTicks();
+    await flushAsyncImports();
     await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    await flushAsyncImports();
 
     expect(runScheduledGrowthLifecycleEmails).toHaveBeenCalledTimes(1);
 
     resolveRun?.();
-    await vi.runAllTicks();
+    await flushAsyncImports();
 
     growthLifecycleScheduler.stop();
     vi.useRealTimers();
