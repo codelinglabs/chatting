@@ -4,8 +4,10 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { classNames } from "@/lib/utils";
 import {
+  DashboardInlineNotice,
   DASHBOARD_PRIMARY_BUTTON_CLASS,
-  DASHBOARD_SECONDARY_BUTTON_CLASS
+  DASHBOARD_SECONDARY_BUTTON_CLASS,
+  type DashboardNoticeState
 } from "./dashboard-controls";
 import { SETTINGS_NAV, type SettingsSection } from "./dashboard-settings-shared";
 
@@ -13,6 +15,7 @@ export function DashboardSettingsScaffold({
   activeSection,
   onSetActiveSection,
   children,
+  notice,
   isDirty,
   isSaving,
   onDiscard,
@@ -21,6 +24,7 @@ export function DashboardSettingsScaffold({
   activeSection: SettingsSection;
   onSetActiveSection: (section: SettingsSection) => void;
   children: ReactNode;
+  notice?: DashboardNoticeState;
   isDirty: boolean;
   isSaving: boolean;
   onDiscard: () => void;
@@ -118,7 +122,8 @@ export function DashboardSettingsScaffold({
           </aside>
 
           <div className="min-w-0 bg-slate-50/70 p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto w-full max-w-[860px] space-y-6">
+            <div className="w-full space-y-6">
+              <DashboardInlineNotice notice={notice ?? null} />
               {children}
 
               {isDirty && activeSection !== "billing" ? (

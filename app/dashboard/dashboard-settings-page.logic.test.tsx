@@ -45,14 +45,11 @@ function createInitialData() {
       limitReached: false,
       nextBillingDate: null,
       trialEndsAt: null,
-      trialExtensionEligible: true,
-      trialExtensionUsedAt: null,
-      activityQualifiedForTrialExtension: true,
       subscriptionStatus: null,
       customerId: null,
       portalAvailable: true,
       checkoutAvailable: true,
-      features: { billedPerSeat: false, proactiveChat: false, removeBranding: false, trialExtensions: true },
+      features: { billedPerSeat: false, proactiveChat: false, removeBranding: false },
       paymentMethod: null,
       invoices: [],
       referrals: { programs: [], attributedSignups: [], rewards: [], pendingRewardCount: 0, earnedRewardCount: 0, earnedFreeMonths: 0, earnedDiscountCents: 0, earnedCommissionCents: 0 }
@@ -68,9 +65,6 @@ async function loadSettingsPage(search = "") {
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(search) }));
   vi.doMock("@/lib/billing-plans", () => ({ shouldShowTranscriptBranding: (planKey: string) => planKey === "starter" }));
-  vi.doMock("./dashboard-controls", () => ({
-    DashboardTopNotice: ({ notice }: { notice: unknown }) => ((captures.notice = notice), <div>notice</div>)
-  }));
   vi.doMock("./dashboard-settings-scaffold", () => ({
     DashboardSettingsScaffold: ({ children, ...props }: { children: unknown }) => ((captures.scaffold = props), <div>{children}</div>)
   }));
@@ -96,7 +90,6 @@ describe("dashboard settings page logic", () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, billing: { ...createInitialData().billing, planKey: "growth", billingInterval: "annual", priceLabel: "$290/year" } }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, redirectUrl: "https://stripe.example/portal" }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, redirectUrl: "https://stripe.example/checkout" }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, billing: { ...createInitialData().billing, planKey: "growth", billingInterval: "monthly" }, outreachQueued: false }) })
       .mockResolvedValue({ ok: true, json: async () => ({ ok: true, billing: { ...createInitialData().billing, planKey: "starter", billingInterval: "monthly" } }) });
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("window", { setTimeout: vi.fn().mockReturnValue(1), clearTimeout: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn(), location: { assign: vi.fn() } });
@@ -108,12 +101,11 @@ describe("dashboard settings page logic", () => {
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData()} />);
 
-    expect(captures.notice).toEqual({ tone: "success", message: "Stripe checkout completed" });
+    expect((captures.scaffold as { notice: unknown }).notice).toEqual({ tone: "success", message: "Stripe checkout completed" });
     expect((captures.billing as { selectedInterval: string }).selectedInterval).toBe("annual");
 
     await (captures.billing as { onOpenBillingPortal: () => Promise<void> }).onOpenBillingPortal();
     await (captures.billing as { onChangePlan: (plan: "starter", interval: "monthly") => Promise<void> }).onChangePlan("starter", "monthly");
-    await (captures.billing as { onRequestTrialExtension: () => Promise<void> }).onRequestTrialExtension();
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData()} />);
     await runMockEffects(reactMocks.effects);
@@ -123,11 +115,6 @@ describe("dashboard settings page logic", () => {
 
     expect((globalThis.window as Window).location.assign).toHaveBeenCalledWith("https://stripe.example/portal");
     expect((globalThis.window as Window).location.assign).toHaveBeenCalledWith("https://stripe.example/checkout");
-    expect(fetchMock).toHaveBeenCalledWith("/dashboard/settings/billing/trial-extension", { method: "POST" });
-    expect(captures.notice).toEqual({
-      tone: "success",
-      message: "Trial extended by 7 days. Personal outreach email could not be queued."
-    });
   });
 
   it("tracks dirty profile changes, handles avatar upload, saves settings, and discards drafts", async () => {
@@ -163,7 +150,7 @@ describe("dashboard settings page logic", () => {
       "/dashboard/settings/update",
       expect.objectContaining({ method: "POST", headers: { "content-type": "application/json" } })
     );
-    expect(captures.notice).toEqual({ tone: "success", message: "Settings saved" });
+    expect((captures.scaffold as { notice: unknown }).notice).toEqual({ tone: "success", message: "Settings saved" });
     expect((globalThis.window as Window).dispatchEvent).toHaveBeenCalledTimes(1);
 
     (captures.profile as { onUpdateProfile: (key: "jobTitle", value: string) => void }).onUpdateProfile("jobTitle", "CEO");

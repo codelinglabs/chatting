@@ -8,7 +8,7 @@ function createInitialData(planKey: "starter" | "growth" = "starter", billingInt
     email: { notificationEmail: "team@usechatting.com", replyToEmail: "reply@usechatting.com", templates: [], emailSignature: "Best,\nChatting" },
     teamMembers: [],
     teamInvites: [],
-    billing: { planKey, planName: "Plan", priceLabel: "$0/month", billingInterval, usedSeats: 1, billedSeats: null, seatLimit: 5, siteCount: 1, conversationCount: 12, messageCount: 34, avgResponseSeconds: 72, conversationLimit: 50, conversationUsagePercent: 24, upgradePromptThreshold: 30, remainingConversations: 38, showUpgradePrompt: false, limitReached: false, nextBillingDate: null, trialEndsAt: null, trialExtensionEligible: true, trialExtensionUsedAt: null, activityQualifiedForTrialExtension: true, subscriptionStatus: null, customerId: null, portalAvailable: true, checkoutAvailable: true, features: { billedPerSeat: false, proactiveChat: false, removeBranding: false, trialExtensions: true }, paymentMethod: null, invoices: [], referrals: { programs: [], attributedSignups: [], rewards: [], pendingRewardCount: 0, earnedRewardCount: 0, earnedFreeMonths: 0, earnedDiscountCents: 0, earnedCommissionCents: 0 } }
+    billing: { planKey, planName: "Plan", priceLabel: "$0/month", billingInterval, usedSeats: 1, billedSeats: null, seatLimit: 5, siteCount: 1, conversationCount: 12, messageCount: 34, avgResponseSeconds: 72, conversationLimit: 50, conversationUsagePercent: 24, upgradePromptThreshold: 30, remainingConversations: 38, showUpgradePrompt: false, limitReached: false, nextBillingDate: null, trialEndsAt: null, subscriptionStatus: null, customerId: null, portalAvailable: true, checkoutAvailable: true, features: { billedPerSeat: false, proactiveChat: false, removeBranding: false }, paymentMethod: null, invoices: [], referrals: { programs: [], attributedSignups: [], rewards: [], pendingRewardCount: 0, earnedRewardCount: 0, earnedFreeMonths: 0, earnedDiscountCents: 0, earnedCommissionCents: 0 } }
   };
 }
 
@@ -19,7 +19,6 @@ async function loadSettingsPage(search = "") {
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(search) }));
   vi.doMock("@/lib/billing-plans", () => ({ shouldShowTranscriptBranding: (planKey: string) => planKey === "starter" }));
-  vi.doMock("./dashboard-controls", () => ({ DashboardTopNotice: ({ notice }: { notice: unknown }) => ((captures.notice = notice), <div>notice</div>) }));
   vi.doMock("./dashboard-settings-scaffold", () => ({ DashboardSettingsScaffold: ({ children, ...props }: { children: unknown }) => ((captures.scaffold = props), <div>{children}</div>) }));
   vi.doMock("./dashboard-settings-profile-section", () => ({ SettingsProfileSection: (props: unknown) => ((captures.profile = props), <div>profile</div>) }));
   vi.doMock("./dashboard-settings-notifications-section", () => ({ SettingsNotificationsSection: (props: unknown) => ((captures.notifications = props), <div>notifications</div>) }));
@@ -36,6 +35,7 @@ describe("dashboard settings page sections", () => {
     const notifications = await loadSettingsPage("section=notifications");
     notifications.reactMocks.beginRender();
     renderToStaticMarkup(<notifications.DashboardSettingsPage initialData={createInitialData()} />);
+    expect((notifications.captures.scaffold as { activeSection: string }).activeSection).toBe("notifications");
     await runMockEffects(notifications.reactMocks.effects);
     notifications.reactMocks.beginRender();
     renderToStaticMarkup(<notifications.DashboardSettingsPage initialData={createInitialData()} />);
@@ -62,6 +62,7 @@ describe("dashboard settings page sections", () => {
     const invalid = await loadSettingsPage("section=unknown");
     invalid.reactMocks.beginRender();
     renderToStaticMarkup(<invalid.DashboardSettingsPage initialData={createInitialData()} />);
+    expect((invalid.captures.scaffold as { activeSection: string }).activeSection).toBe("profile");
     await runMockEffects(invalid.reactMocks.effects);
     invalid.reactMocks.beginRender();
     renderToStaticMarkup(<invalid.DashboardSettingsPage initialData={createInitialData()} />);
@@ -79,8 +80,9 @@ describe("dashboard settings page sections", () => {
     await runMockEffects(reactMocks.effects);
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData("growth", "annual")} />);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     await (captures.billing as { onChangePlan: (plan: "growth", interval: "annual") => Promise<void> }).onChangePlan("growth", "annual");
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

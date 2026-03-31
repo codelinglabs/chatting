@@ -10,6 +10,29 @@ export type DashboardNoticeState = {
   message: string;
 } | null;
 
+function DashboardNoticeCard({
+  notice,
+  className
+}: {
+  notice: Exclude<DashboardNoticeState, null>;
+  className: string;
+}) {
+  return (
+    <div
+      className={classNames(
+        className,
+        "flex items-center gap-3 rounded-lg border px-4 py-3 shadow-sm",
+        notice.tone === "success"
+          ? "border-green-200 bg-green-50 text-green-700"
+          : "border-red-200 bg-red-50 text-red-700"
+      )}
+    >
+      {notice.tone === "success" ? <CheckCircleIcon className="h-4 w-4" /> : <WarningIcon className="h-4 w-4" />}
+      <span className="text-sm font-medium">{notice.message}</span>
+    </div>
+  );
+}
+
 export const DASHBOARD_INPUT_CLASS =
   "h-11 w-full rounded-lg border border-slate-200 bg-white px-3.5 text-sm text-slate-900 transition placeholder:text-slate-400 focus:border-blue-500";
 
@@ -32,17 +55,19 @@ export function DashboardTopNotice({ notice }: { notice: DashboardNoticeState })
 
   return (
     <div className="fixed right-6 top-20 z-40">
-      <div
-        className={classNames(
-          "flex items-center gap-3 rounded-lg border px-4 py-3 shadow-sm",
-          notice.tone === "success"
-            ? "border-green-200 bg-green-50 text-green-700"
-            : "border-red-200 bg-red-50 text-red-700"
-        )}
-      >
-        {notice.tone === "success" ? <CheckCircleIcon className="h-4 w-4" /> : <WarningIcon className="h-4 w-4" />}
-        <span className="text-sm font-medium">{notice.message}</span>
-      </div>
+      <DashboardNoticeCard notice={notice} className="" />
     </div>
+  );
+}
+
+export function DashboardInlineNotice({ notice }: { notice: DashboardNoticeState }) {
+  if (!notice) {
+    return null;
+  }
+
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <DashboardNoticeCard notice={notice} className="w-full shadow-none" />
+    </section>
   );
 }
