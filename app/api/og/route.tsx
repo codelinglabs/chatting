@@ -1,14 +1,16 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 // Deploying as a standard Node.js Serverless Function (50MB limit) 
 // instead of Edge (1MB limit) to easily accommodate the 1.2MB of custom .ttf fonts.
 
-// Node runtime fetching fonts from local bundle
-const fraunces600P = fetch(new URL('./fonts/Fraunces-SemiBold.ttf', import.meta.url)).then((res) => res.arrayBuffer());
-const dmSans400P = fetch(new URL('./fonts/DMSans-Regular.ttf', import.meta.url)).then((res) => res.arrayBuffer());
-const dmSans500P = fetch(new URL('./fonts/DMSans-Medium.ttf', import.meta.url)).then((res) => res.arrayBuffer());
-const dmSans600P = fetch(new URL('./fonts/DMSans-SemiBold.ttf', import.meta.url)).then((res) => res.arrayBuffer());
+// Native Node fs correctly traces static files into the Vercel Lambda without fetch HTTP bounds
+const fraunces600P = readFile(join(process.cwd(), 'app', 'api', 'og', 'fonts', 'Fraunces-SemiBold.ttf'));
+const dmSans400P = readFile(join(process.cwd(), 'app', 'api', 'og', 'fonts', 'DMSans-Regular.ttf'));
+const dmSans500P = readFile(join(process.cwd(), 'app', 'api', 'og', 'fonts', 'DMSans-Medium.ttf'));
+const dmSans600P = readFile(join(process.cwd(), 'app', 'api', 'og', 'fonts', 'DMSans-SemiBold.ttf'));
 
 export async function GET(req: NextRequest) {
   try {
