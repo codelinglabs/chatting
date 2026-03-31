@@ -30,6 +30,7 @@ describe("useDashboardLiveSync", () => {
     const module = await import("./use-dashboard-live-sync");
     const applyReadState = vi.fn();
     const refreshConversationList = vi.fn().mockResolvedValue(undefined);
+    const refreshConversationSummary = vi.fn().mockResolvedValue({ id: "conv_2" });
     const refreshConversation = vi.fn().mockResolvedValue({ id: "conv_1" });
     const markConversationAsRead = vi.fn().mockResolvedValue(undefined);
     const setVisitorTypingConversationId = vi.fn();
@@ -43,6 +44,7 @@ describe("useDashboardLiveSync", () => {
       recentOptimisticReplyAtRef,
       applyReadState,
       refreshConversationList,
+      refreshConversationSummary,
       refreshConversation,
       markConversationAsRead,
       setVisitorTypingConversationId,
@@ -68,6 +70,7 @@ describe("useDashboardLiveSync", () => {
     recentOptimisticReplyAtRef.current.set("conv_1", Date.now() - 6000);
     eventSource.onmessage({ data: JSON.stringify({ type: "message.created", sender: "founder", conversationId: "conv_1" }) });
     eventSource.onmessage({ data: JSON.stringify({ type: "message.created", sender: "user", conversationId: "conv_1" }) });
+    eventSource.onmessage({ data: JSON.stringify({ type: "conversation.updated", conversationId: "conv_2", status: "open" }) });
     await flushAsyncWork();
 
     eventSource.onerror();
@@ -78,8 +81,9 @@ describe("useDashboardLiveSync", () => {
     expect(setVisitorTypingConversationId.mock.calls[0]?.[0](null)).toBe("conv_1");
     expect(setVisitorTypingConversationId.mock.calls[1]?.[0]("conv_1")).toBe(null);
     expect(applyReadState).toHaveBeenCalledWith("conv_2");
-    expect(refreshConversationList).toHaveBeenCalled();
+    expect(refreshConversationList).toHaveBeenCalledTimes(1);
     expect(refreshConversation).toHaveBeenCalledWith("conv_1");
+    expect(refreshConversationSummary).toHaveBeenCalledWith("conv_2", true);
     expect(markConversationAsRead).toHaveBeenCalledWith("conv_1");
     expect(recentOptimisticReplyAtRef.current.has("conv_1")).toBe(false);
     expect(eventSource.close).toHaveBeenCalled();

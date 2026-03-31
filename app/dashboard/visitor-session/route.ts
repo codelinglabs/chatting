@@ -1,0 +1,29 @@
+import { getVisitorPresenceSession } from "@/lib/data";
+import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
+
+export async function GET(request: Request) {
+  const auth = await requireJsonRouteUser();
+  if ("response" in auth) {
+    return auth.response;
+  }
+
+  const { searchParams } = new URL(request.url);
+  const siteId = String(searchParams.get("siteId") ?? "").trim();
+  const sessionId = String(searchParams.get("sessionId") ?? "").trim();
+
+  if (!siteId || !sessionId) {
+    return jsonError("missing-fields", 400);
+  }
+
+  const session = await getVisitorPresenceSession({
+    userId: auth.user.id,
+    siteId,
+    sessionId
+  });
+
+  if (!session) {
+    return jsonError("not-found", 404);
+  }
+
+  return jsonOk({ session });
+}

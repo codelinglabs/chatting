@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
+import { subscribeDashboardLiveClient } from "./dashboard-live-client";
 
 type LiveEvent = {
   type: string;
@@ -18,6 +19,7 @@ export function useDashboardLiveSync({
   recentOptimisticReplyAtRef,
   applyReadState,
   refreshConversationList,
+  refreshConversationSummary,
   refreshConversation,
   markConversationAsRead,
   setVisitorTypingConversationId,
@@ -27,102 +29,103 @@ export function useDashboardLiveSync({
   recentOptimisticReplyAtRef: MutableRefObject<Map<string, number>>;
   applyReadState: (conversationId: string) => void;
   refreshConversationList: () => Promise<void>;
+  refreshConversationSummary: (conversationId: string, moveToTop?: boolean) => Promise<{ id: string } | null>;
   refreshConversation: (conversationId: string) => Promise<{ id: string } | null>;
   markConversationAsRead: (conversationId: string) => Promise<void>;
   setVisitorTypingConversationId: Dispatch<SetStateAction<string | null>>;
   setLiveConnectionState: Dispatch<SetStateAction<"connected" | "reconnecting">>;
 }) {
   useEffect(() => {
-    const eventSource = new EventSource("/dashboard/live");
+    const unsubscribe = subscribeDashboardLiveClient({
+      onOpen() {
+        setLiveConnectionState("connected");
+      },
+      onMessage(event) {
+        setLiveConnectionState("connected");
 
-    eventSource.onopen = () => {
-      setLiveConnectionState("connected");
-    };
+        if (event.type === "connected") {
+          return;
+        }
 
-    eventSource.onmessage = (messageEvent) => {
-      let event: LiveEvent;
+        if (event.type === "typing.updated" && event.actor === "visitor" && event.conversationId) {
+          setVisitorTypingConversationId((current) =>
+            event.typing ? event.conversationId! : current === event.conversationId ? null : current
+          );
+          return;
+        }
 
-      try {
-        event = JSON.parse(messageEvent.data);
-      } catch (error) {
-        return;
-      }
+        if (event.type === "visitor.presence.updated") {
+          if (!event.conversationId) {
+            return;
+          }
 
-      setLiveConnectionState("connected");
+          if (activeConversationIdRef.current === event.conversationId) {
+            void refreshConversation(event.conversationId);
+            return;
+          }
 
-      if (event.type === "connected") {
-        return;
-      }
+          void refreshConversationSummary(event.conversationId);
+          return;
+        }
 
-      if (event.type === "typing.updated" && event.actor === "visitor" && event.conversationId) {
-        setVisitorTypingConversationId((current) =>
-          event.typing ? event.conversationId! : current === event.conversationId ? null : current
-        );
-        return;
-      }
+        if (event.type === "conversation.read" && event.conversationId) {
+          applyReadState(event.conversationId);
+          return;
+        }
 
-      if (event.type === "visitor.presence.updated") {
+        const skipFounderThreadRefresh =
+          event.type === "message.created" &&
+          event.sender === "founder" &&
+          Boolean(event.conversationId) &&
+          (() => {
+            const timestamp = recentOptimisticReplyAtRef.current.get(event.conversationId!);
+            if (!timestamp) {
+              return false;
+            }
+
+            if (Date.now() - timestamp > 5000) {
+              recentOptimisticReplyAtRef.current.delete(event.conversationId!);
+              return false;
+            }
+
+            return true;
+          })();
+
+        if (skipFounderThreadRefresh) {
+          return;
+        }
+
+        if (event.type === "conversation.updated" && event.conversationId) {
+          void refreshConversationSummary(event.conversationId, true);
+          return;
+        }
+
         if (!event.conversationId) {
           return;
         }
 
-        void refreshConversationList();
-
         if (activeConversationIdRef.current === event.conversationId) {
-          void refreshConversation(event.conversationId);
+          void refreshConversation(event.conversationId).then((conversation) => {
+            if (conversation && event.type === "message.created" && event.sender === "user") {
+              void markConversationAsRead(conversation.id);
+            }
+          });
+          return;
         }
 
-        return;
+        void refreshConversationSummary(event.conversationId, true);
+      },
+      onError() {
+        setLiveConnectionState("reconnecting");
+        void refreshConversationList();
+        if (activeConversationIdRef.current) {
+          void refreshConversation(activeConversationIdRef.current);
+        }
       }
-
-      if (event.type === "conversation.read" && event.conversationId) {
-        applyReadState(event.conversationId);
-        return;
-      }
-
-      const skipFounderThreadRefresh =
-        event.type === "message.created" &&
-        event.sender === "founder" &&
-        Boolean(event.conversationId) &&
-        (() => {
-          const timestamp = recentOptimisticReplyAtRef.current.get(event.conversationId!);
-          if (!timestamp) {
-            return false;
-          }
-
-          if (Date.now() - timestamp > 5000) {
-            recentOptimisticReplyAtRef.current.delete(event.conversationId!);
-            return false;
-          }
-
-          return true;
-        })();
-
-      void refreshConversationList();
-
-      if (
-        event.conversationId &&
-        activeConversationIdRef.current === event.conversationId &&
-        !skipFounderThreadRefresh
-      ) {
-        void refreshConversation(event.conversationId).then((conversation) => {
-          if (conversation && event.type === "message.created" && event.sender === "user") {
-            void markConversationAsRead(conversation.id);
-          }
-        });
-      }
-    };
-
-    eventSource.onerror = () => {
-      setLiveConnectionState("reconnecting");
-      void refreshConversationList();
-      if (activeConversationIdRef.current) {
-        void refreshConversation(activeConversationIdRef.current);
-      }
-    };
+    });
 
     return () => {
-      eventSource.close();
+      unsubscribe();
     };
   }, [
     activeConversationIdRef,
@@ -131,6 +134,7 @@ export function useDashboardLiveSync({
     recentOptimisticReplyAtRef,
     refreshConversation,
     refreshConversationList,
+    refreshConversationSummary,
     setLiveConnectionState,
     setVisitorTypingConversationId
   ]);

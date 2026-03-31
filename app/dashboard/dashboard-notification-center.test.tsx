@@ -116,10 +116,11 @@ describe("dashboard notification center", () => {
         newVisitorAlerts: false,
         highIntentAlerts: false
       }
-    }) as { props: Record<string, unknown> };
+    }) as { type: (props: Record<string, unknown>) => { props: Record<string, unknown> }; props: Record<string, unknown> };
+    const toast = element.type(element.props);
 
-    expect(element.props.role).toBe("button");
-    (element.props.onClick as () => void)();
+    expect(toast.props.role).toBe("button");
+    (toast.props.onClick as () => void)();
     expect(navigate).toHaveBeenCalledWith("/dashboard/inbox?id=conv_1");
     expect(reactMocks.states[1]?.current).toBeNull();
     vi.unstubAllGlobals();

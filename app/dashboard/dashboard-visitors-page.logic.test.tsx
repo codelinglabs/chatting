@@ -64,9 +64,7 @@ async function loadVisitorsPage() {
   const exportVisitors = vi.fn();
 
   vi.doMock("react", () => reactMocks.moduleFactory());
-  vi.doMock("./dashboard-shell", () => ({
-    useDashboardNavigation: () => ({ navigate })
-  }));
+  vi.doMock("./dashboard-shell", () => ({ useDashboardNavigation: () => ({ navigate }) }));
   vi.doMock("./dashboard-visitors-page-sections", () => ({
     VisitorsToolbar: (props: unknown) => ((captures.toolbar = props), <div>toolbar</div>),
     VisitorsFiltersPanel: (props: unknown) => ((captures.filters = props), <div>filters</div>),
@@ -88,12 +86,13 @@ describe("dashboard visitors page logic", () => {
     vi.unstubAllGlobals();
   });
 
-  it("refreshes visitors, responds to live events, and routes conversation actions", async () => {
+  it("refreshes visitors manually, patches live events incrementally, and routes conversation actions", async () => {
     const initial = createVisitorsData();
     const eventSources: Array<{ close: ReturnType<typeof vi.fn>; onmessage: ((event: { data: string }) => void) | null }> = [];
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, conversations: [], liveSessions: [] }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, conversations: initial.conversations, liveSessions: initial.liveSessions }) });
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, summary: initial.conversations[0] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true, session: initial.liveSessions[0] }) });
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("window", { setInterval: vi.fn().mockReturnValue(7), clearInterval: vi.fn() });
     vi.stubGlobal("EventSource", class {
@@ -111,14 +110,12 @@ describe("dashboard visitors page logic", () => {
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardVisitorsPage initialConversations={initial.conversations} initialLiveSessions={initial.liveSessions} />);
 
-    await (captures.recent as { onOpenConversation: (visitor: { latestConversationId: string }) => void }).onOpenConversation(
-      (captures.recent as { filteredVisitors: Array<{ latestConversationId: string }> }).filteredVisitors[0]
-    );
-    await (captures.live as { onOpenConversation: (visitor: { id: string; latestConversationId: string | null }) => void }).onOpenConversation(
-      (captures.live as { liveVisitors: Array<{ id: string; latestConversationId: string | null }> }).liveVisitors.find(
-        (visitor) => !visitor.latestConversationId
-      )!
-    );
+    await (captures.recent as { onOpenConversation: (visitor: { latestConversationId: string }) => void }).onOpenConversation((captures.recent as {
+      filteredVisitors: Array<{ latestConversationId: string }>;
+    }).filteredVisitors[0]);
+    await (captures.live as { onOpenConversation: (visitor: { id: string; latestConversationId: string | null }) => void }).onOpenConversation((captures.live as {
+      liveVisitors: Array<{ id: string; latestConversationId: string | null }>;
+    }).liveVisitors.find((visitor) => !visitor.latestConversationId)!);
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardVisitorsPage initialConversations={initial.conversations} initialLiveSessions={initial.liveSessions} />);
 
@@ -133,9 +130,20 @@ describe("dashboard visitors page logic", () => {
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardVisitorsPage initialConversations={initial.conversations} initialLiveSessions={initial.liveSessions} />);
 
-    eventSources[0]?.onmessage?.({ data: JSON.stringify({ type: "message.created" }) });
+    eventSources[0]?.onmessage?.({ data: JSON.stringify({ type: "message.created", sender: "user", conversationId: "conv_1" }) });
+    eventSources[0]?.onmessage?.({ data: JSON.stringify({ type: "visitor.presence.updated", siteId: "site_1", sessionId: "live_1" }) });
     await flushAsyncWork();
-    expect(fetchMock).toHaveBeenCalledWith("/dashboard/visitors-data", { method: "GET", cache: "no-store" });
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "/dashboard/visitors-data", { method: "GET", cache: "no-store" });
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/dashboard/conversation-summary?conversationId=conv_1",
+      { method: "GET", cache: "no-store" }
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      3,
+      "/dashboard/visitor-session?siteId=site_1&sessionId=live_1",
+      { method: "GET", cache: "no-store" }
+    );
     expect((captures.drawer as { visitor: unknown }).visitor).toBeNull();
     expect((captures.live as { refreshing: boolean }).refreshing).toBe(false);
 

@@ -80,3 +80,39 @@ export function settleOptimisticMessage(
 
   return [...messages, nextMessage];
 }
+
+export function filterDashboardConversations(
+  conversations: ConversationSummary[],
+  threadFilter: "all" | "open" | "resolved",
+  searchQuery: string
+) {
+  const needle = searchQuery.trim().toLowerCase();
+
+  return conversations.filter((conversation) => {
+    if (threadFilter === "open" && conversation.status !== "open") {
+      return false;
+    }
+
+    if (threadFilter === "resolved" && conversation.status !== "resolved") {
+      return false;
+    }
+
+    if (!needle) {
+      return true;
+    }
+
+    const haystack = [
+      conversation.email,
+      conversation.siteName,
+      conversation.pageUrl,
+      conversation.lastMessagePreview,
+      conversation.city,
+      conversation.country
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(needle);
+  });
+}

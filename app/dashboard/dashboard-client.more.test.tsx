@@ -73,58 +73,16 @@ describe("dashboard client more", () => {
     vi.unstubAllGlobals();
   });
 
-  it("starts and stops heartbeats based on visibility changes", async () => {
-    const listeners: Record<string, () => void> = {};
-    let visibilityState = "hidden";
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
-    vi.stubGlobal("document", {
-      get visibilityState() {
-        return visibilityState;
-      },
-      addEventListener: vi.fn((name: string, handler: () => void) => { listeners[name] = handler; }),
-      removeEventListener: vi.fn(),
-      getElementById: vi.fn(() => null)
-    });
-    vi.stubGlobal("window", {
-      innerWidth: 1280,
-      setInterval: vi.fn().mockReturnValue(1),
-      clearInterval: vi.fn(),
-      addEventListener: vi.fn((name: string, handler: () => void) => { listeners[name] = handler; }),
-      removeEventListener: vi.fn(),
-      history: { pushState: vi.fn() }
-    });
-
-    const { DashboardClient, reactMocks } = await loadDashboardClient();
-    reactMocks.beginRender();
-    DashboardClient(createProps());
-    await runMockEffects(reactMocks.effects);
-    expect(globalThis.fetch).not.toHaveBeenCalled();
-
-    visibilityState = "visible";
-    listeners.visibilitychange?.();
-    listeners.focus?.();
-    visibilityState = "hidden";
-    listeners.visibilitychange?.();
-
-    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
-    expect((globalThis.window as Window).setInterval).toHaveBeenCalled();
-    expect((globalThis.window as Window).clearInterval).toHaveBeenCalled();
-  });
-
   it("covers shortcuts, palette filtering, typing-target guards, and sidebar escape", async () => {
     const listeners: Record<string, (event: Record<string, unknown>) => void> = {};
     const searchInput = { focus: vi.fn(), select: vi.fn() };
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
     vi.stubGlobal("document", {
-      visibilityState: "visible",
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       getElementById: vi.fn(() => searchInput)
     });
     vi.stubGlobal("window", {
       innerWidth: 1280,
-      setInterval: vi.fn().mockReturnValue(1),
-      clearInterval: vi.fn(),
       addEventListener: vi.fn((name: string, handler: (event: Record<string, unknown>) => void) => { listeners[name] = handler; }),
       removeEventListener: vi.fn(),
       history: { pushState: vi.fn() }

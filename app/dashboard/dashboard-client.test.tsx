@@ -89,21 +89,15 @@ describe("dashboard client", () => {
     vi.unstubAllGlobals();
   });
 
-  it("starts the presence heartbeat and maps inbox props into thread panels", async () => {
-    const listeners: Record<string, () => void> = {};
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
-    vi.stubGlobal("fetch", fetchMock);
+  it("maps inbox props into thread panels and syncs unread count", async () => {
     vi.stubGlobal("document", {
-      visibilityState: "visible",
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       getElementById: vi.fn(() => null)
     });
     vi.stubGlobal("window", {
       innerWidth: 640,
-      setInterval: vi.fn().mockReturnValue(1),
-      clearInterval: vi.fn(),
-      addEventListener: vi.fn((name: string, handler: () => void) => { listeners[name] = handler; }),
+      addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       history: { pushState: vi.fn() }
     });
@@ -111,40 +105,30 @@ describe("dashboard client", () => {
     const { DashboardClient, reactMocks, unreadCount } = await loadDashboardClient();
     reactMocks.beginRender();
     const tree = DashboardClient(createProps());
-    const cleanups = await runMockEffects(reactMocks.effects);
+    await runMockEffects(reactMocks.effects);
 
     const panels = collectElements(tree, (element) => element.type === "dashboard-threads-panel");
     const details = collectElements(tree, (element) => element.type === "dashboard-thread-detail");
 
-    expect(fetchMock).toHaveBeenCalledWith("/dashboard/presence", expect.objectContaining({ method: "POST" }));
     expect(unreadCount.setUnreadCount).toHaveBeenCalledWith(2);
-    expect((globalThis.window as Window).setInterval).toHaveBeenCalledWith(expect.any(Function), 30000);
-    listeners.focus?.();
-    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(panels).toHaveLength(1);
     expect(panels[0]?.props.initialWidgetInstalled).toBe(true);
     expect(panels[0]?.props.widgetSiteIds).toEqual(["site_1"]);
     expect(details[0]?.props.showBackButton).toBe(true);
     expect(details[0]?.props.isLiveDisconnected).toBe(true);
     expect(reactMocks.states[4]?.current).toBe(false);
-    cleanups.forEach((cleanup) => cleanup());
-    expect((globalThis.window as Window).clearInterval).toHaveBeenCalled();
   });
 
   it("handles keyboard navigation, command palette actions, and inbox clearing", async () => {
     const listeners: Record<string, (event: Record<string, unknown>) => void> = {};
     const searchInput = { focus: vi.fn(), select: vi.fn() };
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
     vi.stubGlobal("document", {
-      visibilityState: "visible",
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       getElementById: vi.fn(() => searchInput)
     });
     vi.stubGlobal("window", {
       innerWidth: 1280,
-      setInterval: vi.fn().mockReturnValue(1),
-      clearInterval: vi.fn(),
       addEventListener: vi.fn((name: string, handler: (event: Record<string, unknown>) => void) => {
         listeners[name] = handler;
       }),

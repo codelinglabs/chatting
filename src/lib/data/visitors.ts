@@ -7,6 +7,7 @@ import {
   upsertVisitorPresenceSessionRow
 } from "@/lib/repositories/visitor-presence-repository";
 import { optionalText } from "@/lib/utils";
+import { getWorkspaceAccess } from "@/lib/workspace-access";
 
 export type RecordVisitorPresenceInput = {
   siteId: string;
@@ -96,6 +97,31 @@ export async function recordVisitorPresence(input: RecordVisitorPresenceInput) {
   }
 
   return next;
+}
+
+export async function getVisitorPresenceSession(input: {
+  userId: string;
+  siteId: string;
+  sessionId: string;
+}) {
+  const siteId = input.siteId.trim();
+  const sessionId = input.sessionId.trim();
+
+  if (!siteId || !sessionId) {
+    return null;
+  }
+
+  const workspace = await getWorkspaceAccess(input.userId);
+  const [owner, row] = await Promise.all([
+    findSiteOwnerRow(siteId),
+    findVisitorPresenceSessionRow(siteId, sessionId)
+  ]);
+
+  if (!row || owner?.user_id !== workspace.ownerUserId) {
+    return null;
+  }
+
+  return mapVisitorPresenceSession(row);
 }
 
 export async function listVisitorPresenceSessions(userId: string) {

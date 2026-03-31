@@ -34,21 +34,21 @@ describe("useDashboardLiveUnreadCount", () => {
         ok: true,
         json: vi.fn().mockResolvedValue({
           ok: true,
-          conversations: [{ unreadCount: 2 }, { unreadCount: 3 }]
+          unreadCount: 5
         })
       })
       .mockResolvedValueOnce({
         ok: true,
         json: vi.fn().mockResolvedValue({
           ok: true,
-          conversations: [{ unreadCount: 0 }]
+          unreadCount: 0
         })
       })
       .mockResolvedValueOnce({
         ok: true,
         json: vi.fn().mockResolvedValue({
           ok: true,
-          conversations: [{ unreadCount: 1 }, { unreadCount: 1 }]
+          unreadCount: 2
         })
       });
     vi.stubGlobal("fetch", fetchMock);
@@ -86,5 +86,26 @@ describe("useDashboardLiveUnreadCount", () => {
 
     cleanups[0]?.();
     expect(eventSource.close).toHaveBeenCalled();
+  });
+
+  it("skips the live refresh subscription when disabled", async () => {
+    vi.resetModules();
+    const reactMocks = createMockReactHooks();
+    vi.doMock("react", () => reactMocks.moduleFactory());
+
+    const eventSource = vi.fn();
+    vi.stubGlobal("EventSource", eventSource as unknown as typeof EventSource);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const module = await import("./use-dashboard-live-unread-count");
+
+    reactMocks.beginRender();
+    module.useDashboardLiveUnreadCount(3, false);
+    await runMockEffects(reactMocks.effects);
+
+    expect(eventSource).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(reactMocks.states[0]?.current).toBe(3);
   });
 });

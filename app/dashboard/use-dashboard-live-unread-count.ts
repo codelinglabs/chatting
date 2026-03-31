@@ -1,17 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { DashboardLiveEvent } from "@/lib/live-events";
-import { countUnreadConversations } from "./dashboard-unread-count";
+import { subscribeDashboardLiveClient } from "./dashboard-live-client";
 
-type ConversationSummariesResponse = {
+type UnreadCountResponse = {
   ok: true;
-  conversations: Array<{
-    unreadCount: number;
-  }>;
+  unreadCount: number;
 };
 
-export function useDashboardLiveUnreadCount(initialUnreadCount: number) {
+export function useDashboardLiveUnreadCount(initialUnreadCount: number, liveSyncEnabled = true) {
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const refreshInFlightRef = useRef<Promise<void> | null>(null);
   const refreshQueuedRef = useRef(false);
@@ -21,6 +18,10 @@ export function useDashboardLiveUnreadCount(initialUnreadCount: number) {
   }, [initialUnreadCount]);
 
   useEffect(() => {
+    if (!liveSyncEnabled) {
+      return;
+    }
+
     let isActive = true;
 
     const refreshUnreadCount = async () => {
@@ -31,7 +32,7 @@ export function useDashboardLiveUnreadCount(initialUnreadCount: number) {
 
       const task = (async () => {
         try {
-          const response = await fetch("/dashboard/conversations", {
+          const response = await fetch("/dashboard/unread-count", {
             method: "GET",
             cache: "no-store"
           });
@@ -40,12 +41,12 @@ export function useDashboardLiveUnreadCount(initialUnreadCount: number) {
             return;
           }
 
-          const payload = (await response.json()) as ConversationSummariesResponse;
+          const payload = (await response.json()) as UnreadCountResponse;
           if (!isActive) {
             return;
           }
 
-          setUnreadCount(countUnreadConversations(payload.conversations));
+          setUnreadCount(payload.unreadCount);
         } catch {
           return;
         } finally {
@@ -62,31 +63,22 @@ export function useDashboardLiveUnreadCount(initialUnreadCount: number) {
       await task;
     };
 
-    const eventSource = new EventSource("/dashboard/live");
-
-    eventSource.onmessage = (messageEvent) => {
-      let event: DashboardLiveEvent | { type: "connected" };
-
-      try {
-        event = JSON.parse(messageEvent.data);
-      } catch {
-        return;
-      }
-
-      if (event.type === "conversation.read" || (event.type === "message.created" && event.sender === "user")) {
+    const unsubscribe = subscribeDashboardLiveClient({
+      onMessage(event) {
+        if (event.type === "conversation.read" || (event.type === "message.created" && event.sender === "user")) {
+          void refreshUnreadCount();
+        }
+      },
+      onError() {
         void refreshUnreadCount();
       }
-    };
-
-    eventSource.onerror = () => {
-      void refreshUnreadCount();
-    };
+    });
 
     return () => {
       isActive = false;
-      eventSource.close();
+      unsubscribe();
     };
-  }, []);
+  }, [liveSyncEnabled]);
 
   return { unreadCount, setUnreadCount };
 }

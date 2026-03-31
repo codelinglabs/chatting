@@ -13,6 +13,7 @@ import { classNames } from "@/lib/utils";
 import { DashboardNotificationCenter } from "./dashboard-notification-center";
 import { DashboardUnreadCountProvider } from "./dashboard-unread-count";
 import { useDashboardLiveUnreadCount } from "./use-dashboard-live-unread-count";
+import { useDashboardPresenceHeartbeat } from "./use-dashboard-presence-heartbeat";
 import {
   DashboardHeader,
   dashboardGreeting,
@@ -43,7 +44,9 @@ export function DashboardShell({ children, userEmail, unreadCount, notificationS
   const { displayName, firstName, initials } = getDashboardIdentity(userEmail);
   const isInboxRoute = pathname === "/dashboard/inbox";
   const [hour, setHour] = useState<number | null>(null);
-  const { unreadCount: liveUnreadCount, setUnreadCount } = useDashboardLiveUnreadCount(unreadCount);
+  const { unreadCount: liveUnreadCount, setUnreadCount } = useDashboardLiveUnreadCount(unreadCount, !isInboxRoute);
+
+  useDashboardPresenceHeartbeat();
 
   useEffect(() => {
     setHour(new Date().getHours());

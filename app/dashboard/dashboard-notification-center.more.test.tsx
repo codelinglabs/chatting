@@ -98,9 +98,10 @@ describe("dashboard notification center more", () => {
     const tree = DashboardNotificationCenter({
       initialSettings: { browserNotifications: false, soundAlerts: false, emailNotifications: true, newVisitorAlerts: false, highIntentAlerts: false }
     }) as ReactElement;
-    const dismissButton = collectElements(tree, (element) => element.type === "button" && element.props["aria-label"] === "Dismiss notification")[0];
+    const toastTree = (tree.type as (props: Record<string, unknown>) => ReactElement)(tree.props);
+    const dismissButton = collectElements(toastTree, (element) => element.type === "button" && element.props["aria-label"] === "Dismiss notification")[0];
 
-    (tree.props.onKeyDown as (event: { key: string; preventDefault: () => void }) => void)({ key: " ", preventDefault: vi.fn() });
+    (toastTree.props.onKeyDown as (event: { key: string; preventDefault: () => void }) => void)({ key: " ", preventDefault: vi.fn() });
     expect(navigate).toHaveBeenCalledWith("/dashboard/inbox?id=conv_1");
     expect(reactMocks.states[1]?.current).toBeNull();
 
@@ -111,7 +112,8 @@ describe("dashboard notification center more", () => {
     const dismissTree = dismissState.DashboardNotificationCenter({
       initialSettings: { browserNotifications: false, soundAlerts: false, emailNotifications: true, newVisitorAlerts: false, highIntentAlerts: false }
     }) as ReactElement;
-    const closeButton = collectElements(dismissTree, (element) => element.type === "button" && element.props["aria-label"] === "Dismiss notification")[0];
+    const dismissToastTree = (dismissTree.type as (props: Record<string, unknown>) => ReactElement)(dismissTree.props);
+    const closeButton = collectElements(dismissToastTree, (element) => element.type === "button" && element.props["aria-label"] === "Dismiss notification")[0];
     closeButton?.props.onClick({ stopPropagation: vi.fn() });
     expect(dismissState.reactMocks.states[1]?.current).toBeNull();
   });

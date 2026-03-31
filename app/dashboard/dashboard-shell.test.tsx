@@ -7,6 +7,7 @@ async function loadDashboardShell(options?: {
 }) {
   vi.resetModules();
   const captures: Record<string, unknown> = {};
+  const heartbeat = vi.fn();
   const router = { prefetch: vi.fn(), push: vi.fn() };
   const reactMocks = createMockReactHooks();
 
@@ -20,6 +21,9 @@ async function loadDashboardShell(options?: {
       captures.notification = props;
       return <div>notifications</div>;
     }
+  }));
+  vi.doMock("./use-dashboard-presence-heartbeat", () => ({
+    useDashboardPresenceHeartbeat: heartbeat
   }));
   vi.doMock("./use-dashboard-live-unread-count", () => ({
     useDashboardLiveUnreadCount: (initialUnreadCount: number) => ({
@@ -69,7 +73,7 @@ async function loadDashboardShell(options?: {
   }));
 
   const module = await import("./dashboard-shell");
-  return { DashboardShell: module.DashboardShell, captures, reactMocks, router };
+  return { DashboardShell: module.DashboardShell, captures, heartbeat, reactMocks, router };
 }
 
 describe("dashboard shell", () => {
@@ -86,7 +90,7 @@ describe("dashboard shell", () => {
         removeEventListener: vi.fn()
       })
     });
-    const { DashboardShell, captures, reactMocks, router } = await loadDashboardShell();
+    const { DashboardShell, captures, heartbeat, reactMocks, router } = await loadDashboardShell();
 
     reactMocks.beginRender();
     renderToStaticMarkup(
@@ -101,6 +105,7 @@ describe("dashboard shell", () => {
     const cleanups = await runMockEffects(reactMocks.effects);
 
     expect(captures.notification).toEqual({ initialSettings: { browserNotifications: true } });
+    expect(heartbeat).toHaveBeenCalled();
     expect(captures.mobile).toEqual({ pathname: "/dashboard/inbox", unreadCount: 3 });
     expect(captures.header).toEqual(
       expect.objectContaining({ showUnreadBadge: true, unreadCount: 3, firstName: "Tina" })

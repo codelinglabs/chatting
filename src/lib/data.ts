@@ -42,7 +42,7 @@ export {
   updateSiteWidgetSettings,
   updateSiteWidgetTitle
 } from "./data/sites";
-export { listVisitorPresenceSessions, recordVisitorPresence } from "./data/visitors";
+export { getVisitorPresenceSession, listVisitorPresenceSessions, recordVisitorPresence } from "./data/visitors";
 export {
   getConversationVisitorNote,
   getSiteVisitorNote,
@@ -52,6 +52,7 @@ export {
 } from "./data/visitor-notes";
 export { getDashboardStats } from "./data/stats";
 export { recordUserPresence } from "./data/presence";
+export { getDashboardUnreadCount } from "./data/unread";
 export { subscribeToNewsletter } from "./data/newsletter";
 export { requestFreeToolExport } from "./data/free-tool-export";
 export {

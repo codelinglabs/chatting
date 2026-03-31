@@ -40,12 +40,6 @@ export async function notifyIncomingVisitorMessage(
     isNewVisitor: input.isNewVisitor,
     highIntent: input.highIntent
   });
-  publishDashboardLive(input.userId, {
-    type: "conversation.updated",
-    conversationId: input.conversationId,
-    status: "open",
-    updatedAt: input.createdAt
-  });
 
   try {
     const deliverySettings = await getDashboardNotificationDeliverySettings(input.userId);

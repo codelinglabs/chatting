@@ -14,7 +14,6 @@ import { renderDashboardClientPanels } from "./dashboard-client-panels";
 import { countUnreadConversations, useSetDashboardUnreadCount } from "./dashboard-unread-count";
 import { useDashboardNavigation } from "./dashboard-shell";
 import { useDashboardInboxKeyboardShortcuts } from "./use-dashboard-inbox-keyboard-shortcuts";
-import { useDashboardPresenceHeartbeat } from "./use-dashboard-presence-heartbeat";
 import { useDashboardState } from "./use-dashboard-state";
 
 const SEARCH_INPUT_ID = "dashboard-inbox-search";
@@ -34,8 +33,6 @@ export function DashboardClient(props: DashboardClientProps) {
   const [showSidebarDrawer, setShowSidebarDrawer] = useState(false);
   const [showMobileList, setShowMobileList] = useState(!state.activeConversation);
   const [keyboardConversationId, setKeyboardConversationId] = useState<string | null>(state.activeConversation?.id ?? state.filteredConversations[0]?.id ?? null);
-
-  useDashboardPresenceHeartbeat();
 
   useEffect(() => {
     setDashboardUnreadCount?.(unreadCount);

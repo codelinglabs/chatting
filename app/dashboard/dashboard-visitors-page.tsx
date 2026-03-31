@@ -19,96 +19,31 @@ import {
   VisitorsFiltersPanel,
   VisitorsToolbar
 } from "./dashboard-visitors-page-sections";
+import { useDashboardVisitorsData } from "./use-dashboard-visitors-data";
 import { exportVisitors, filterVisitors, sortVisitors, withinTimeRange } from "./dashboard-visitors-page.utils";
-
-type DashboardVisitorsPageProps = {
-  initialConversations: ConversationSummary[];
-  initialLiveSessions: VisitorPresenceSession[];
-};
 
 export function DashboardVisitorsPage({
   initialConversations,
   initialLiveSessions
-}: DashboardVisitorsPageProps) {
+}: {
+  initialConversations: ConversationSummary[];
+  initialLiveSessions: VisitorPresenceSession[];
+}) {
   const dashboardNavigation = useDashboardNavigation();
-  const [conversations, setConversations] = useState(initialConversations);
-  const [liveSessions, setLiveSessions] = useState(initialLiveSessions);
+  const { conversations, liveSessions, refreshing, refreshVisitors } = useDashboardVisitorsData({
+    initialConversations,
+    initialLiveSessions
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [primaryFilter, setPrimaryFilter] = useState<VisitorsPrimaryFilter>("all");
   const [timeRange, setTimeRange] = useState<VisitorsTimeRange>("7d");
   const [sortKey, setSortKey] = useState("lastSeen");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [selectedVisitorId, setSelectedVisitorId] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<VisitorFilterState>(DEFAULT_VISITOR_FILTERS);
   const [draftFilters, setDraftFilters] = useState<VisitorFilterState>(DEFAULT_VISITOR_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
-
-  async function refreshVisitors(manual = false) {
-    if (manual) {
-      setRefreshing(true);
-    }
-
-    try {
-      const response = await fetch("/dashboard/visitors-data", {
-        method: "GET",
-        cache: "no-store"
-      });
-
-      if (!response.ok) {
-        return;
-      }
-
-      const payload = (await response.json()) as {
-        ok: true;
-        conversations: ConversationSummary[];
-        liveSessions: VisitorPresenceSession[];
-      };
-      setConversations(payload.conversations);
-      setLiveSessions(payload.liveSessions);
-    } catch (error) {
-      // Keep the current UI steady if a refresh misses.
-    } finally {
-      if (manual) {
-        setRefreshing(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      void refreshVisitors();
-    }, 30000);
-
-    return () => window.clearInterval(intervalId);
-  }, []);
-
-  useEffect(() => {
-    const eventSource = new EventSource("/dashboard/live");
-
-    eventSource.onmessage = (messageEvent) => {
-      let event: { type?: string };
-
-      try {
-        event = JSON.parse(messageEvent.data);
-      } catch (error) {
-        return;
-      }
-
-      if (
-        event.type === "visitor.presence.updated" ||
-        event.type === "message.created" ||
-        event.type === "conversation.updated"
-      ) {
-        void refreshVisitors();
-      }
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
 
   const visitors = buildVisitorRecords(conversations, liveSessions);
   const filteredVisitors = sortVisitors(
@@ -128,6 +63,10 @@ export function DashboardVisitorsPage({
   const selectedVisitor = selectedVisitorId
     ? visitors.find((visitor) => visitor.id === selectedVisitorId) ?? null
     : null;
+  const filtersActive =
+    Boolean(searchQuery) ||
+    primaryFilter !== "all" ||
+    JSON.stringify(filters) !== JSON.stringify(DEFAULT_VISITOR_FILTERS);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -162,21 +101,6 @@ export function DashboardVisitorsPage({
     dashboardNavigation?.navigate(`/dashboard/inbox?id=${visitor.latestConversationId}`);
   }
 
-  function applyFilters() {
-    setFilters(draftFilters);
-    setShowFilters(false);
-  }
-
-  function clearFilters() {
-    setDraftFilters(DEFAULT_VISITOR_FILTERS);
-    setFilters(DEFAULT_VISITOR_FILTERS);
-  }
-
-  const filtersActive =
-    Boolean(searchQuery) ||
-    primaryFilter !== "all" ||
-    JSON.stringify(filters) !== JSON.stringify(DEFAULT_VISITOR_FILTERS);
-
   return (
     <div className="space-y-6">
       <VisitorsToolbar
@@ -196,8 +120,14 @@ export function DashboardVisitorsPage({
         visible={showFilters}
         draftFilters={draftFilters}
         setDraftFilters={setDraftFilters}
-        clearFilters={clearFilters}
-        applyFilters={applyFilters}
+        clearFilters={() => {
+          setDraftFilters(DEFAULT_VISITOR_FILTERS);
+          setFilters(DEFAULT_VISITOR_FILTERS);
+        }}
+        applyFilters={() => {
+          setFilters(draftFilters);
+          setShowFilters(false);
+        }}
       />
 
       <LiveVisitorsSection

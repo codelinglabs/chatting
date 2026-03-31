@@ -73,9 +73,8 @@ describe("dashboard client hotspots", () => {
 
   it("omits resolved toggles without an active conversation and safely no-ops when search focus cannot find an input", async () => {
     const listeners: Record<string, (event: Record<string, unknown>) => void> = {};
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
-    vi.stubGlobal("document", { visibilityState: "visible", addEventListener: vi.fn(), removeEventListener: vi.fn(), getElementById: vi.fn(() => null) });
-    vi.stubGlobal("window", { innerWidth: 1280, setInterval: vi.fn().mockReturnValue(1), clearInterval: vi.fn(), addEventListener: vi.fn((name: string, handler: (event: Record<string, unknown>) => void) => { listeners[name] = handler; }), removeEventListener: vi.fn(), history: { pushState: vi.fn() } });
+    vi.stubGlobal("document", { addEventListener: vi.fn(), removeEventListener: vi.fn(), getElementById: vi.fn(() => null) });
+    vi.stubGlobal("window", { innerWidth: 1280, addEventListener: vi.fn((name: string, handler: (event: Record<string, unknown>) => void) => { listeners[name] = handler; }), removeEventListener: vi.fn(), history: { pushState: vi.fn() } });
 
     const { DashboardClient, reactMocks, state } = await loadDashboardClient({ activeConversation: null, filteredConversations: [] });
     reactMocks.beginRender();
@@ -95,9 +94,8 @@ describe("dashboard client hotspots", () => {
 
   it("reopens resolved conversations from the palette and navigates to widget settings", async () => {
     const listeners: Record<string, (event: Record<string, unknown>) => void> = {};
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
-    vi.stubGlobal("document", { visibilityState: "visible", addEventListener: vi.fn(), removeEventListener: vi.fn(), getElementById: vi.fn(() => ({ focus: vi.fn(), select: vi.fn() })) });
-    vi.stubGlobal("window", { innerWidth: 960, setInterval: vi.fn().mockReturnValue(1), clearInterval: vi.fn(), addEventListener: vi.fn((name: string, handler: (event: Record<string, unknown>) => void) => { listeners[name] = handler; }), removeEventListener: vi.fn(), history: { pushState: vi.fn() } });
+    vi.stubGlobal("document", { addEventListener: vi.fn(), removeEventListener: vi.fn(), getElementById: vi.fn(() => ({ focus: vi.fn(), select: vi.fn() })) });
+    vi.stubGlobal("window", { innerWidth: 960, addEventListener: vi.fn((name: string, handler: (event: Record<string, unknown>) => void) => { listeners[name] = handler; }), removeEventListener: vi.fn(), history: { pushState: vi.fn() } });
 
     const resolvedThread = createConversationThread({ status: "resolved" });
     const { DashboardClient, navigation, reactMocks, state } = await loadDashboardClient({ activeConversation: resolvedThread });
@@ -118,9 +116,8 @@ describe("dashboard client hotspots", () => {
   });
 
   it("executes the thread-panel and detail callbacks that wire inbox navigation together", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
-    vi.stubGlobal("document", { visibilityState: "visible", addEventListener: vi.fn(), removeEventListener: vi.fn(), getElementById: vi.fn(() => ({ focus: vi.fn(), select: vi.fn() })) });
-    vi.stubGlobal("window", { innerWidth: 1280, setInterval: vi.fn().mockReturnValue(1), clearInterval: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), history: { pushState: vi.fn() } });
+    vi.stubGlobal("document", { addEventListener: vi.fn(), removeEventListener: vi.fn(), getElementById: vi.fn(() => ({ focus: vi.fn(), select: vi.fn() })) });
+    vi.stubGlobal("window", { innerWidth: 1280, addEventListener: vi.fn(), removeEventListener: vi.fn(), history: { pushState: vi.fn() } });
 
     const { DashboardClient, reactMocks, state } = await loadDashboardClient({});
     reactMocks.beginRender();
@@ -148,23 +145,15 @@ describe("dashboard client hotspots", () => {
     expect((globalThis.window as Window).history.pushState).toHaveBeenCalledWith(null, "", "/dashboard/inbox");
   });
 
-  it("covers repeated heartbeats, escape precedence, typing-target guards, and loading summaries", async () => {
-    const documentListeners: Record<string, () => void> = {};
+  it("covers escape precedence, typing-target guards, and loading summaries", async () => {
     const windowListeners: Record<string, (event?: Record<string, unknown>) => void> = {};
-    let visibilityState = "visible";
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
     vi.stubGlobal("document", {
-      get visibilityState() {
-        return visibilityState;
-      },
-      addEventListener: vi.fn((name: string, handler: () => void) => { documentListeners[name] = handler; }),
+      addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       getElementById: vi.fn(() => null)
     });
     vi.stubGlobal("window", {
       innerWidth: 1280,
-      setInterval: vi.fn().mockReturnValue(7),
-      clearInterval: vi.fn(),
       addEventListener: vi.fn((name: string, handler: (event?: Record<string, unknown>) => void) => { windowListeners[name] = handler; }),
       removeEventListener: vi.fn(),
       history: { pushState: vi.fn() }
@@ -174,10 +163,6 @@ describe("dashboard client hotspots", () => {
     reactMocks.beginRender();
     let tree = DashboardClient(createProps());
     await runMockEffects(reactMocks.effects);
-    documentListeners.visibilitychange?.();
-    visibilityState = "hidden";
-    windowListeners.focus?.();
-    documentListeners.visibilitychange?.();
     windowListeners.keydown?.({ key: "k", ctrlKey: true, preventDefault: vi.fn(), target: null });
     reactMocks.beginRender();
     tree = DashboardClient(createProps());
@@ -186,7 +171,6 @@ describe("dashboard client hotspots", () => {
     windowListeners.keydown?.({ key: "ArrowDown", preventDefault: vi.fn(), target: { tagName: "TEXTAREA", isContentEditable: false } });
     const detail = collect(tree, (element) => element.type === "dashboard-thread-detail")[0];
 
-    expect((globalThis.window as Window).clearInterval).toHaveBeenCalledWith(7);
     expect(reactMocks.states[0]?.current).toBe(false);
     expect(detail?.props.loadingConversationSummary).toBeNull();
   });

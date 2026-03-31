@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { ConversationSummary, ConversationThread } from "@/lib/types";
+import type { ConversationThread } from "@/lib/types";
 import type { BannerState, DashboardClientProps } from "./dashboard-client.types";
 import { topTagsFromConversations } from "./dashboard-client.utils";
-import { toSummary } from "./dashboard-state-helpers";
-import { useDashboardLiveSync } from "./use-dashboard-live-sync";
+import { filterDashboardConversations } from "./dashboard-state-helpers";
+import { createDashboardStateNetwork } from "./dashboard-state-network";
+import { useDashboardStateEffects } from "./use-dashboard-state-effects";
 import { createDashboardActions } from "./use-dashboard-actions";
 
 export type ThreadFilter = "all" | "open" | "resolved";
@@ -50,157 +51,27 @@ export function useDashboardState({
   const lastTypingSentAtRef = useRef(0);
   const recentOptimisticReplyAtRef = useRef<Map<string, number>>(new Map());
   const pendingTagMutationsRef = useRef<Set<string>>(new Set());
-
-  function showBanner(tone: NonNullable<BannerState>["tone"], text: string) {
-    setBanner({ tone, text });
-  }
-
-  function syncSummary(summary: ConversationSummary, moveToTop = false) {
-    setConversations((current) => {
-      const exists = current.some((conversation) => conversation.id === summary.id);
-      if (!exists) {
-        return [summary, ...current];
-      }
-
-      const updated = current.map((conversation) => (conversation.id === summary.id ? summary : conversation));
-      if (!moveToTop) {
-        return updated;
-      }
-
-      const next = updated.find((conversation) => conversation.id === summary.id);
-      return next ? [next, ...updated.filter((conversation) => conversation.id !== summary.id)] : updated;
-    });
-  }
-
-  function applyReadState(conversationId: string) {
-    setConversations((current) =>
-      current.map((conversation) =>
-        conversation.id === conversationId ? { ...conversation, unreadCount: 0 } : conversation
-      )
-    );
-    setActiveConversation((current) =>
-      current && current.id === conversationId ? { ...current, unreadCount: 0 } : current
-    );
-  }
-
-  async function refreshConversationList() {
-    try {
-      const response = await fetch("/dashboard/conversations", {
-        method: "GET",
-        cache: "no-store"
-      });
-
-      if (!response.ok) {
-        return;
-      }
-
-      const payload = (await response.json()) as { ok: true; conversations: ConversationSummary[] };
-      setConversations(payload.conversations);
-    } catch {
-      return;
-    }
-  }
-
-  async function fetchConversationById(conversationId: string) {
-    try {
-      const response = await fetch(`/dashboard/conversation?conversationId=${encodeURIComponent(conversationId)}`, {
-        method: "GET",
-        cache: "no-store"
-      });
-
-      if (!response.ok) {
-        return null;
-      }
-
-      const payload = (await response.json()) as { ok: true; conversation: ConversationThread };
-      conversationCacheRef.current.set(payload.conversation.id, payload.conversation);
-      return payload.conversation;
-    } catch {
-      return null;
-    }
-  }
-
-  function syncActiveConversation(conversation: ConversationThread) {
-    setActiveConversation(conversation);
-    syncSummary(toSummary(conversation), true);
-  }
-
-  async function refreshConversation(conversationId: string) {
-    const conversation = await fetchConversationById(conversationId);
-    if (!conversation) {
-      return null;
-    }
-
-    syncActiveConversation(conversation);
-    return conversation;
-  }
-
-  async function openConversation(conversationId: string) {
-    const requestId = ++openRequestIdRef.current;
-    setLoadingConversationId(conversationId);
-
-    const cached = conversationCacheRef.current.get(conversationId);
-    const conversation = cached ?? await fetchConversationById(conversationId);
-    if (!cached && openRequestIdRef.current !== requestId) {
-      return conversation;
-    }
-
-    if (conversation) {
-      syncActiveConversation(conversation);
-      void markConversationAsRead(conversationId);
-    }
-
-    setLoadingConversationId(null);
-    return conversation;
-  }
-
-  function clearActiveConversation() {
-    setLoadingConversationId(null);
-    setActiveConversation(null);
-  }
-
-  async function markConversationAsRead(conversationId: string) {
-    applyReadState(conversationId);
-    await fetch("/dashboard/read", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversationId }),
-      keepalive: true
-    }).catch(() => {});
-  }
-
-  async function postTypingSignal(conversationId: string, typing: boolean) {
-    await fetch("/dashboard/typing", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversationId, typing }),
-      keepalive: !typing
-    }).catch(() => {});
-  }
-
-  async function clearTypingSignal() {
-    const conversationId = activeTypingConversationIdRef.current;
-    if (!conversationId) {
-      return;
-    }
-
-    activeTypingConversationIdRef.current = null;
-    lastTypingSentAtRef.current = 0;
-    await postTypingSignal(conversationId, false);
-  }
-
-  useEffect(() => {
-    setSites(initialSites);
-    setConversations(initialConversations);
-    setActiveConversation(initialActiveConversation);
-    setAnsweredConversations(initialStats.answeredConversations);
-    setRatedConversations(initialStats.ratedConversations);
-    setBanner(null);
-  }, [initialActiveConversation, initialConversations, initialSites, initialStats]);
-
-  useEffect(() => {
-    conversationsRef.current = conversations;
-  }, [conversations]);
+  const {
+    showBanner,
+    applyReadState,
+    refreshConversationList,
+    refreshConversationSummary,
+    refreshConversation,
+    openConversation,
+    clearActiveConversation,
+    markConversationAsRead,
+    postTypingSignal,
+    clearTypingSignal
+  } = createDashboardStateNetwork({
+    setBanner,
+    setConversations,
+    setActiveConversation,
+    setLoadingConversationId,
+    conversationCacheRef,
+    openRequestIdRef,
+    activeTypingConversationIdRef,
+    lastTypingSentAtRef
+  });
 
   useEffect(() => {
     if (activeConversation) {
@@ -208,92 +79,39 @@ export function useDashboardState({
     }
   }, [activeConversation]);
 
-  useEffect(() => {
-    activeConversationIdRef.current = activeConversation?.id ?? null;
-  }, [activeConversation?.id]);
-
-  useEffect(() => {
-    if (pathname !== "/dashboard/inbox") {
-      return;
-    }
-
-    if (!routeConversationId) {
-      clearActiveConversation();
-      return;
-    }
-
-    if (routeConversationId === activeConversation?.id) {
-      if (loadingConversationId) {
-        setLoadingConversationId(null);
-      }
-      return;
-    }
-
-    if (routeConversationId === loadingConversationId) {
-      return;
-    }
-
-    void openConversation(routeConversationId);
-  }, [pathname, routeConversationId, activeConversation?.id, loadingConversationId]);
-
-  useEffect(() => {
-    const currentTypingConversationId = activeTypingConversationIdRef.current;
-
-    if (
-      currentTypingConversationId &&
-      currentTypingConversationId !== (activeConversation?.id ?? null)
-    ) {
-      void clearTypingSignal();
-    }
-  }, [activeConversation?.id]);
-
-  useEffect(
-    () => () => {
-      void clearTypingSignal();
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!activeConversation?.id) {
-      return;
-    }
-
-    setVisitorTypingConversationId((current) =>
-      current === activeConversation.id ? current : null
-    );
-    void markConversationAsRead(activeConversation.id);
-  }, [activeConversation?.id]);
-
-  useEffect(() => {
-    if (!searchParams) {
-      return;
-    }
-
-    const nextParams = new URLSearchParams(searchParams.toString());
-    const hadSuccess = nextParams.has("success");
-    const hadError = nextParams.has("error");
-
-    nextParams.delete("success");
-    nextParams.delete("error");
-
-    if (!hadSuccess && !hadError) {
-      return;
-    }
-
-    const nextUrl = nextParams.toString() ? `${pathname}?${nextParams.toString()}` : pathname;
-    window.history.replaceState(null, "", nextUrl);
-  }, [pathname, searchParams]);
-
-  useDashboardLiveSync({
+  useDashboardStateEffects({
+    pathname,
+    searchParams: searchParams ? new URLSearchParams(searchParams.toString()) : null,
+    routeConversationId,
+    initialSites,
+    initialConversations,
+    initialActiveConversation,
+    initialAnsweredConversations: initialStats.answeredConversations,
+    initialRatedConversations: initialStats.ratedConversations,
+    conversations,
+    activeConversation,
+    loadingConversationId,
+    setSites,
+    setConversations,
+    setActiveConversation,
+    setAnsweredConversations,
+    setRatedConversations,
+    setBanner,
+    setLoadingConversationId,
+    setVisitorTypingConversationId,
+    setLiveConnectionState,
+    activeTypingConversationIdRef,
     activeConversationIdRef,
+    conversationsRef,
     recentOptimisticReplyAtRef,
     applyReadState,
     refreshConversationList,
+    refreshConversationSummary,
     refreshConversation,
-    markConversationAsRead,
-    setVisitorTypingConversationId,
-    setLiveConnectionState
+    openConversation,
+    clearActiveConversation,
+    clearTypingSignal,
+    markConversationAsRead
   });
 
   const {
@@ -327,34 +145,7 @@ export function useDashboardState({
     postTypingSignal
   });
 
-  const filteredConversations = conversations.filter((conversation) => {
-    if (threadFilter === "open" && conversation.status !== "open") {
-      return false;
-    }
-
-    if (threadFilter === "resolved" && conversation.status !== "resolved") {
-      return false;
-    }
-
-    const needle = searchQuery.trim().toLowerCase();
-    if (!needle) {
-      return true;
-    }
-
-    const haystack = [
-      conversation.email,
-      conversation.siteName,
-      conversation.pageUrl,
-      conversation.lastMessagePreview,
-      conversation.city,
-      conversation.country
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-
-    return haystack.includes(needle);
-  });
+  const filteredConversations = filterDashboardConversations(conversations, threadFilter, searchQuery);
 
   return {
     sites,
