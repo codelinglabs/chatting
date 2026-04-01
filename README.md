@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Fixed the dashboard inbox retry CTA wiring so failed optimistic replies can actually resend through the thread detail panel again.
 - Dashboard inbox replies now keep failed team messages inline with retry, preserve optimistic thread state, and leave the composer editable while earlier sends finish.
 - Based the dashboard home conversations card on rolling local 7-day windows using the saved teammate timezone for local date boundaries and previous-period comparison.
 - Wired the dashboard home conversations selector to real rolling `7 / 30 / 90` day ranges with matching comparison labels.
@@ -133,6 +134,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Dashboard
 
 - Shared dashboard shell with focused pages for inbox, visitors, analytics, team, settings, and widget setup.
+- Dashboard thread detail now routes inline retry actions through the exported inbox state handler again so failed optimistic replies can resend reliably.
 - Dashboard shell now syncs each teammate's browser timezone so timezone-aware scheduled emails can use local delivery windows.
 - Dashboard live updates now share one `/dashboard/live` connection per tab, route unread and conversation refreshes through targeted endpoints, and keep visitors current with incremental session/message patches plus manual full-refresh fallback.
 - Dashboard widget settings now preview online, away, and offline states directly in settings, and inbox thread ordering stays pinned to real recency instead of moving touched threads to the top.

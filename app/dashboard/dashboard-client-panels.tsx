@@ -97,7 +97,7 @@ function renderThreadDetail({
     onCloseSidebar: () => setShowSidebarDrawer(false),
     onSaveConversationEmail: state.handleSaveConversationEmail,
     onSendReply: state.handleReplySend,
-    onRetryReply: state.handleRetryReply,
+    onRetryReply: state.handleReplyRetry,
     onConversationStatusChange: state.handleConversationStatusChange,
     onReplyComposerBlur: state.handleReplyComposerBlur,
     onReplyComposerFocus: state.handleReplyComposerFocus,
