@@ -43,8 +43,12 @@ export function revokeOptimisticAttachmentUrls(message: ThreadMessage) {
   }, 0);
 }
 
-export function removeMessageById(messages: ThreadMessage[], messageId: string) {
-  return messages.filter((message) => message.id !== messageId);
+export function markOptimisticMessageFailed(messages: ThreadMessage[], optimisticId: string, retryFiles: File[]) {
+  return messages.map((message) =>
+    message.id === optimisticId
+      ? { ...message, pending: false, failed: true, retryFiles: retryFiles.length ? retryFiles : undefined }
+      : message
+  );
 }
 
 export function syncConversationSummaryList(
@@ -88,10 +92,7 @@ export function settleOptimisticMessage(
     }
 
     foundOptimistic = true;
-    return {
-      ...message,
-      pending: false
-    };
+    return { ...nextMessage, pending: false };
   });
 
   if (foundOptimistic) {

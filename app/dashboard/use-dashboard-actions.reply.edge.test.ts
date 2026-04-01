@@ -31,6 +31,10 @@ class MockFormData {
   getAll(name: string) {
     return this.values.get(name) ?? [];
   }
+
+  set(name: string, value: string | File) {
+    this.values.set(name, [value]);
+  }
 }
 
 const originalFormData = globalThis.FormData;
@@ -95,7 +99,7 @@ describe("dashboard reply action hotspots", () => {
     });
   });
 
-  it("rolls optimistic state back to the previous summary when posting fails", async () => {
+  it("keeps the failed optimistic bubble while restoring the previous summary when posting fails", async () => {
     mocks.postDashboardForm.mockRejectedValueOnce(new Error("Reply failed"));
     const harness = createDashboardActionsHarness({
       activeConversation: createConversationThread({ lastMessagePreview: "Older message" }),
@@ -104,7 +108,11 @@ describe("dashboard reply action hotspots", () => {
 
     await harness.actions.handleReplySend(createReplyEvent("Hello there"));
 
-    expect(harness.activeConversationState.current?.messages.some((message) => String(message.id).startsWith("optimistic-founder-"))).toBe(false);
+    expect(harness.activeConversationState.current?.messages[1]).toMatchObject({
+      content: "Hello there",
+      failed: true,
+      pending: false
+    });
     expect(harness.activeConversationState.current?.lastMessagePreview).toBe("Older message");
     expect(harness.bannerState.current).toEqual({
       tone: "error",

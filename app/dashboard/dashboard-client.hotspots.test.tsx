@@ -41,6 +41,7 @@ async function loadDashboardClient(stateOverrides: Record<string, unknown>) {
     setSearchQuery: vi.fn(),
     handleSaveConversationEmail: vi.fn(),
     handleReplySend: vi.fn(),
+    handleReplyRetry: vi.fn(),
     handleConversationStatusChange: vi.fn(),
     handleReplyComposerBlur: vi.fn(),
     handleReplyComposerFocus: vi.fn(),

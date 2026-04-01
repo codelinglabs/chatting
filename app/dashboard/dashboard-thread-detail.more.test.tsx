@@ -29,6 +29,7 @@ function baseProps() {
     teamInitials: "CH",
     onSaveConversationEmail: vi.fn(),
     onSendReply: vi.fn(),
+    onRetryReply: vi.fn(),
     onConversationStatusChange: vi.fn().mockResolvedValue(undefined),
     onReplyComposerBlur: vi.fn(),
     onReplyComposerFocus: vi.fn(),
@@ -75,7 +76,32 @@ describe("dashboard thread detail more", () => {
     expect(loadingHtml).toContain("Anonymous visitor");
     expect(activeHtml).toContain("Resolve");
     expect(activeHtml).toContain("sidebar:conv_1");
-    expect(activeHtml).toContain("Sending...");
+    expect(activeHtml).toContain("Chatting ·");
+    expect(activeHtml).not.toContain("Sending...");
+  });
+
+  it("renders inline retry affordances for failed founder replies", () => {
+    const html = renderToStaticMarkup(
+      <DashboardThreadDetail
+        {...baseProps()}
+        activeConversation={createConversationThread({
+          messages: [
+            {
+              id: "msg_1",
+              conversationId: "conv_1",
+              sender: "founder",
+              content: "Need another shot",
+              createdAt: "2026-03-29T11:15:00.000Z",
+              attachments: [],
+              failed: true
+            }
+          ]
+        })}
+      />
+    );
+
+    expect(html).toContain("Didn&#x27;t send");
+    expect(html).toContain("Retry");
   });
 
   it("wires drawer close handlers and ignores shift-enter submits", () => {
@@ -106,5 +132,19 @@ describe("dashboard thread detail more", () => {
     expect(props.onCloseSidebar).toHaveBeenCalledTimes(2);
     expect(preventDefault).not.toHaveBeenCalled();
     expect(requestSubmit).not.toHaveBeenCalled();
+  });
+
+  it("keeps the composer editable while a reply is sending", () => {
+    const tree = DashboardThreadDetail({
+      ...baseProps(),
+      sendingReply: true,
+      activeConversation: createConversationThread({ status: "open" }),
+      showSidebarInline: false
+    });
+    const textarea = collect(tree, (element) => element.type === "textarea")[0];
+    const buttons = collect(tree, (element) => element.type === "button");
+
+    expect(textarea?.props.disabled).toBeUndefined();
+    expect(buttons.at(-1)?.props.disabled).toBe(true);
   });
 });

@@ -58,6 +58,7 @@ async function loadDashboardClient() {
     setSearchQuery: vi.fn(),
     handleSaveConversationEmail: vi.fn(),
     handleReplySend: vi.fn(),
+    handleReplyRetry: vi.fn(),
     handleConversationStatusChange: vi.fn(),
     handleReplyComposerBlur: vi.fn(),
     handleReplyComposerFocus: vi.fn(),
@@ -102,7 +103,7 @@ describe("dashboard client", () => {
       history: { pushState: vi.fn() }
     });
 
-    const { DashboardClient, reactMocks, unreadCount } = await loadDashboardClient();
+    const { DashboardClient, reactMocks, unreadCount, state } = await loadDashboardClient();
     reactMocks.beginRender();
     const tree = DashboardClient(createProps());
     await runMockEffects(reactMocks.effects);

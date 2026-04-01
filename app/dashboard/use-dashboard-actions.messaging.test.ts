@@ -1,16 +1,15 @@
 const mocks = vi.hoisted(() => ({
   postDashboardForm: vi.fn()
 }));
-
 vi.mock("./dashboard-client.api", () => ({
   postDashboardForm: mocks.postDashboardForm
 }));
-
 import {
   createConversationSummary,
   createConversationThread,
   createDashboardActionsHarness
 } from "./use-dashboard-actions.test-helpers";
+import { createDashboardReplyActions } from "./use-dashboard-actions.reply";
 
 class MockFormData {
   private readonly values = new Map<string, Array<string | File>>();
@@ -40,12 +39,11 @@ class MockFormData {
 
 const originalFormData = globalThis.FormData;
 const originalWindow = globalThis.window;
-
-function createReplyEvent(content: string) {
+function createReplyEvent(content: string, attachments: File[] = []) {
   return {
     preventDefault: vi.fn(),
     currentTarget: {
-      __formDataEntries: [["content", content]],
+      __formDataEntries: [["content", content], ...attachments.map((file) => ["attachments", file] as [string, File])],
       reset: vi.fn()
     }
   } as never;
@@ -68,12 +66,10 @@ describe("dashboard actions messaging handlers", () => {
       }
     });
   });
-
   afterAll(() => {
     globalThis.FormData = originalFormData;
     Object.defineProperty(globalThis, "window", { configurable: true, value: originalWindow });
   });
-
   it("posts replies optimistically and settles the thread on success", async () => {
     mocks.postDashboardForm.mockResolvedValueOnce({
       conversationId: "conv_1",
@@ -94,9 +90,7 @@ describe("dashboard actions messaging handlers", () => {
       ]
     });
     const event = createReplyEvent("Happy to help");
-
     await harness.actions.handleReplySend(event);
-
     expect(harness.clearTypingSignal).toHaveBeenCalled();
     expect(event.currentTarget.reset).toHaveBeenCalled();
     expect(harness.activeConversationState.current?.lastMessagePreview).toBe("Happy to help");
@@ -111,19 +105,71 @@ describe("dashboard actions messaging handlers", () => {
     expect(harness.sendingReplyState.current).toBe(false);
   });
 
-  it("rolls back the optimistic reply when posting fails", async () => {
+  it("keeps failed optimistic replies in the thread when posting fails", async () => {
     mocks.postDashboardForm.mockRejectedValueOnce(new Error("Reply could not be sent."));
     const harness = createDashboardActionsHarness();
-
     await harness.actions.handleReplySend(createReplyEvent("Still there?"));
-
-    expect(harness.activeConversationState.current?.messages).toHaveLength(1);
+    expect(harness.activeConversationState.current?.messages).toHaveLength(2);
+    expect(harness.activeConversationState.current?.messages[1]).toMatchObject({
+      content: "Still there?",
+      failed: true,
+      pending: false
+    });
     expect(harness.activeConversationState.current?.lastMessagePreview).toBe("Need help with pricing");
     expect(harness.bannerState.current).toEqual({
       tone: "error",
       text: "Reply could not be sent."
     });
     expect(harness.sendingReplyState.current).toBe(false);
+  });
+
+  it("retries failed replies and clears the failed state after a successful resend", async () => {
+    const file = new File(["hello"], "retry.txt", { type: "text/plain" });
+    mocks.postDashboardForm.mockRejectedValueOnce(new Error("Reply could not be sent."));
+    const harness = createDashboardActionsHarness();
+
+    await harness.actions.handleReplySend(createReplyEvent("Retry me", [file]));
+
+    const failedMessage = harness.activeConversationState.current?.messages[1];
+    expect(failedMessage).toMatchObject({ failed: true, retryFiles: [file] });
+
+    mocks.postDashboardForm.mockResolvedValueOnce({
+      conversationId: "conv_1",
+      message: {
+        id: "msg_2",
+        conversationId: "conv_1",
+        sender: "founder",
+        content: "Retry me",
+        createdAt: "2026-03-29T11:30:00.000Z",
+        attachments: []
+      },
+      emailDelivery: "sent"
+    });
+
+    const retryActions = createDashboardReplyActions({
+      activeConversation: harness.activeConversationState.current,
+      setConversations: harness.conversationsState.set,
+      setActiveConversation: harness.activeConversationState.set,
+      setSendingReply: harness.sendingReplyState.set,
+      setAnsweredConversations: harness.answeredConversationsState.set,
+      setBanner: harness.bannerState.set,
+      recentOptimisticReplyAtRef: harness.recentOptimisticReplyAtRef,
+      showBanner: harness.showBanner,
+      clearTypingSignal: harness.clearTypingSignal
+    } as never);
+
+    await retryActions.handleReplyRetry(failedMessage?.id ?? "");
+
+    expect(harness.activeConversationState.current?.messages[1]).toMatchObject({
+      id: "msg_2",
+      content: "Retry me",
+      pending: false
+    });
+    expect(globalThis.window.URL.revokeObjectURL).toHaveBeenCalledWith("blob:optimistic");
+    expect(harness.bannerState.current).toEqual({
+      tone: "success",
+      text: "Reply posted to the chat thread and emailed to the visitor."
+    });
   });
 
   it("sends typing signals only when needed and clears them on blur", () => {
@@ -140,5 +186,13 @@ describe("dashboard actions messaging handlers", () => {
     expect(harness.postTypingSignal).toHaveBeenCalledWith("conv_1", true);
     expect(harness.clearTypingSignal).toHaveBeenCalledTimes(2);
     nowSpy.mockRestore();
+  });
+
+  it("keeps typing signals active while a reply is already sending", () => {
+    const harness = createDashboardActionsHarness({ sendingReply: true });
+
+    harness.actions.handleReplyComposerInput("Drafting the next reply");
+
+    expect(harness.postTypingSignal).toHaveBeenCalledWith("conv_1", true);
   });
 });

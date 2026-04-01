@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Dashboard inbox replies now keep failed team messages inline with retry, preserve optimistic thread state, and leave the composer editable while earlier sends finish.
 - Based the dashboard home conversations card on rolling local 7-day windows using the saved teammate timezone for local date boundaries and previous-period comparison.
 - Wired the dashboard home conversations selector to real rolling `7 / 30 / 90` day ranges with matching comparison labels.
 - Kept the dashboard home conversations range off the browser URL by fetching card updates locally and refreshing the server chart after timezone sync lands.
@@ -145,6 +146,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Dashboard home conversation range changes now stay local to the card instead of mutating the page URL, and pending timezone sync can refresh the chart once the saved preference is available.
 - Dashboard home now surfaces activation, health, and expansion growth signals for the workspace.
 - Optimistic inbox interactions for replies and tags, plus modularized page components throughout.
+- Dashboard inbox replies now keep failed team messages in-thread with inline retry and let teammates keep drafting while the previous send is still settling.
 - Dashboard live refresh now tolerates failed fetches without surfacing unhandled browser promise rejections, and public feedback links now resolve numeric ratings cleanly.
 - Hosted conversation handoff now renders through a dedicated resume-message component and keeps email template lookups tied to the real site and session context.
 - Dashboard settings now resolve sections through dedicated hooks and keep notices inside the shared settings wrapper instead of a separate loading shell.

@@ -36,6 +36,7 @@ function baseProps() {
     teamInitials: "CH",
     onSaveConversationEmail: vi.fn(),
     onSendReply: vi.fn(),
+    onRetryReply: vi.fn(),
     onConversationStatusChange: vi.fn().mockResolvedValue(undefined),
     onReplyComposerBlur: vi.fn(),
     onReplyComposerFocus: vi.fn(),

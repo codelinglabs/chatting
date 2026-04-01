@@ -2,14 +2,13 @@ import type { DashboardActionsParams } from "./use-dashboard-actions.types";
 
 export function createDashboardTypingActions({
   activeConversation,
-  sendingReply,
   activeTypingConversationIdRef,
   lastTypingSentAtRef,
   clearTypingSignal,
   postTypingSignal
 }: DashboardActionsParams) {
   function handleReplyComposerInput(value: string) {
-    if (!activeConversation || sendingReply) {
+    if (!activeConversation) {
       return;
     }
     const trimmed = value.trim();

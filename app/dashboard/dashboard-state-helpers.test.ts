@@ -2,7 +2,6 @@ import {
   createOptimisticAttachmentUrls,
   nextTagsForToggle,
   previewForMessage,
-  removeMessageById,
   revokeOptimisticAttachmentUrls,
   settleOptimisticMessage,
   toSummary
@@ -64,8 +63,7 @@ describe("dashboard state helpers", () => {
 
     expect(nextTagsForToggle(["pricing"], "bug")).toEqual(["bug", "pricing"]);
     expect(nextTagsForToggle(["pricing", "bug"], "bug")).toEqual(["pricing"]);
-    expect(removeMessageById([optimistic, real], "optimistic")).toEqual([real]);
-    expect(settleOptimisticMessage([optimistic], "optimistic", real)[0]).toMatchObject({ id: "optimistic", pending: false });
+    expect(settleOptimisticMessage([optimistic], "optimistic", real)[0]).toMatchObject({ id: "msg_2", pending: false });
     expect(settleOptimisticMessage([real], "optimistic", real)).toEqual([real]);
     expect(settleOptimisticMessage([], "optimistic", real)).toEqual([real]);
   });

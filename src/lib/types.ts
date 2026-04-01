@@ -128,6 +128,8 @@ export type ThreadMessage = {
   createdAt: string;
   attachments: MessageAttachment[];
   pending?: boolean;
+  failed?: boolean;
+  retryFiles?: File[];
 };
 
 export type VisitorActivity = {
