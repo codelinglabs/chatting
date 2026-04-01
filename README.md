@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Tightened dashboard reply rollback coverage so recency-based summary sorting no longer makes the regression test fail on array position alone.
 - Localized daily digests and weekly performance emails to teammate timezones, with dashboard-side browser timezone sync and shared local report window helpers.
 - Added Cloud Run deployment packaging with standalone Next.js output, a repo `cloudbuild.yaml`, and DB-claimed scheduler windows plus advisory locks so startup email jobs do not double-run across instances.
 - Hardened Cloud Run startup by serializing schema bootstrap with a shared Postgres advisory lock and setting metadataBase for deployed OG and Twitter URLs.
@@ -136,6 +137,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Dashboard settings now resolve sections through dedicated hooks and keep notices inside the shared settings wrapper instead of a separate loading shell.
 - Visitor emails and teammate mention alerts now deeplink back into the exact conversation or note context instead of generic inbox entry points.
 - Dashboard email settings now preview transcript and visitor email layouts through the same canonical shell used for live sends.
+- Dashboard reply regression coverage now asserts rollback state by conversation id so recency sorting can stay intact without brittle array-order expectations.
 - Dashboard shell, inbox, visitors, widget settings, and route handlers now have broad Vitest coverage across interactive and edge-case flows.
 
 ### Billing & Operations

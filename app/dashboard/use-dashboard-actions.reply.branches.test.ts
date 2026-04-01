@@ -181,13 +181,13 @@ describe("dashboard reply action branch coverage", () => {
       lastMessageAt: "2026-03-29T09:01:00.000Z",
       lastMessagePreview: "Already changed upstream"
     });
-    expect(rolledBackSummaries[0]).toMatchObject({
+    expect(rolledBackSummaries.find((summary) => summary.id === "conv_1")).toMatchObject({
       id: "conv_1",
       updatedAt: "2026-03-29T09:00:00.000Z",
       lastMessageAt: "2026-03-29T09:01:00.000Z",
       lastMessagePreview: "Already changed upstream"
     });
-    expect(rolledBackSummaries[1]).toMatchObject({
+    expect(rolledBackSummaries.find((summary) => summary.id === "conv_2")).toMatchObject({
       id: "conv_2",
       lastMessagePreview: "Untouched sibling"
     });
