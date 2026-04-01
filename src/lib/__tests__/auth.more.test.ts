@@ -1,27 +1,30 @@
 const mocks = vi.hoisted(() => ({
   cookies: vi.fn(),
-  createBillingAccount: vi.fn(),
-  createSiteForUser: vi.fn(),
   deleteAuthSessionByTokenHash: vi.fn(),
   findAuthUserByEmail: vi.fn(),
   findAuthUserById: vi.fn(),
   findCurrentUserByTokenHash: vi.fn(),
   findExistingUserIdByEmail: vi.fn(),
   getWorkspaceAccess: vi.fn(),
+  headers: vi.fn(),
   insertAuthSession: vi.fn(),
   insertAuthUser: vi.fn(),
   redirect: vi.fn(),
+  resumeOwnerOnboardingForUser: vi.fn(),
+  updateUserOwnerOnboardingIntent: vi.fn(),
   updateAuthUserPassword: vi.fn(),
   validateReferralCodeForSignup: vi.fn()
 }));
 
-vi.mock("next/headers", () => ({ cookies: mocks.cookies }));
+vi.mock("next/headers", () => ({ cookies: mocks.cookies, headers: mocks.headers }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
-vi.mock("@/lib/data/sites", () => ({ createSiteForUser: mocks.createSiteForUser }));
-vi.mock("@/lib/billing-default-account", () => ({ ensureOwnerGrowthTrialBillingAccount: mocks.createBillingAccount }));
+vi.mock("@/lib/auth-owner-onboarding", () => ({ resumeOwnerOnboardingForUser: mocks.resumeOwnerOnboardingForUser }));
 vi.mock("@/lib/referrals", () => ({
-  applyReferralCodeForSignup: vi.fn(),
+  normalizeReferralCode: (value?: string | null) => value?.trim().toUpperCase() || null,
   validateReferralCodeForSignup: mocks.validateReferralCodeForSignup
+}));
+vi.mock("@/lib/repositories/auth-owner-onboarding-repository", () => ({
+  updateUserOwnerOnboardingIntent: mocks.updateUserOwnerOnboardingIntent
 }));
 vi.mock("@/lib/repositories/auth-repository", () => ({
   deleteAuthSessionByTokenHash: mocks.deleteAuthSessionByTokenHash,
@@ -47,10 +50,12 @@ import {
 describe("auth more", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.findAuthUserByEmail.mockResolvedValue(null);
     mocks.findExistingUserIdByEmail.mockResolvedValue(null);
     mocks.validateReferralCodeForSignup.mockResolvedValue(undefined);
-    mocks.createSiteForUser.mockResolvedValue(undefined);
-    mocks.createBillingAccount.mockResolvedValue(undefined);
+    mocks.resumeOwnerOnboardingForUser.mockResolvedValue("complete");
+    mocks.updateUserOwnerOnboardingIntent.mockResolvedValue(undefined);
+    mocks.headers.mockResolvedValue(new Headers());
   });
 
   it("signs users in with a stored password hash and writes session cookies", async () => {
@@ -101,7 +106,36 @@ describe("auth more", () => {
     expect(mocks.updateAuthUserPassword).toHaveBeenCalledWith("user_1", expect.any(String));
 
     mocks.cookies.mockResolvedValueOnce({ get: vi.fn().mockReturnValue(undefined), delete: vi.fn() });
+    mocks.headers.mockResolvedValueOnce(
+      new Headers({ "x-chatly-request-path": "/dashboard/inbox?id=conversation_1" })
+    );
     await requireUser();
-    expect(mocks.redirect).toHaveBeenCalledWith("/login");
+    expect(mocks.redirect).toHaveBeenCalledWith("/login?redirectTo=%2Fdashboard%2Finbox%3Fid%3Dconversation_1");
+  });
+
+  it("resumes existing incomplete owner accounts when the password matches", async () => {
+    await signUpUser({ email: "owner@acme.com", password: "password123", websiteUrl: "https://acme.com" });
+    const insertedUser = mocks.insertAuthUser.mock.calls.at(-1)?.[0];
+    mocks.findAuthUserByEmail.mockResolvedValueOnce({
+      id: insertedUser.userId,
+      email: "owner@acme.com",
+      created_at: "2026-03-29T00:00:00.000Z",
+      password_hash: insertedUser.passwordHash,
+      owner_onboarding_stage: "account_created"
+    });
+
+    await expect(
+      signUpUser({ email: "owner@acme.com", password: "password123", websiteUrl: "https://updated.acme.com" })
+    ).resolves.toEqual({
+      id: insertedUser.userId,
+      email: "owner@acme.com",
+      createdAt: "2026-03-29T00:00:00.000Z"
+    });
+    expect(mocks.updateUserOwnerOnboardingIntent).toHaveBeenCalledWith({
+      userId: insertedUser.userId,
+      siteDomain: "https://updated.acme.com",
+      referralCode: null
+    });
+    expect(mocks.resumeOwnerOnboardingForUser).toHaveBeenCalledWith(insertedUser.userId);
   });
 });

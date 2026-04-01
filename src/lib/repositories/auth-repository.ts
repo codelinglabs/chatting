@@ -1,5 +1,5 @@
 import { query } from "@/lib/db";
-import type { OnboardingStep } from "@/lib/types";
+import type { OnboardingStep, OwnerOnboardingStage } from "@/lib/types";
 
 export type AuthUserRecord = {
   id: string;
@@ -7,6 +7,9 @@ export type AuthUserRecord = {
   password_hash: string;
   onboarding_step: OnboardingStep;
   onboarding_completed_at: string | null;
+  owner_onboarding_stage: OwnerOnboardingStage;
+  owner_onboarding_site_domain: string | null;
+  owner_onboarding_referral_code: string | null;
   created_at: string;
 };
 
@@ -23,6 +26,7 @@ export async function findAuthUserById(userId: string) {
     `
       SELECT id, email, password_hash, created_at
       , onboarding_step, onboarding_completed_at
+      , owner_onboarding_stage, owner_onboarding_site_domain, owner_onboarding_referral_code
       FROM users
       WHERE id = $1
       LIMIT 1
@@ -38,6 +42,7 @@ export async function findAuthUserByEmail(email: string) {
     `
       SELECT id, email, password_hash, created_at
       , onboarding_step, onboarding_completed_at
+      , owner_onboarding_stage, owner_onboarding_site_domain, owner_onboarding_referral_code
       FROM users
       WHERE email = $1
       LIMIT 1
@@ -68,18 +73,27 @@ export async function insertAuthUser(input: {
   passwordHash: string;
   onboardingStep?: OnboardingStep;
   onboardingCompletedAt?: string | null;
+  ownerOnboardingStage?: OwnerOnboardingStage;
+  ownerOnboardingSiteDomain?: string | null;
+  ownerOnboardingReferralCode?: string | null;
 }) {
   await query(
     `
-      INSERT INTO users (id, email, password_hash, onboarding_step, onboarding_completed_at)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO users (
+        id, email, password_hash, onboarding_step, onboarding_completed_at,
+        owner_onboarding_stage, owner_onboarding_site_domain, owner_onboarding_referral_code
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `,
     [
       input.userId,
       input.email,
       input.passwordHash,
       input.onboardingStep ?? "done",
-      input.onboardingCompletedAt ?? null
+      input.onboardingCompletedAt ?? null,
+      input.ownerOnboardingStage ?? "complete",
+      input.ownerOnboardingSiteDomain ?? null,
+      input.ownerOnboardingReferralCode ?? null
     ]
   );
 }

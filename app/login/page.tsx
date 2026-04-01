@@ -6,6 +6,7 @@ type LoginPageProps = {
     token?: string;
     invite?: string;
     email?: string;
+    redirectTo?: string;
   }>;
 };
 
@@ -19,6 +20,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       resetToken={params.token ?? ""}
       inviteId={params.invite ?? ""}
       inviteEmail={params.email ?? ""}
+      redirectTo={params.redirectTo ?? ""}
     />
   );
 }

@@ -2,41 +2,42 @@ const mocks = vi.hoisted(() => ({
   applyReferralCodeForSignup: vi.fn(),
   acceptTeamInvite: vi.fn(),
   cookies: vi.fn(),
-  createBillingAccount: vi.fn(),
   redirect: vi.fn(),
-  createSiteForUser: vi.fn(),
   deleteAuthSessionByTokenHash: vi.fn(),
   findAuthUserByEmail: vi.fn(),
   findAuthUserById: vi.fn(),
   findCurrentUserByTokenHash: vi.fn(),
   findExistingUserIdByEmail: vi.fn(),
   getWorkspaceAccess: vi.fn(),
+  headers: vi.fn(),
   insertAuthSession: vi.fn(),
   insertAuthUser: vi.fn(),
+  resumeOwnerOnboardingForUser: vi.fn(),
+  updateUserOwnerOnboardingIntent: vi.fn(),
   updateAuthUserPassword: vi.fn(),
   validateReferralCodeForSignup: vi.fn(),
   validateTeamInvite: vi.fn()
 }));
 
 vi.mock("next/headers", () => ({
-  cookies: mocks.cookies
+  cookies: mocks.cookies,
+  headers: mocks.headers
 }));
 
 vi.mock("next/navigation", () => ({
   redirect: mocks.redirect
 }));
 
-vi.mock("@/lib/data/sites", () => ({
-  createSiteForUser: mocks.createSiteForUser
-}));
-
-vi.mock("@/lib/billing-default-account", () => ({
-  ensureOwnerGrowthTrialBillingAccount: mocks.createBillingAccount
+vi.mock("@/lib/auth-owner-onboarding", () => ({
+  resumeOwnerOnboardingForUser: mocks.resumeOwnerOnboardingForUser
 }));
 
 vi.mock("@/lib/referrals", () => ({
-  applyReferralCodeForSignup: mocks.applyReferralCodeForSignup,
+  normalizeReferralCode: (value?: string | null) => value?.trim().toUpperCase() || null,
   validateReferralCodeForSignup: mocks.validateReferralCodeForSignup
+}));
+vi.mock("@/lib/repositories/auth-owner-onboarding-repository", () => ({
+  updateUserOwnerOnboardingIntent: mocks.updateUserOwnerOnboardingIntent
 }));
 
 vi.mock("@/lib/repositories/auth-repository", () => ({
@@ -72,13 +73,14 @@ describe("auth session helpers", () => {
       ownerEmail: "hello@chatly.example",
       ownerCreatedAt: "2026-03-27T00:00:00.000Z"
     });
+    mocks.findAuthUserByEmail.mockResolvedValue(null);
     mocks.findExistingUserIdByEmail.mockResolvedValue(null);
     mocks.validateReferralCodeForSignup.mockResolvedValue(undefined);
-    mocks.applyReferralCodeForSignup.mockResolvedValue(undefined);
-    mocks.createSiteForUser.mockResolvedValue(undefined);
-    mocks.createBillingAccount.mockResolvedValue(undefined);
+    mocks.resumeOwnerOnboardingForUser.mockResolvedValue("complete");
+    mocks.updateUserOwnerOnboardingIntent.mockResolvedValue(undefined);
     mocks.validateTeamInvite.mockResolvedValue(undefined);
     mocks.acceptTeamInvite.mockResolvedValue(undefined);
+    mocks.headers.mockResolvedValue(new Headers());
   });
 
   it("does not try to delete cookies during read-only current user lookups", async () => {
@@ -128,7 +130,7 @@ describe("auth session helpers", () => {
     expect(deleteCookie).toHaveBeenCalledWith("chatly_session");
   });
 
-  it("provisions a growth trial billing account for new workspace owners", async () => {
+  it("starts resumable onboarding for new workspace owners", async () => {
     await signUpUser({
       email: "owner@acme.com",
       password: "password123",
@@ -137,11 +139,9 @@ describe("auth session helpers", () => {
 
     const insertedUser = mocks.insertAuthUser.mock.calls[0]?.[0];
     expect(insertedUser.userId).toBeTruthy();
-    expect(mocks.createSiteForUser).toHaveBeenCalledWith(insertedUser.userId, {
-      name: "Acme site",
-      domain: "https://acme.com"
-    });
-    expect(mocks.createBillingAccount).toHaveBeenCalledWith(insertedUser.userId);
+    expect(insertedUser.ownerOnboardingStage).toBe("account_created");
+    expect(insertedUser.ownerOnboardingSiteDomain).toBe("https://acme.com");
+    expect(mocks.resumeOwnerOnboardingForUser).toHaveBeenCalledWith(insertedUser.userId);
   });
 
   it("skips owner billing setup for invited teammate signups", async () => {
@@ -151,8 +151,7 @@ describe("auth session helpers", () => {
       password: "password123"
     });
 
-    expect(mocks.createBillingAccount).not.toHaveBeenCalled();
-    expect(mocks.createSiteForUser).not.toHaveBeenCalled();
+    expect(mocks.resumeOwnerOnboardingForUser).not.toHaveBeenCalled();
     expect(mocks.acceptTeamInvite).toHaveBeenCalledWith({
       inviteId: "invite_123",
       userId: expect.any(String),

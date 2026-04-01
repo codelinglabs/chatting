@@ -1,257 +1,34 @@
-import { createHash, randomBytes, scrypt as nodeScrypt, timingSafeEqual } from "node:crypto";
-import { promisify } from "node:util";
-import { cookies } from "next/headers";
+import { randomBytes } from "node:crypto";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { ensureOwnerGrowthTrialBillingAccount } from "@/lib/billing-default-account";
-import { createSiteForUser } from "@/lib/data/sites";
-import { getAuthSecret } from "@/lib/env.server";
-import { applyReferralCodeForSignup, validateReferralCodeForSignup } from "@/lib/referrals";
-import {
-  type AuthSessionUserRecord,
-  deleteAuthSessionByTokenHash,
-  findAuthUserByEmail,
-  findAuthUserById,
-  findCurrentUserByTokenHash,
-  findExistingUserIdByEmail,
-  insertAuthSession,
-  insertAuthUser,
-  updateAuthUserPassword
-} from "@/lib/repositories/auth-repository";
+import { AUTH_REQUEST_PATH_HEADER, AUTH_SESSION_COOKIE_NAME, buildLoginPath } from "@/lib/auth-redirect";
 import { isProductionRuntime } from "@/lib/env";
-import type { CurrentUser } from "@/lib/types";
-import { normalizeSiteDomain } from "@/lib/widget-settings";
-import { acceptTeamInvite, getWorkspaceAccess, validateTeamInvite } from "@/lib/workspace-access";
+import { deleteAuthSessionByTokenHash, findCurrentUserByTokenHash, insertAuthSession } from "@/lib/repositories/auth-repository";
+import { getWorkspaceAccess } from "@/lib/workspace-access";
+import { hashSessionToken, mapUser } from "./auth-credentials";
 
-const AUTH_COOKIE_NAME = "chatly_session";
+export {
+  changeUserPassword,
+  signInUser,
+  signUpInvitedUser,
+  signUpUser
+} from "./auth-credentials";
+export { resumeOwnerOnboardingForUser } from "./auth-owner-onboarding";
+
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
-const scrypt = promisify(nodeScrypt);
-
-type AuthIdentity = Pick<CurrentUser, "id" | "email" | "createdAt">;
-
-function normalizeEmail(email: string) {
-  return email.trim().toLowerCase();
-}
-
-function hashSessionToken(token: string) {
-  return createHash("sha256")
-    .update(`${getAuthSecret()}:${token}`)
-    .digest("hex");
-}
-
-function mapUser(
-  row: AuthIdentity | AuthSessionUserRecord
-): AuthIdentity {
-  return {
-    id: row.id,
-    email: row.email,
-    createdAt: "createdAt" in row ? row.createdAt : row.created_at
-  };
-}
-
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const derived = (await scrypt(`${getAuthSecret()}:${password}`, salt, 64)) as Buffer;
-  return `scrypt:${salt}:${derived.toString("hex")}`;
-}
-
-async function verifyPasswordHash(password: string, storedHash: string) {
-  const [algorithm, salt, hash] = storedHash.split(":");
-
-  if (algorithm !== "scrypt" || !salt || !hash) {
-    return false;
-  }
-
-  const derived = (await scrypt(`${getAuthSecret()}:${password}`, salt, 64)) as Buffer;
-  const expected = Buffer.from(hash, "hex");
-
-  if (derived.length !== expected.length) {
-    return false;
-  }
-
-  return timingSafeEqual(derived, expected);
-}
-
-export async function changeUserPassword(userId: string, currentPassword: string, nextPassword: string) {
-  const trimmedCurrentPassword = currentPassword.trim();
-  const trimmedNextPassword = nextPassword.trim();
-
-  if (!trimmedCurrentPassword) {
-    throw new Error("MISSING_CURRENT_PASSWORD");
-  }
-
-  if (!trimmedNextPassword) {
-    throw new Error("MISSING_PASSWORD");
-  }
-
-  if (trimmedNextPassword.length < 8) {
-    throw new Error("WEAK_PASSWORD");
-  }
-
-  const row = await findAuthUserById(userId);
-  if (!row) {
-    throw new Error("USER_NOT_FOUND");
-  }
-
-  const matches = await verifyPasswordHash(trimmedCurrentPassword, row.password_hash);
-  if (!matches) {
-    throw new Error("INVALID_CURRENT_PASSWORD");
-  }
-
-  const passwordHash = await hashPassword(trimmedNextPassword);
-  await updateAuthUserPassword(userId, passwordHash);
-}
-
-function defaultSiteNameForEmail(email: string) {
-  const domain = normalizeEmail(email).split("@")[1];
-  if (!domain) {
-    return "My site";
-  }
-
-  const label = domain.split(".")[0];
-  return `${label.charAt(0).toUpperCase()}${label.slice(1)} site`;
-}
-
-export async function signUpUser(input: {
-  email: string;
-  password: string;
-  websiteUrl?: string;
-  referralCode?: string | null;
-}) {
-  const email = normalizeEmail(input.email);
-  const password = input.password.trim();
-  const siteName = defaultSiteNameForEmail(email);
-  const websiteUrl = normalizeSiteDomain(input.websiteUrl);
-
-  if (!email) {
-    throw new Error("MISSING_EMAIL");
-  }
-
-  if (!password) {
-    throw new Error("MISSING_PASSWORD");
-  }
-
-  if (!websiteUrl) {
-    throw new Error("MISSING_DOMAIN");
-  }
-
-  if (password.length < 8) {
-    throw new Error("WEAK_PASSWORD");
-  }
-
-  const existingUserId = await findExistingUserIdByEmail(email);
-
-  if (existingUserId) {
-    throw new Error("EMAIL_TAKEN");
-  }
-
-  await validateReferralCodeForSignup(input.referralCode);
-
-  const userId = randomBytes(16).toString("hex");
-  const passwordHash = await hashPassword(password);
-
-  await insertAuthUser({
-    userId,
-    email,
-    passwordHash,
-    onboardingStep: "customize",
-    onboardingCompletedAt: null
-  });
-
-  await createSiteForUser(userId, {
-    name: siteName,
-    domain: websiteUrl
-  });
-
-  await ensureOwnerGrowthTrialBillingAccount(userId);
-  await applyReferralCodeForSignup({
-    userId,
-    email,
-    referralCode: input.referralCode
-  });
-
-  return {
-    id: userId,
-    email
-  };
-}
-
-export async function signUpInvitedUser(input: {
-  inviteId: string;
-  email: string;
-  password: string;
-}) {
-  const email = normalizeEmail(input.email);
-  const password = input.password.trim();
-
-  if (!email) {
-    throw new Error("MISSING_EMAIL");
-  }
-
-  if (!password) {
-    throw new Error("MISSING_PASSWORD");
-  }
-
-  if (password.length < 8) {
-    throw new Error("WEAK_PASSWORD");
-  }
-
-  await validateTeamInvite(input.inviteId, email);
-
-  const existingUserId = await findExistingUserIdByEmail(email);
-  if (existingUserId) {
-    throw new Error("EMAIL_TAKEN");
-  }
-
-  const userId = randomBytes(16).toString("hex");
-  const passwordHash = await hashPassword(password);
-
-  await insertAuthUser({
-    userId,
-    email,
-    passwordHash,
-    onboardingStep: "done",
-    onboardingCompletedAt: new Date().toISOString()
-  });
-  await acceptTeamInvite({
-    inviteId: input.inviteId,
-    userId,
-    email
-  });
-
-  return {
-    id: userId,
-    email
-  };
-}
-
-export async function signInUser(email: string, password: string) {
-  const normalizedEmail = normalizeEmail(email);
-  const row = await findAuthUserByEmail(normalizedEmail);
-  if (!row) {
-    return null;
-  }
-
-  const matches = await verifyPasswordHash(password.trim(), row.password_hash);
-  if (!matches) {
-    return null;
-  }
-
-  return mapUser(row);
-}
 
 export async function setUserSession(userId: string) {
   const sessionId = randomBytes(16).toString("hex");
   const token = randomBytes(32).toString("hex");
-  const tokenHash = hashSessionToken(token);
   const cookieStore = await cookies();
 
   await insertAuthSession({
     sessionId,
     userId,
-    tokenHash
+    tokenHash: hashSessionToken(token)
   });
 
-  cookieStore.set(AUTH_COOKIE_NAME, token, {
+  cookieStore.set(AUTH_SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: isProductionRuntime(),
@@ -262,19 +39,17 @@ export async function setUserSession(userId: string) {
 
 export async function clearUserSession() {
   const cookieStore = await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
+  const token = cookieStore.get(AUTH_SESSION_COOKIE_NAME)?.value;
 
   if (token) {
     await deleteAuthSessionByTokenHash(hashSessionToken(token));
   }
 
-  cookieStore.delete(AUTH_COOKIE_NAME);
+  cookieStore.delete(AUTH_SESSION_COOKIE_NAME);
 }
 
 export async function getCurrentUser() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
-
+  const token = (await cookies()).get(AUTH_SESSION_COOKIE_NAME)?.value;
   if (!token) {
     return null;
   }
@@ -286,7 +61,6 @@ export async function getCurrentUser() {
 
   const user = mapUser(row);
   const workspace = await getWorkspaceAccess(user.id);
-
   return {
     ...user,
     workspaceOwnerId: workspace.ownerUserId,
@@ -298,7 +72,7 @@ export async function requireUser() {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(buildLoginPath((await headers()).get(AUTH_REQUEST_PATH_HEADER)));
   }
 
   return user;

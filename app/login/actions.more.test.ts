@@ -2,7 +2,7 @@ const passwordResetMocks = vi.hoisted(() => ({ requestPasswordReset: vi.fn(), re
 
 vi.mock("@/lib/auth-password-reset", () => passwordResetMocks);
 
-import { forgotPasswordAction, resetPasswordAction } from "./actions";
+import { forgotPasswordAction, resetPasswordAction } from "./password-actions";
 
 function authForm(fields: Record<string, string>) {
   const form = new FormData();

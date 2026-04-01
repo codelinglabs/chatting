@@ -67,11 +67,22 @@ async function loadAuthForms(options: { loginState?: Record<string, unknown> } =
       ])
     };
   });
-  vi.doMock("./actions", () => ({ loginAction: vi.fn(), forgotPasswordAction, resetPasswordAction }));
+  vi.doMock("./actions", () => ({
+    forgotPasswordAction,
+    loginAction: vi.fn(),
+    resetPasswordAction
+  }));
   vi.doMock("../ui/toast-provider", () => ({ useToast: () => ({ showToast }) }));
 
   const module = await import("./auth-forms");
-  return { AuthForms: module.AuthForms, reactMocks, router, forgotPasswordAction, resetPasswordAction, showToast };
+  return {
+    AuthForms: module.AuthForms,
+    reactMocks,
+    router,
+    forgotPasswordAction,
+    resetPasswordAction,
+    showToast
+  };
 }
 
 describe("auth forms actions", () => {

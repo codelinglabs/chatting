@@ -10,7 +10,13 @@ describe("auth and public page wrappers", () => {
     const module = await import("./login/page");
     renderToStaticMarkup(
       await module.default({
-        searchParams: Promise.resolve({ mode: "reset", token: "token_123", invite: "invite_123", email: "teammate@example.com" })
+        searchParams: Promise.resolve({
+          mode: "reset",
+          token: "token_123",
+          invite: "invite_123",
+          email: "teammate@example.com",
+          redirectTo: "/dashboard/inbox?id=conv_1"
+        })
       })
     );
 
@@ -18,7 +24,8 @@ describe("auth and public page wrappers", () => {
       initialMode: "reset",
       resetToken: "token_123",
       inviteId: "invite_123",
-      inviteEmail: "teammate@example.com"
+      inviteEmail: "teammate@example.com",
+      redirectTo: "/dashboard/inbox?id=conv_1"
     });
   });
 
@@ -52,4 +59,5 @@ describe("auth and public page wrappers", () => {
     expect(validMarkup).toContain("You rated this conversation 5 out of 5.");
     expect(invalidMarkup).toContain("We couldn&#x27;t read that feedback link.");
   });
+
 });

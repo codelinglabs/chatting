@@ -11,39 +11,24 @@ import {
   SignInAuthView
 } from "./auth-form-views";
 import { AuthPageShell } from "./auth-shell";
-import { forgotPasswordAction, loginAction, resetPasswordAction, type AuthActionState } from "./actions";
-
-type AuthMode = "signin" | "forgot" | "reset" | "success";
-
-const INITIAL_AUTH_STATE: AuthActionState = {
-  error: null,
-  ok: false,
-  nextPath: null,
-  fields: {
-    email: "",
-    password: "",
-    websiteUrl: "",
-    referralCode: ""
-  }
-};
-
-export const SIGNIN_STATS = [
-  { value: "2,400+", label: "Teams" },
-  { value: "1.2m", label: "Avg response" },
-  { value: "4.8/5", label: "Rating" }
-];
+import {
+  type AuthFormsProps,
+  type AuthMode,
+  DEFAULT_SUCCESS_COPY,
+  INITIAL_AUTH_STATE,
+  SIGNIN_STATS
+} from "./auth-forms-config";
+import { submitPasswordFlow } from "./auth-form-submit";
+import type { PasswordActionState } from "./action-types";
+import { forgotPasswordAction, loginAction, resetPasswordAction } from "./actions";
 
 export function AuthForms({
   initialMode = "signin",
   resetToken = "",
   inviteId = "",
-  inviteEmail = ""
-}: {
-  initialMode?: Exclude<AuthMode, "success">;
-  resetToken?: string;
-  inviteId?: string;
-  inviteEmail?: string;
-}) {
+  inviteEmail = "",
+  redirectTo = ""
+}: AuthFormsProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const inviteQuery = inviteId
@@ -52,12 +37,10 @@ export function AuthForms({
   const isInviteFlow = Boolean(inviteId);
   const [mode, setMode] = useState<AuthMode>(initialMode === "reset" && resetToken ? "reset" : initialMode);
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
-  const [successCopy, setSuccessCopy] = useState({
-    title: "Check your inbox",
-    body: "If that email exists in Chatting, we’ve sent instructions to continue."
-  });
+  const [successCopy, setSuccessCopy] = useState(DEFAULT_SUCCESS_COPY);
   const [loginState, loginFormAction] = useActionState(loginAction, INITIAL_AUTH_STATE);
   const lastLoginToastErrorRef = useRef<string | null>(null);
+  const handleCreateAccount = () => router.push(`/signup${inviteQuery}` as never);
 
   useEffect(() => {
     if (loginState.ok) {
@@ -83,49 +66,34 @@ export function AuthForms({
     setMode(nextMode);
   }
 
-  async function handleForgotSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    setPasswordSubmitting(true);
-
-    const result = await forgotPasswordAction(formData);
-    setPasswordSubmitting(false);
-
-    if (!result.ok) {
-      if (result.error) {
-        showToast("error", result.error);
-      }
-      return;
-    }
-
+  function showSuccess(title: string, defaultBody: string, result: PasswordActionState) {
     setSuccessCopy({
-      title: "Reset email sent",
-      body: result.message ?? "Check your inbox for the reset link."
+      title,
+      body: result.message ?? defaultBody
     });
     setMode("success");
   }
 
-  async function handleResetSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    formData.set("token", resetToken);
-    setPasswordSubmitting(true);
-
-    const result = await resetPasswordAction(formData);
-    setPasswordSubmitting(false);
-
-    if (!result.ok) {
-      if (result.error) {
-        showToast("error", result.error);
-      }
-      return;
-    }
-
-    setSuccessCopy({
-      title: "Password updated",
-      body: result.message ?? "Your password has been reset. You can sign in with the new one now."
+  async function handleForgotSubmit(event: FormEvent<HTMLFormElement>) {
+    await submitPasswordFlow({
+      action: forgotPasswordAction,
+      event,
+      onError: (message) => showToast("error", message),
+      onSuccess: (result) => showSuccess("Reset email sent", "Check your inbox for the reset link.", result),
+      setSubmitting: setPasswordSubmitting
     });
-    setMode("success");
+  }
+
+  async function handleResetSubmit(event: FormEvent<HTMLFormElement>) {
+    await submitPasswordFlow({
+      action: resetPasswordAction,
+      event,
+      mutateFormData: (formData) => formData.set("token", resetToken),
+      onError: (message) => showToast("error", message),
+      onSuccess: (result) =>
+        showSuccess("Password updated", "Your password has been reset. You can sign in with the new one now.", result),
+      setSubmitting: setPasswordSubmitting
+    });
   }
 
   return (
@@ -144,9 +112,10 @@ export function AuthForms({
           inviteEmail={inviteEmail}
           inviteId={inviteId}
           isInviteFlow={isInviteFlow}
-          onCreateAccount={() => router.push(`/signup${inviteQuery}` as never)}
+          onCreateAccount={handleCreateAccount}
           onForgotPassword={() => handleModeChange("forgot")}
           password={loginState.fields.password}
+          redirectTo={redirectTo}
           submitAction={handleLoginAction}
         />
       ) : null}
@@ -168,7 +137,7 @@ export function AuthForms({
         <AuthSuccessView
           body={successCopy.body}
           onBackToSignIn={() => handleModeChange("signin")}
-          onCreateAccount={() => router.push(`/signup${inviteQuery}` as never)}
+          onCreateAccount={handleCreateAccount}
           title={successCopy.title}
         />
       ) : null}

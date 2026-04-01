@@ -1,4 +1,5 @@
 const authMocks = vi.hoisted(() => ({
+  resumeOwnerOnboardingForUser: vi.fn(),
   setUserSession: vi.fn(),
   signInUser: vi.fn(),
   signUpInvitedUser: vi.fn(),
@@ -6,7 +7,10 @@ const authMocks = vi.hoisted(() => ({
 }));
 
 const emailMocks = vi.hoisted(() => ({ sendAccountWelcomeEmail: vi.fn() }));
-const dataMocks = vi.hoisted(() => ({ getPostAuthPath: vi.fn() }));
+const dataMocks = vi.hoisted(() => ({
+  getPostAuthPath: vi.fn(),
+  onboardingPathForStep: vi.fn((step: string) => (step === "done" ? "/dashboard" : `/onboarding?step=${step}`))
+}));
 const workspaceMocks = vi.hoisted(() => ({ acceptTeamInvite: vi.fn() }));
 
 vi.mock("@/lib/auth", () => authMocks);
@@ -36,6 +40,7 @@ describe("login actions edge cases", () => {
     vi.clearAllMocks();
     process.env.NODE_ENV = "test";
     process.env.NEXT_PUBLIC_APP_URL = "https://chatly.example";
+    dataMocks.getPostAuthPath.mockResolvedValue("/onboarding?step=customize");
   });
 
   afterAll(() => {
@@ -73,6 +78,7 @@ describe("login actions edge cases", () => {
     });
 
     authMocks.signUpUser.mockResolvedValueOnce({ id: "user_1", email: "alex@example.com" });
+    dataMocks.getPostAuthPath.mockResolvedValueOnce("/onboarding?step=customize");
     emailMocks.sendAccountWelcomeEmail.mockRejectedValueOnce(new Error("smtp down"));
 
     await expect(

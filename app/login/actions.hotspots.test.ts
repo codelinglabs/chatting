@@ -1,4 +1,5 @@
 const authMocks = vi.hoisted(() => ({
+  resumeOwnerOnboardingForUser: vi.fn(),
   setUserSession: vi.fn(),
   signInUser: vi.fn(),
   signUpInvitedUser: vi.fn(),
@@ -13,7 +14,10 @@ vi.mock("@/lib/auth-password-reset", () => ({
 vi.mock("@/lib/chatly-transactional-email-senders", () => ({
   sendAccountWelcomeEmail: vi.fn()
 }));
-vi.mock("@/lib/data", () => ({ getPostAuthPath: vi.fn() }));
+vi.mock("@/lib/data", () => ({
+  getPostAuthPath: vi.fn(),
+  onboardingPathForStep: (step: string) => (step === "done" ? "/dashboard" : `/onboarding?step=${step}`)
+}));
 vi.mock("@/lib/workspace-access", () => ({ acceptTeamInvite: vi.fn() }));
 
 import { loginAction, signupAction, type AuthActionState } from "./actions";
