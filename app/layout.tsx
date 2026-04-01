@@ -7,10 +7,12 @@ import "./globals.css";
 const ANALYTICS_SCRIPT_SRC = "https://grometrics-166523647849.europe-west1.run.app/js/script.js";
 const ANALYTICS_WEBSITE_ID = "gm_13c7a11993d9d7ce797e06a3";
 const ANALYTICS_DOMAIN = "usechatting.com";
+const METADATA_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://usechatting.com";
 
 export const metadata: Metadata = {
   title: "Chatting",
   description: "Talk to users before they leave and learn what's blocking revenue.",
+  metadataBase: new URL(METADATA_BASE_URL),
   openGraph: {
     type: "website",
     siteName: "Chatting",

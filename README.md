@@ -20,6 +20,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ## Recent Updates
 
 - Added Cloud Run deployment packaging with standalone Next.js output, a repo `cloudbuild.yaml`, and DB-claimed scheduler windows plus advisory locks so startup email jobs do not double-run across instances.
+- Hardened Cloud Run startup by serializing schema bootstrap with a shared Postgres advisory lock and setting metadataBase for deployed OG and Twitter URLs.
 - Fixed the production build by tightening widget offline-copy field typing, conversation-template retry status returns, mail-from sender resolution, and shared scheduler test-helper imports.
 - Swapped the root app-shell analytics embed to the hosted Grometrics runtime for `usechatting.com` with the new production website id.
 - Streamlined dashboard live updates so each tab shares one `/dashboard/live` connection, unread badges use lightweight count fetches, and the visitors page patches presence/message changes incrementally instead of reloading the full snapshot on every live event.
@@ -136,6 +137,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Billing & Operations
 
 - Cloud Run deployment now builds from standalone Next.js output, ships through repo Docker/Cloud Build config, and suppresses duplicate startup scheduler windows with shared DB claims plus advisory locks.
+- Cloud Run startup now serializes schema initialization behind a shared Postgres advisory lock, and root metadata uses NEXT_PUBLIC_APP_URL so deployed OG/Twitter URLs no longer fall back to localhost.
 - Postgres server packaging now uses a traceable `pg` import plus a postbuild trace verification step so Vercel deploys fail fast if Next.js stops tracing the database driver into server output.
 - Conversation-template emails now keep failed deliveries for automatic retry, surface queued retry state back to the dashboard, and run through scheduler-backed resend jobs with distributed locks.
 - Stripe-backed billing flows for checkout, portal access, invoice sync, and webhook handling.

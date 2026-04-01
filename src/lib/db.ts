@@ -16,6 +16,7 @@ declare global {
 }
 
 const SCHEMA_VERSION = "2026-03-31-cloud-run-scheduler-windows";
+const SCHEMA_LOCK_KEY = [20260401, 1] as const;
 
 async function createPool() {
   const config = getDatabaseConfig();
@@ -24,6 +25,35 @@ async function createPool() {
   return new Pool({
     connectionString: config.connectionString
   });
+}
+
+async function runSchemaInitializationWithLock(pool: Pool) {
+  const client = await pool.connect();
+  let destroyClient = false;
+
+  try {
+    await client.query("select pg_advisory_lock($1, $2)", [...SCHEMA_LOCK_KEY]);
+
+    try {
+      await runSchemaInitialization(pool);
+    } finally {
+      try {
+        const unlockResult = await client.query<{ unlocked: boolean }>(
+          "select pg_advisory_unlock($1, $2) as unlocked",
+          [...SCHEMA_LOCK_KEY]
+        );
+
+        if (!unlockResult.rows[0]?.unlocked) {
+          destroyClient = true;
+        }
+      } catch (error) {
+        destroyClient = true;
+        throw error;
+      }
+    }
+  } finally {
+    client.release(destroyClient);
+  }
 }
 
 export async function getPool() {
@@ -53,7 +83,7 @@ export async function ensureSchema() {
   ) {
     global.__chatlySchemaVersion = SCHEMA_VERSION;
     global.__chatlySchemaReady = (async () => {
-      await runSchemaInitialization(await getPool());
+      await runSchemaInitializationWithLock(await getPool());
     })().catch((error) => {
       if (global.__chatlySchemaVersion === SCHEMA_VERSION) {
         global.__chatlySchemaReady = undefined;
