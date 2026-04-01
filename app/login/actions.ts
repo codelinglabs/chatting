@@ -1,6 +1,7 @@
 "use server";
 
 import { sanitizeReturnPath } from "@/lib/auth-redirect";
+import { requestEmailVerificationForUserId } from "@/lib/auth-email-verification";
 import {
   resumeOwnerOnboardingForUser,
   setUserSession,
@@ -110,6 +111,12 @@ export async function signupAction(
     await setUserSession(user.id);
 
     if (!inviteId) {
+      try {
+        await requestEmailVerificationForUserId(user.id);
+      } catch (verificationError) {
+        console.error("signup verification email failed", verificationError);
+      }
+
       try {
         await sendAccountWelcomeEmail({
           to: user.email,

@@ -7,6 +7,9 @@ const authMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => authMocks);
+vi.mock("@/lib/auth-email-verification", () => ({
+  requestEmailVerificationForUserId: vi.fn()
+}));
 vi.mock("@/lib/auth-password-reset", () => ({
   requestPasswordReset: vi.fn(),
   resetPasswordWithToken: vi.fn()

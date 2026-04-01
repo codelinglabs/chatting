@@ -1,6 +1,6 @@
 import type { AuthActionState } from "./action-types";
 
-export type AuthMode = "signin" | "forgot" | "reset" | "success";
+export type AuthMode = "signin" | "forgot" | "reset" | "success" | "verify";
 
 export type AuthFormsProps = {
   initialMode?: Exclude<AuthMode, "success">;

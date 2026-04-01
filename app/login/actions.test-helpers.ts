@@ -15,6 +15,11 @@ const passwordResetMocks = vi.hoisted(() => ({
   resetPasswordWithToken: vi.fn()
 }));
 
+const verificationMocks = vi.hoisted(() => ({
+  requestEmailVerification: vi.fn(),
+  requestEmailVerificationForUserId: vi.fn()
+}));
+
 const dataMocks = vi.hoisted(() => ({
   getPostAuthPath: vi.fn(),
   onboardingPathForStep: vi.fn((step: string) => (step === "done" ? "/dashboard" : `/onboarding?step=${step}`))
@@ -25,17 +30,19 @@ const workspaceMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/auth", () => authMocks);
+vi.mock("@/lib/auth-email-verification", () => verificationMocks);
 vi.mock("@/lib/auth-password-reset", () => passwordResetMocks);
 vi.mock("@/lib/chatly-transactional-email-senders", () => emailMocks);
 vi.mock("@/lib/data", () => dataMocks);
 vi.mock("@/lib/workspace-access", () => workspaceMocks);
 
 import { loginAction, signupAction, type AuthActionState } from "./actions";
-import { forgotPasswordAction, resetPasswordAction } from "./password-actions";
+import { forgotPasswordAction, resendVerificationAction, resetPasswordAction } from "./password-actions";
 
 const callLoginAction: typeof loginAction = (...args) => loginAction(...args);
 const callSignupAction: typeof signupAction = (...args) => signupAction(...args);
 const callForgotPasswordAction: typeof forgotPasswordAction = (...args) => forgotPasswordAction(...args);
+const callResendVerificationAction: typeof resendVerificationAction = (...args) => resendVerificationAction(...args);
 const callResetPasswordAction: typeof resetPasswordAction = (...args) => resetPasswordAction(...args);
 
 export {
@@ -45,8 +52,10 @@ export {
   callForgotPasswordAction as forgotPasswordAction,
   callLoginAction as loginAction,
   passwordResetMocks,
+  callResendVerificationAction as resendVerificationAction,
   callResetPasswordAction as resetPasswordAction,
   callSignupAction as signupAction,
+  verificationMocks,
   workspaceMocks,
   type AuthActionState
 };

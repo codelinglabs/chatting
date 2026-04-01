@@ -5,6 +5,7 @@ export type AuthUserRecord = {
   id: string;
   email: string;
   password_hash: string;
+  email_verified_at: string | null;
   onboarding_step: OnboardingStep;
   onboarding_completed_at: string | null;
   owner_onboarding_stage: OwnerOnboardingStage;
@@ -24,7 +25,7 @@ export type AuthSessionUserRecord = {
 export async function findAuthUserById(userId: string) {
   const result = await query<AuthUserRecord>(
     `
-      SELECT id, email, password_hash, created_at
+      SELECT id, email, password_hash, email_verified_at, created_at
       , onboarding_step, onboarding_completed_at
       , owner_onboarding_stage, owner_onboarding_site_domain, owner_onboarding_referral_code
       FROM users
@@ -40,7 +41,7 @@ export async function findAuthUserById(userId: string) {
 export async function findAuthUserByEmail(email: string) {
   const result = await query<AuthUserRecord>(
     `
-      SELECT id, email, password_hash, created_at
+      SELECT id, email, password_hash, email_verified_at, created_at
       , onboarding_step, onboarding_completed_at
       , owner_onboarding_stage, owner_onboarding_site_domain, owner_onboarding_referral_code
       FROM users
@@ -71,6 +72,7 @@ export async function insertAuthUser(input: {
   userId: string;
   email: string;
   passwordHash: string;
+  emailVerifiedAt?: string | null;
   onboardingStep?: OnboardingStep;
   onboardingCompletedAt?: string | null;
   ownerOnboardingStage?: OwnerOnboardingStage;
@@ -80,15 +82,16 @@ export async function insertAuthUser(input: {
   await query(
     `
       INSERT INTO users (
-        id, email, password_hash, onboarding_step, onboarding_completed_at,
+        id, email, password_hash, email_verified_at, onboarding_step, onboarding_completed_at,
         owner_onboarding_stage, owner_onboarding_site_domain, owner_onboarding_referral_code
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `,
     [
       input.userId,
       input.email,
       input.passwordHash,
+      input.emailVerifiedAt ?? null,
       input.onboardingStep ?? "done",
       input.onboardingCompletedAt ?? null,
       input.ownerOnboardingStage ?? "complete",
@@ -117,6 +120,17 @@ export async function updateAuthUserPassword(userId: string, passwordHash: strin
       WHERE id = $1
     `,
     [userId, passwordHash]
+  );
+}
+
+export async function markAuthUserEmailVerified(userId: string) {
+  await query(
+    `
+      UPDATE users
+      SET email_verified_at = COALESCE(email_verified_at, NOW())
+      WHERE id = $1
+    `,
+    [userId]
   );
 }
 

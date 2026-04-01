@@ -20,7 +20,8 @@ import {
 } from "./auth-forms-config";
 import { submitPasswordFlow } from "./auth-form-submit";
 import type { PasswordActionState } from "./action-types";
-import { forgotPasswordAction, loginAction, resetPasswordAction } from "./actions";
+import { forgotPasswordAction, loginAction, resendVerificationAction, resetPasswordAction } from "./actions";
+import { ResendVerificationView } from "./auth-verification-view";
 
 export function AuthForms({
   initialMode = "signin",
@@ -96,6 +97,17 @@ export function AuthForms({
     });
   }
 
+  async function handleResendSubmit(event: FormEvent<HTMLFormElement>) {
+    await submitPasswordFlow({
+      action: resendVerificationAction,
+      event,
+      onError: (message) => showToast("error", message),
+      onSuccess: (result) =>
+        showSuccess("Verification email sent", "Check your inbox for the verification link.", result),
+      setSubmitting: setPasswordSubmitting
+    });
+  }
+
   return (
     <AuthPageShell
       heroTitle={isInviteFlow ? "Join your team's workspace" : "Welcome back to Chatting"}
@@ -114,6 +126,7 @@ export function AuthForms({
           isInviteFlow={isInviteFlow}
           onCreateAccount={handleCreateAccount}
           onForgotPassword={() => handleModeChange("forgot")}
+          onResendVerification={() => handleModeChange("verify")}
           password={loginState.fields.password}
           redirectTo={redirectTo}
           submitAction={handleLoginAction}
@@ -131,6 +144,15 @@ export function AuthForms({
 
       {mode === "reset" ? (
         <ResetPasswordView isSubmitting={passwordSubmitting} onSubmit={handleResetSubmit} />
+      ) : null}
+
+      {mode === "verify" ? (
+        <ResendVerificationView
+          email={loginState.fields.email}
+          isSubmitting={passwordSubmitting}
+          onBackToSignIn={() => handleModeChange("signin")}
+          onSubmit={handleResendSubmit}
+        />
       ) : null}
 
       {mode === "success" ? (

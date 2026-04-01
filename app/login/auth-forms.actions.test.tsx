@@ -43,6 +43,7 @@ async function loadAuthForms(options: { loginState?: Record<string, unknown> } =
   const reactMocks = createMockReactHooks();
   const router = { replace: vi.fn(), push: vi.fn(), refresh: vi.fn() };
   const forgotPasswordAction = vi.fn();
+  const resendVerificationAction = vi.fn();
   const resetPasswordAction = vi.fn();
   const showToast = vi.fn();
 
@@ -70,6 +71,7 @@ async function loadAuthForms(options: { loginState?: Record<string, unknown> } =
   vi.doMock("./actions", () => ({
     forgotPasswordAction,
     loginAction: vi.fn(),
+    resendVerificationAction,
     resetPasswordAction
   }));
   vi.doMock("../ui/toast-provider", () => ({ useToast: () => ({ showToast }) }));
@@ -80,6 +82,7 @@ async function loadAuthForms(options: { loginState?: Record<string, unknown> } =
     reactMocks,
     router,
     forgotPasswordAction,
+    resendVerificationAction,
     resetPasswordAction,
     showToast
   };
@@ -180,5 +183,36 @@ describe("auth forms actions", () => {
     tree = AuthForms({ initialMode: "reset", resetToken: "token_123" });
     expect(router.push).toHaveBeenCalledWith("/signup");
     expect(renderToStaticMarkup(tree)).toContain("Sign in");
+  });
+
+  it("submits resend-verification requests and shows confirmation copy", async () => {
+    const { AuthForms, reactMocks, resendVerificationAction, showToast } = await loadAuthForms();
+    resendVerificationAction
+      .mockResolvedValueOnce({ ok: false, error: "Email missing." })
+      .mockResolvedValueOnce({ ok: true, error: null, message: "Verification sent." });
+
+    reactMocks.beginRender();
+    let tree = AuthForms({ initialMode: "verify" });
+    collectElements(tree, (element) => element.type === "form")[0]?.props.onSubmit({
+      preventDefault: vi.fn(),
+      currentTarget: { __data: { email: "hello@example.com" } }
+    });
+    await flushAsyncWork();
+
+    reactMocks.beginRender();
+    tree = AuthForms({ initialMode: "verify" });
+    expect(showToast).toHaveBeenCalledWith("error", "Email missing.");
+
+    collectElements(tree, (element) => element.type === "form")[0]?.props.onSubmit({
+      preventDefault: vi.fn(),
+      currentTarget: { __data: { email: "hello@example.com" } }
+    });
+    await flushAsyncWork();
+
+    reactMocks.beginRender();
+    tree = AuthForms({ initialMode: "verify" });
+    const html = renderToStaticMarkup(tree);
+    expect(html).toContain("Verification email sent");
+    expect(html).toContain("Verification sent.");
   });
 });

@@ -1,5 +1,6 @@
 "use server";
 
+import { requestEmailVerification } from "@/lib/auth-email-verification";
 import { requestPasswordReset, resetPasswordWithToken } from "@/lib/auth-password-reset";
 import { FORGOT_PASSWORD_ERROR_MESSAGE, RESET_PASSWORD_ERROR_MESSAGE } from "./auth-error-messages";
 import type { PasswordActionState } from "./action-types";
@@ -13,7 +14,7 @@ function passwordActionError(error: string): PasswordActionState {
 }
 
 async function runEmailAction(input: {
-  action: (email: string) => Promise<void>;
+  action: (email: string) => Promise<unknown>;
   email: string;
   errorMessage: string;
   logLabel: string;
@@ -46,6 +47,17 @@ export async function forgotPasswordAction(formData: FormData): Promise<Password
     errorMessage: FORGOT_PASSWORD_ERROR_MESSAGE,
     logLabel: "forgotPasswordAction",
     successMessage: `We sent a password reset link to ${email}.`
+  });
+}
+
+export async function resendVerificationAction(formData: FormData): Promise<PasswordActionState> {
+  const email = String(formData.get("email") ?? "").trim();
+  return runEmailAction({
+    action: requestEmailVerification,
+    email,
+    errorMessage: "We couldn't send the verification link right now. Please try again in a moment.",
+    logLabel: "resendVerificationAction",
+    successMessage: "If that address belongs to an account that still needs verification, we sent a new link."
   });
 }
 

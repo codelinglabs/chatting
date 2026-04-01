@@ -12,7 +12,7 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
-  const initialMode = params.mode === "reset" ? "reset" : "signin";
+  const initialMode = params.mode === "reset" ? "reset" : params.mode === "verify" ? "verify" : "signin";
 
   return (
     <AuthForms

@@ -7,6 +7,7 @@ const authMocks = vi.hoisted(() => ({
 }));
 
 const emailMocks = vi.hoisted(() => ({ sendAccountWelcomeEmail: vi.fn() }));
+const verificationMocks = vi.hoisted(() => ({ requestEmailVerificationForUserId: vi.fn() }));
 const dataMocks = vi.hoisted(() => ({
   getPostAuthPath: vi.fn(),
   onboardingPathForStep: vi.fn((step: string) => (step === "done" ? "/dashboard" : `/onboarding?step=${step}`))
@@ -14,6 +15,7 @@ const dataMocks = vi.hoisted(() => ({
 const workspaceMocks = vi.hoisted(() => ({ acceptTeamInvite: vi.fn() }));
 
 vi.mock("@/lib/auth", () => authMocks);
+vi.mock("@/lib/auth-email-verification", () => verificationMocks);
 vi.mock("@/lib/chatly-transactional-email-senders", () => emailMocks);
 vi.mock("@/lib/data", () => dataMocks);
 vi.mock("@/lib/workspace-access", () => workspaceMocks);
@@ -64,7 +66,7 @@ describe("login actions edge cases", () => {
     });
   });
 
-  it("maps production signup setup errors and keeps signup successful when the welcome email fails", async () => {
+  it("maps production signup setup errors and keeps signup successful when follow-up emails fail", async () => {
     process.env.NODE_ENV = "production";
 
     authMocks.signUpUser.mockRejectedValueOnce(new Error("AUTH_SECRET missing"));
@@ -79,6 +81,7 @@ describe("login actions edge cases", () => {
 
     authMocks.signUpUser.mockResolvedValueOnce({ id: "user_1", email: "alex@example.com" });
     dataMocks.getPostAuthPath.mockResolvedValueOnce("/onboarding?step=customize");
+    verificationMocks.requestEmailVerificationForUserId.mockRejectedValueOnce(new Error("mail down"));
     emailMocks.sendAccountWelcomeEmail.mockRejectedValueOnce(new Error("smtp down"));
 
     await expect(
@@ -91,5 +94,6 @@ describe("login actions edge cases", () => {
       nextPath: "/onboarding?step=customize"
     });
     expect(authMocks.setUserSession).toHaveBeenCalledWith("user_1");
+    expect(verificationMocks.requestEmailVerificationForUserId).toHaveBeenCalledWith("user_1");
   });
 });

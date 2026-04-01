@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 
-type AuthMode = "signin" | "forgot" | "reset" | "success";
+type AuthMode = "signin" | "forgot" | "reset" | "success" | "verify";
 
 async function renderAuthForms(
   mode: AuthMode = "signin",
@@ -30,6 +30,7 @@ async function renderAuthForms(
   vi.doMock("./actions", () => ({
     forgotPasswordAction: vi.fn(),
     loginAction: vi.fn(),
+    resendVerificationAction: vi.fn(),
     resetPasswordAction: vi.fn(),
     signupAction: vi.fn()
   }));
@@ -79,6 +80,7 @@ describe("auth forms", () => {
     expect(html).toContain("Create one");
     expect(html).toContain("Forgot password?");
     expect(html).toContain("Remember me");
+    expect(html).toContain("Resend verification email");
     expect(html).toContain("2,400+");
     expect(html).toContain("1.2m");
   });
@@ -97,6 +99,14 @@ describe("auth forms", () => {
     expect(html).toContain("Reset password");
     expect(html).toContain("Confirm password");
     expect(html).toContain("Reset password");
+  });
+
+  it("renders the resend-verification state", async () => {
+    const html = await renderAuthForms("verify");
+
+    expect(html).toContain("Resend verification");
+    expect(html).toContain("Back to sign in");
+    expect(html).toContain("Send verification link");
   });
 
   it("renders the success state", async () => {

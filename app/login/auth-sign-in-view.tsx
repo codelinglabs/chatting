@@ -10,6 +10,7 @@ type LoginViewProps = {
   isInviteFlow: boolean;
   onCreateAccount: () => void;
   onForgotPassword: () => void;
+  onResendVerification: () => void;
   password: string;
   redirectTo: string;
   submitAction: (payload: FormData) => void;
@@ -22,6 +23,7 @@ export function SignInAuthView({
   isInviteFlow,
   onCreateAccount,
   onForgotPassword,
+  onResendVerification,
   password,
   redirectTo,
   submitAction
@@ -68,9 +70,14 @@ export function SignInAuthView({
             <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600" />
             Remember me
           </label>
-          <button type="button" onClick={onForgotPassword} className="font-semibold text-blue-600">
-            Forgot password?
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button type="button" onClick={onForgotPassword} className="font-semibold text-blue-600">
+              Forgot password?
+            </button>
+            <button type="button" onClick={onResendVerification} className="font-semibold text-slate-500">
+              Resend verification email
+            </button>
+          </div>
         </div>
 
         <FormSubmitButton idleLabel="Sign in" pendingLabel="Signing in..." />

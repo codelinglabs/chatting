@@ -5,7 +5,8 @@ import {
   emailMocks,
   INITIAL_STATE,
   resetActionMocks,
-  signupAction
+  signupAction,
+  verificationMocks
 } from "./actions.test-helpers";
 
 describe("signup actions", () => {
@@ -91,6 +92,7 @@ describe("signup actions", () => {
     });
     expect(authMocks.setUserSession).toHaveBeenCalledWith("user_signup");
     expect(dataMocks.getPostAuthPath).toHaveBeenCalledWith("user_signup");
+    expect(verificationMocks.requestEmailVerificationForUserId).toHaveBeenCalledWith("user_signup");
     expect(emailMocks.sendAccountWelcomeEmail).toHaveBeenCalledWith({
       to: "new@chatly.example",
       firstName: "new",
@@ -122,6 +124,7 @@ describe("signup actions", () => {
       email: "teammate@chatly.example",
       password: "password123"
     });
+    expect(verificationMocks.requestEmailVerificationForUserId).not.toHaveBeenCalled();
     expect(emailMocks.sendAccountWelcomeEmail).not.toHaveBeenCalled();
   });
 });

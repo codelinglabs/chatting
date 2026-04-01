@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Added signup-triggered email verification delivery, resend-verification recovery from login, and a public `/verify` page for consuming email tokens.
 - Preserved safe post-login return paths back to the original internal URL after auth, resumed owner onboarding on sign-in, and split the auth/login flow into smaller modules with focused regression coverage.
 - Added a root Next.js proxy that short-circuits obvious WordPress bot-probe paths so junk traffic returns a cheap `404` before it reaches the app.
 - Defaulted the shared public app URL fallback to `https://usechatting.com` so generated widget snippets no longer fall back to localhost when `NEXT_PUBLIC_APP_URL` is unset.
@@ -102,6 +103,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Landing pricing now mirrors the dashboard billing format with Starter and Growth plans driven by shared pricing helpers, and the Growth card total now follows the team-size slider directly.
 - Public free-tool workflows now have focused action, form, and result coverage across export-gate and generator/calculator tools.
 - Dedicated login and signup screens with shared form controls, referral-aware owner signup, invite-based teammate access, password reset flows, safe post-login return paths, owner-onboarding resume handling, and direct onboarding handoff.
+- Signup now sends email-verification links, login exposes resend-verification recovery, and public `/verify` routes consume verification tokens.
 - Auth failures now stay in shared toast notifications with generic user-safe copy instead of showing deployment or server setup details in the UI.
 - Shared button-link controls now accept both string and object hrefs so invite and auth flows can pass structured Next.js routes safely.
 - Shared layout, auth wrappers, toast plumbing, newsletter actions, and form controls now have dedicated regression coverage.

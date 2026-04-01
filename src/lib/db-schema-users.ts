@@ -11,6 +11,7 @@ export async function runUserSchemaInitialization(pool: Pool) {
       owner_onboarding_stage TEXT NOT NULL DEFAULT 'complete',
       owner_onboarding_site_domain TEXT,
       owner_onboarding_referral_code TEXT,
+      email_verified_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
@@ -38,6 +39,11 @@ export async function runUserSchemaInitialization(pool: Pool) {
   await pool.query(`
     ALTER TABLE users
     ADD COLUMN IF NOT EXISTS owner_onboarding_referral_code TEXT;
+  `);
+
+  await pool.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ;
   `);
 
   await pool.query(`
@@ -78,5 +84,4 @@ export async function runUserSchemaInitialization(pool: Pool) {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
-
 }
