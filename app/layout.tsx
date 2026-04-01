@@ -19,6 +19,7 @@ export const metadata: Metadata = {
       url: "/api/og?template=a",
       width: 1200,
       height: 630,
+      type: "image/png",
       alt: "Chatting — Live chat for small teams who care."
     }]
   },
