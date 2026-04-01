@@ -49,8 +49,8 @@ export const APP_ENV_DEFINITIONS = {
     exampleValue: "MiniMax-M2"
   },
   NEXT_PUBLIC_APP_URL: {
-    defaultValue: "http://localhost:3000",
-    exampleValue: "http://localhost:3000",
+    defaultValue: "https://usechatting.com",
+    exampleValue: "https://usechatting.com",
     requiredIn: ["startup-production-core", "stripe-checkout", "stripe-billing"]
   },
   R2_ACCESS_KEY_ID: {

@@ -25,7 +25,7 @@ describe("env", () => {
 
   it("returns a safe public app url fallback", () => {
     delete process.env.NEXT_PUBLIC_APP_URL;
-    expect(getPublicAppUrl()).toBe("http://localhost:3000");
+    expect(getPublicAppUrl()).toBe("https://usechatting.com");
 
     process.env.NEXT_PUBLIC_APP_URL = "https://chatly.example";
     expect(getPublicAppUrl()).toBe("https://chatly.example");
