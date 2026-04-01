@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Shared button links now support internal Next routes plus external `mailto:`, `tel:`, and absolute URL hrefs without typed-route build failures.
 - Kept auth server actions build-safe by importing password recovery actions from their dedicated module and tightening shared auth route typing.
 - Fixed the dashboard inbox retry CTA wiring so failed optimistic replies can actually resend through the thread detail panel again.
 - Dashboard inbox replies now keep failed team messages inline with retry, preserve optimistic thread state, and leave the composer editable while earlier sends finish.
@@ -114,7 +115,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Logged-out dashboard requests now pass their original internal path through the auth proxy so login can return users to the exact screen they opened.
 - Signup now sends email-verification links, login exposes resend-verification recovery, and public `/verify` routes consume verification tokens.
 - Auth failures now stay in shared toast notifications with generic user-safe copy instead of showing deployment or server setup details in the UI.
-- Shared button-link controls now accept both string and object hrefs so invite and auth flows can pass structured Next.js routes safely.
+- Shared button-link controls now accept Next route objects plus external string hrefs like `mailto:`, `tel:`, and absolute URLs so invite, auth, and billing flows can share one safe link primitive.
 - Shared layout, auth wrappers, toast plumbing, newsletter actions, and form controls now have dedicated regression coverage.
 - Added dynamic Open Graph image generation via `/api/og` to dynamically support brand-aligned social sharing cards for all marketing and blog routes.
 - Added Edge-rendered SVG favicon via `app/icon.tsx` for crisp browser tab identity.

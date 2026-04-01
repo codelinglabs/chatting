@@ -24,7 +24,7 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
 
 export type ButtonLinkProps = Omit<NextLinkProps, "href"> &
   ButtonOptions & {
-    href: NextLinkProps["href"];
+    href: NextLinkProps["href"] | string;
     leadingIcon?: ReactNode;
     trailingIcon?: ReactNode;
     children: ReactNode;
@@ -51,6 +51,10 @@ function getButtonClassName(input: ButtonOptions) {
     input.fullWidth && "w-full",
     input.className
   );
+}
+
+function isExternalHref(href: ButtonLinkProps["href"]): href is string {
+  return typeof href === "string" && (/^(?:[a-z]+:)?\/\//i.test(href) || /^(mailto:|tel:)/i.test(href));
 }
 
 export function Button({
@@ -85,9 +89,26 @@ export function ButtonLink({
   children,
   ...props
 }: ButtonLinkProps) {
+  const { href, ...linkProps } = props;
+
+  if (isExternalHref(href)) {
+    return (
+      <a
+        {...(linkProps as ComponentProps<"a">)}
+        href={href}
+        className={getButtonClassName({ className, variant, size, fullWidth })}
+      >
+        {leadingIcon}
+        {children}
+        {trailingIcon}
+      </a>
+    );
+  }
+
   return (
     <Link
-      {...props}
+      {...linkProps}
+      href={href as NextLinkProps["href"]}
       className={getButtonClassName({ className, variant, size, fullWidth })}
     >
       {leadingIcon}
