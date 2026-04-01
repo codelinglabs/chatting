@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { getPublicAppUrl } from "@/lib/env";
 import ChattingScript from "./chatting-script";
 import { ToastProvider } from "./ui/toast-provider";
 import "./globals.css";
 
-const ANALYTICS_SCRIPT_SRC = "https://grometrics.com/js/script.js";
-const ANALYTICS_WEBSITE_ID = "gm_25f962a050796abf194ae4f4";
-const FALLBACK_ANALYTICS_DOMAIN = "your-site.com";
-const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1"]);
+const ANALYTICS_SCRIPT_SRC = "https://grometrics-166523647849.europe-west1.run.app/js/script.js";
+const ANALYTICS_WEBSITE_ID = "gm_13c7a11993d9d7ce797e06a3";
+const ANALYTICS_DOMAIN = "usechatting.com";
 
 export const metadata: Metadata = {
   title: "Chatting",
@@ -33,31 +31,11 @@ export const metadata: Metadata = {
   }
 };
 
-function getAnalyticsDomain() {
-  const appUrl = getPublicAppUrl();
-
-  if (!appUrl) {
-    return FALLBACK_ANALYTICS_DOMAIN;
-  }
-
-  let hostname = "";
-
-  try {
-    hostname = new URL(appUrl).hostname;
-  } catch {
-    hostname = appUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-  }
-
-  return hostname && !LOCAL_HOSTNAMES.has(hostname) ? hostname : FALLBACK_ANALYTICS_DOMAIN;
-}
-
 export default function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const analyticsDomain = getAnalyticsDomain();
-
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body>
@@ -66,7 +44,7 @@ export default function RootLayout({
         <Script
           defer
           data-website-id={ANALYTICS_WEBSITE_ID}
-          data-domain={analyticsDomain}
+          data-domain={ANALYTICS_DOMAIN}
           src={ANALYTICS_SCRIPT_SRC}
           strategy="afterInteractive"
         />
