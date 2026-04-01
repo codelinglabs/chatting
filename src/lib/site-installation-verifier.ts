@@ -1,13 +1,5 @@
+import { isLocalHostLike } from "@/lib/local-host";
 import { optionalText } from "@/lib/utils";
-
-function isLocalHostLike(value: string) {
-  return (
-    value.startsWith("localhost") ||
-    value.startsWith("127.0.0.1") ||
-    value.startsWith("[::1]") ||
-    value.startsWith("0.0.0.0")
-  );
-}
 
 function buildVerificationUrls(domain: string | null) {
   const normalized = optionalText(domain);

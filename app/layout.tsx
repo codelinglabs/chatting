@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import ChattingScript from "./chatting-script";
+import GrometricsScript from "./grometrics-script";
 import { ToastProvider } from "./ui/toast-provider";
 import "./globals.css";
 
-const ANALYTICS_SCRIPT_SRC = "https://grometrics-166523647849.europe-west1.run.app/js/script.js";
-const ANALYTICS_WEBSITE_ID = "gm_13c7a11993d9d7ce797e06a3";
-const ANALYTICS_DOMAIN = "usechatting.com";
 const METADATA_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://usechatting.com";
 
 export const metadata: Metadata = {
@@ -43,13 +40,7 @@ export default function RootLayout({
       <body>
         <ToastProvider>{children}</ToastProvider>
         <ChattingScript />
-        <Script
-          defer
-          data-website-id={ANALYTICS_WEBSITE_ID}
-          data-domain={ANALYTICS_DOMAIN}
-          src={ANALYTICS_SCRIPT_SRC}
-          strategy="afterInteractive"
-        />
+        <GrometricsScript />
       </body>
     </html>
   );
