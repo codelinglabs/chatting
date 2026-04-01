@@ -1,3 +1,5 @@
+import { vi } from "vitest";
+
 type GlobalSchedulerStore = typeof globalThis & Record<string, unknown>;
 
 export function resetGlobalScheduler(key: string) {

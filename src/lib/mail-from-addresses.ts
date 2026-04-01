@@ -49,8 +49,8 @@ function formatMailFrom(displayName: string, emailAddress: string) {
 function getSubdomainMailboxAddress<TSubdomain extends ChattingEmailSubdomain>(
   subdomain: TSubdomain,
   mailbox: ChattingEmailMailbox<TSubdomain>
-) {
-  return CHATTING_EMAIL_ADDRESSES_BY_SUBDOMAIN[subdomain][mailbox];
+): string {
+  return CHATTING_EMAIL_ADDRESSES_BY_SUBDOMAIN[subdomain][mailbox] as string;
 }
 
 function resolveChattingMailFrom<TSubdomain extends ChattingEmailSubdomain>(

@@ -11,7 +11,8 @@ const COPY_FIELDS = [
     key: "offlineTitle",
     label: "Offline title",
     limit: TITLE_LIMIT,
-    placeholder: "We're not online right now"
+    placeholder: "We're not online right now",
+    multiline: false
   },
   {
     key: "offlineMessage",
@@ -24,7 +25,8 @@ const COPY_FIELDS = [
     key: "awayTitle",
     label: "Away title",
     limit: TITLE_LIMIT,
-    placeholder: "We're away right now"
+    placeholder: "We're away right now",
+    multiline: false
   },
   {
     key: "awayMessage",

@@ -59,7 +59,11 @@ function formatTranscript(rows: Awaited<ReturnType<typeof listConversationTransc
     })
     .join("\n\n");
 }
-async function queueRetry(deliveryKey: string, attemptCount: number, errorMessage: string) {
+async function queueRetry(
+  deliveryKey: string,
+  attemptCount: number,
+  errorMessage: string
+): Promise<ConversationTemplateDeliveryStatus> {
   try {
     await markTemplateDeliveryFailed({
       deliveryKey,
@@ -90,7 +94,7 @@ export async function sendConversationTemplateEmail(input: SendConversationTempl
   const conversation = await loadConversationContext(input.conversationId);
   if (!conversation?.visitorEmail) {
     return input.skipClaim
-      ? queueRetry(input.deliveryKey, input.attemptCount ?? 0, "visitor-email-missing")
+      ? await queueRetry(input.deliveryKey, input.attemptCount ?? 0, "visitor-email-missing")
       : "skipped";
   }
 
@@ -99,7 +103,7 @@ export async function sendConversationTemplateEmail(input: SendConversationTempl
   const template = settings.email.templates.find((entry) => entry.key === input.templateKey);
   if (!template || !template.enabled) {
     return input.skipClaim
-      ? queueRetry(input.deliveryKey, input.attemptCount ?? 0, "template-disabled")
+      ? await queueRetry(input.deliveryKey, input.attemptCount ?? 0, "template-disabled")
       : "skipped";
   }
   if (!input.skipClaim) {
@@ -190,7 +194,7 @@ export async function sendConversationTemplateEmail(input: SendConversationTempl
     await markTemplateDeliverySent(input.deliveryKey);
     return "sent";
   } catch (error) {
-    return queueRetry(
+    return await queueRetry(
       input.deliveryKey,
       input.attemptCount ?? 0,
       error instanceof Error ? error.message : "email-send-failed"
