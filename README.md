@@ -23,8 +23,8 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Tightened dashboard reply rollback coverage so recency-based summary sorting no longer makes the regression test fail on array position alone.
 - Localized daily digests and weekly performance emails to teammate timezones, with dashboard-side browser timezone sync and shared local report window helpers.
 - Added Cloud Run deployment packaging with standalone Next.js output, a repo `cloudbuild.yaml`, and DB-claimed scheduler windows plus advisory locks so startup email jobs do not double-run across instances.
-- Hardened Cloud Run startup by serializing schema bootstrap with a shared Postgres advisory lock and setting metadataBase for deployed OG and Twitter URLs.
 - Fixed the production build by tightening widget offline-copy field typing, conversation-template retry status returns, mail-from sender resolution, and shared scheduler test-helper imports.
+- Added Cloud Run deployment packaging with standalone Next.js output, a repo `cloudbuild.yaml`, and DB-claimed scheduler windows plus advisory locks so startup email jobs do not double-run across instances.
 - Swapped the root app-shell analytics embed to the hosted Grometrics runtime for `usechatting.com` with the new production website id.
 - Skipped the hosted Grometrics script on localhost-style hosts and reused one shared local-host helper for analytics and installation checks.
 - Streamlined dashboard live updates so each tab shares one `/dashboard/live` connection, unread badges use lightweight count fetches, and the visitors page patches presence/message changes incrementally instead of reloading the full snapshot on every live event.
@@ -125,7 +125,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Shared dashboard shell with focused pages for inbox, visitors, analytics, team, settings, and widget setup.
 - Dashboard shell now syncs each teammate's browser timezone so timezone-aware scheduled emails can use local delivery windows.
 - Dashboard live updates now share one `/dashboard/live` connection per tab, route unread and conversation refreshes through targeted endpoints, and keep visitors current with incremental session/message patches plus manual full-refresh fallback.
-- - Dashboard widget settings now preview online, away, and offline states directly in settings, and inbox thread ordering stays pinned to real recency instead of moving touched threads to the top.
+- Dashboard widget settings now preview online, away, and offline states directly in settings, and inbox thread ordering stays pinned to real recency instead of moving touched threads to the top.
 - Dashboard navigation now relies on the route-level skeleton only, and inbox thread selection clears stale loading state without the extra shell overlay layer.
 - Dashboard conversation previews now stay message-only, and the thread detail sidebar preserves the original visitor page URL from when the conversation started instead of drifting with later navigation.
 - Dashboard unread badges now clear immediately on thread open and stay live across the shell header and sidebar when visitor messages or read events stream in.
@@ -145,14 +145,12 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - Shared public app URL helpers now default generated widget snippets and app links to `https://usechatting.com` instead of localhost when `NEXT_PUBLIC_APP_URL` is unset.
 - Cloud Run deployment now builds from standalone Next.js output, ships through repo Docker/Cloud Build config, and suppresses duplicate startup scheduler windows with shared DB claims plus advisory locks.
-- Cloud Run startup now serializes schema initialization behind a shared Postgres advisory lock, and root metadata uses NEXT_PUBLIC_APP_URL so deployed OG/Twitter URLs no longer fall back to localhost.
 - Postgres server packaging now uses a traceable `pg` import plus a postbuild trace verification step so Vercel deploys fail fast if Next.js stops tracing the database driver into server output.
 - Conversation-template emails now keep failed deliveries for automatic retry, surface queued retry state back to the dashboard, and run through scheduler-backed resend jobs with distributed locks.
 - Stripe-backed billing flows for checkout, portal access, invoice sync, and webhook handling.
 - Growth billing now runs from a shared seat-pricing config, validates Stripe's tiered Growth price shape before checkout, and prefers `STRIPE_DEV_*` billing credentials and price ids outside production.
 - Billing price resolution now relies only on the current Growth Stripe price ids.
-- Scheduled daily digests and weekly performance reports now send from the node runtime with persisted delivery windows.
-- Those reports now resolve teammate-local delivery windows from saved browser timezones, falling back through site timezone to UTC.
+- Scheduled daily digests and weekly performance reports now use teammate-local report windows with timezone fallback before sending from the node runtime.
 - Owner workspaces now default to a backend-seeded Growth trial and automatically downgrade expired unpaid trials to Starter.
 - Billing settings fixtures and cards now consistently use the post-trial-extension billing shape across dashboard tests and widget settings.
 - Scheduled lifecycle nudges now deliver activation, health, and upgrade reminders from the node runtime instead of widget pageviews.
@@ -181,7 +179,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Ops Note
 
-- Vercel is currently connected through the personal GitHub account.
+- The application is deployed via Google Cloud Run.
 - The production Postgres database is hosted on Neon.
 - Neon is currently managed from the Letterflow account `tina@letterflow.so`.
 - This is only an account-ownership note. Runtime config still comes from environment variables.
@@ -297,6 +295,3 @@ The inbound route now:
 - handles SES `Received` notifications
 - parses raw MIME email content with `mailparser`
 - strips common quoted reply blocks before saving the new user message
-- Added configurable offline and away widget copy with matching dashboard preview states, persisted site settings, and live widget rendering from public config.
-- Widget settings now persist customizable offline and away titles/messages, and the live widget renders those saved empty-state messages from site config.
-- Dashboard widget settings now preview online, away, and offline states directly in settings.
