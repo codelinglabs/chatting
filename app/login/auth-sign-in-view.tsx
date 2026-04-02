@@ -2,6 +2,7 @@
 
 import { FormPasswordField, FormSubmitButton, FormTextField } from "../ui/form-controls";
 import { AuthFormIntro } from "./auth-shell";
+import { BrowserTimeZoneField } from "./browser-timezone-field";
 
 type LoginViewProps = {
   email: string;
@@ -10,7 +11,6 @@ type LoginViewProps = {
   isInviteFlow: boolean;
   onCreateAccount: () => void;
   onForgotPassword: () => void;
-  onResendVerification: () => void;
   password: string;
   redirectTo: string;
   submitAction: (payload: FormData) => void;
@@ -23,7 +23,6 @@ export function SignInAuthView({
   isInviteFlow,
   onCreateAccount,
   onForgotPassword,
-  onResendVerification,
   password,
   redirectTo,
   submitAction
@@ -43,6 +42,7 @@ export function SignInAuthView({
             Use {inviteEmail || "the invited email"} to join this workspace.
           </div>
         ) : null}
+        <BrowserTimeZoneField />
         {isInviteFlow ? <input type="hidden" name="inviteId" value={inviteId} /> : null}
         {redirectTo ? <input type="hidden" name="redirectTo" value={redirectTo} /> : null}
 
@@ -65,19 +65,10 @@ export function SignInAuthView({
           placeholder="Enter your password"
         />
 
-        <div className="flex items-center justify-between gap-4 text-sm">
-          <label className="inline-flex items-center gap-3 text-slate-700">
-            <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600" />
-            Remember me
-          </label>
-          <div className="flex flex-col items-end gap-1">
-            <button type="button" onClick={onForgotPassword} className="font-semibold text-blue-600">
-              Forgot password?
-            </button>
-            <button type="button" onClick={onResendVerification} className="font-semibold text-slate-500">
-              Resend verification email
-            </button>
-          </div>
+        <div className="flex justify-end text-sm">
+          <button type="button" onClick={onForgotPassword} className="font-semibold text-blue-600">
+            Forgot password?
+          </button>
         </div>
 
         <FormSubmitButton idleLabel="Sign in" pendingLabel="Signing in..." />

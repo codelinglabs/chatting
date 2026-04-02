@@ -5,6 +5,7 @@ import {
   INITIAL_STATE,
   loginAction,
   resetActionMocks,
+  timeZoneMocks,
   workspaceMocks
 } from "./actions.test-helpers";
 
@@ -44,15 +45,34 @@ describe("login actions", () => {
     expect(authMocks.setUserSession).not.toHaveBeenCalled();
   });
 
+  it("blocks unverified users from signing in", async () => {
+    authMocks.signInUser.mockRejectedValueOnce(new Error("EMAIL_NOT_VERIFIED"));
+
+    const result = await loginAction(INITIAL_STATE, authForm({ email: "hello@chatly.example", password: "password123" }));
+    expect(result.error).toBe("Verify your email before signing in. Check your inbox for the verification link.");
+    expect(authMocks.setUserSession).not.toHaveBeenCalled();
+  });
+
   it("creates a session on successful login", async () => {
     authMocks.signInUser.mockResolvedValueOnce({ id: "user_123", email: "hello@chatly.example" });
     dataMocks.getPostAuthPath.mockResolvedValueOnce("/dashboard");
 
-    const result = await loginAction(INITIAL_STATE, authForm({ email: "hello@chatly.example", password: "password123" }));
+    const result = await loginAction(
+      INITIAL_STATE,
+      authForm({
+        email: "hello@chatly.example",
+        password: "password123",
+        timezone: "Europe/London"
+      })
+    );
     expect(result.ok).toBe(true);
     expect(result.nextPath).toBe("/dashboard");
     expect(authMocks.resumeOwnerOnboardingForUser).toHaveBeenCalledWith("user_123");
-    expect(authMocks.setUserSession).toHaveBeenCalledWith("user_123");
+    expect(authMocks.setUserSession).toHaveBeenCalledWith("user_123", null);
+    expect(timeZoneMocks.persistPreferredTimeZoneForUser).toHaveBeenCalledWith(
+      "user_123",
+      "Europe/London"
+    );
   });
 
   it("routes incomplete owners without a saved domain back into customize", async () => {
@@ -62,7 +82,7 @@ describe("login actions", () => {
     const result = await loginAction(INITIAL_STATE, authForm({ email: "hello@chatly.example", password: "password123" }));
     expect(result).toMatchObject({ ok: true, nextPath: "/onboarding?step=customize" });
     expect(dataMocks.getPostAuthPath).not.toHaveBeenCalled();
-    expect(authMocks.setUserSession).toHaveBeenCalledWith("user_123");
+    expect(authMocks.setUserSession).toHaveBeenCalledWith("user_123", null);
   });
 
   it("returns users to safe saved internal urls after successful login", async () => {
@@ -95,6 +115,7 @@ describe("login actions", () => {
 
   it("accepts workspace invites during login", async () => {
     authMocks.signInUser.mockResolvedValueOnce({ id: "user_123", email: "hello@chatly.example" });
+    workspaceMocks.acceptTeamInvite.mockResolvedValueOnce({ ownerUserId: "owner_999", alreadyAccepted: false });
 
     const result = await loginAction(
       INITIAL_STATE,
@@ -106,6 +127,7 @@ describe("login actions", () => {
       userId: "user_123",
       email: "hello@chatly.example"
     });
+    expect(authMocks.setUserSession).toHaveBeenCalledWith("user_123", "owner_999");
     expect(authMocks.resumeOwnerOnboardingForUser).not.toHaveBeenCalled();
     expect(result.nextPath).toBe("/dashboard");
   });

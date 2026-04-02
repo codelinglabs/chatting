@@ -12,6 +12,7 @@ import {
 import { sendAccountWelcomeEmail } from "@/lib/chatly-transactional-email-senders";
 import { getPostAuthPath, onboardingPathForStep } from "@/lib/data";
 import { getPublicAppUrl } from "@/lib/env";
+import { persistPreferredTimeZoneForUser } from "@/lib/user-timezone-preference";
 import { acceptTeamInvite } from "@/lib/workspace-access";
 import { formatAuthError, isExpectedAuthError } from "./action-errors";
 import type { AuthActionState } from "./action-types";
@@ -66,6 +67,7 @@ export async function loginAction(
   const password = String(formData.get("password") ?? "").trim();
   const inviteId = String(formData.get("inviteId") ?? "").trim();
   const redirectTo = String(formData.get("redirectTo") ?? "").trim();
+  const timeZone = String(formData.get("timezone") ?? "").trim();
   const fields = { ...emptyFields(), email, password };
 
   if (!email) return { ok: false, error: "Work email is required.", nextPath: null, fields };
@@ -82,12 +84,15 @@ export async function loginAction(
       };
     }
 
+    let inviteWorkspaceOwnerId: string | null = null;
     if (inviteId) {
-      await acceptTeamInvite({ inviteId, userId: user.id, email: user.email });
+      const invite = await acceptTeamInvite({ inviteId, userId: user.id, email: user.email });
+      inviteWorkspaceOwnerId = invite.ownerUserId;
     }
 
     const defaultNextPath = inviteId ? "/dashboard" : await getOwnerPostAuthPath(user.id);
-    await setUserSession(user.id);
+    await setUserSession(user.id, inviteWorkspaceOwnerId);
+    await persistPreferredTimeZoneForUser(user.id, timeZone);
     const nextPath =
       !inviteId && defaultNextPath === onboardingPathForStep("done")
         ? sanitizeReturnPath(redirectTo) ?? defaultNextPath
@@ -118,15 +123,20 @@ export async function signupAction(
   const websiteUrl = String(formData.get("websiteUrl") ?? "").trim();
   const referralCode = String(formData.get("referralCode") ?? "").trim();
   const inviteId = String(formData.get("inviteId") ?? "").trim();
+  const timeZone = String(formData.get("timezone") ?? "").trim();
   const fields = { email, password, websiteUrl, referralCode };
 
   try {
     const user = inviteId
       ? await signUpInvitedUser({ inviteId, email, password })
       : await signUpUser({ email, password, websiteUrl, referralCode });
+    const workspaceOwnerId =
+      "workspaceOwnerId" in user && typeof user.workspaceOwnerId === "string" ? user.workspaceOwnerId : null;
+
+    await persistPreferredTimeZoneForUser(user.id, timeZone);
 
     if (inviteId) {
-      await setUserSession(user.id);
+      await setUserSession(user.id, workspaceOwnerId);
       return {
         ok: true,
         error: null,

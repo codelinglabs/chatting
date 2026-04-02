@@ -12,12 +12,14 @@ const dataMocks = vi.hoisted(() => ({
   getPostAuthPath: vi.fn(),
   onboardingPathForStep: vi.fn((step: string) => (step === "done" ? "/dashboard" : `/onboarding?step=${step}`))
 }));
+const timeZoneMocks = vi.hoisted(() => ({ persistPreferredTimeZoneForUser: vi.fn() }));
 const workspaceMocks = vi.hoisted(() => ({ acceptTeamInvite: vi.fn() }));
 
 vi.mock("@/lib/auth", () => authMocks);
 vi.mock("@/lib/auth-email-verification", () => verificationMocks);
 vi.mock("@/lib/chatly-transactional-email-senders", () => emailMocks);
 vi.mock("@/lib/data", () => dataMocks);
+vi.mock("@/lib/user-timezone-preference", () => timeZoneMocks);
 vi.mock("@/lib/workspace-access", () => workspaceMocks);
 
 import { loginAction, signupAction, type AuthActionState } from "./actions";

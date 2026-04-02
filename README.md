@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Owner signup now stays on the signup page with inline verification messaging, password login blocks unverified accounts, and the sign-in form drops the dead remember-me/resend-verification clutter.
 - Signup verification now lets people jump back to the signup form from the "Check your email" screen so they can correct details and resubmit without leaving the flow.
 - Deleted the unused legacy `/onboarding/team` route and its tests so onboarding no longer carries a dead team-setup endpoint.
 - Removed the forced `site` suffix from default owner workspace names so new email-domain-based sites no longer ship customer-facing labels like `Heypond site`.
@@ -116,9 +117,9 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - The public landing now keeps the header/CTA framing stable while using the new proof and conversion section split.
 - Landing pricing now mirrors the dashboard billing format with Starter and Growth plans driven by shared pricing helpers, and the Growth card total now follows the team-size slider directly.
 - Public free-tool workflows now have focused action, form, and result coverage across export-gate and generator/calculator tools.
-- Dedicated login and signup screens with shared form controls, referral-aware owner signup, invite-based teammate access, password reset flows, safe post-login return paths, owner-onboarding resume handling, and direct onboarding handoff.
+- Dedicated login and signup screens with shared form controls, referral-aware owner signup, invite-based teammate access, password reset flows, safe post-login return paths, owner-onboarding resume handling, inline verification guidance for new owner signups, and direct invite handoff into the dashboard.
 - Logged-out dashboard requests now pass their original internal path through the auth proxy so login can return users to the exact screen they opened.
-- Signup now sends email-verification links, login exposes resend-verification recovery, and public `/verify` routes consume verification tokens.
+- Signup now sends email-verification links, owner password login stays blocked until verification, invited teammates complete auth with workspace-aware sessions, and public `/verify` routes consume verification tokens.
 - Auth failures now stay in shared toast notifications with generic user-safe copy instead of showing deployment or server setup details in the UI.
 - Shared button-link controls now accept Next route objects plus external string hrefs like `mailto:`, `tel:`, and absolute URLs so invite, auth, and billing flows can share one safe link primitive.
 - Shared layout, auth wrappers, toast plumbing, newsletter actions, and form controls now have dedicated regression coverage.

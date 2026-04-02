@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormButton, FormPasswordField, FormTextField } from "../ui/form-controls";
+import { BrowserTimeZoneField } from "../login/browser-timezone-field";
 import { useToast } from "../ui/toast-provider";
 import { getGenericAuthErrorMessage } from "../login/auth-error-messages";
 import { AuthFormIntro, AuthPageShell } from "../login/auth-shell";
@@ -124,6 +125,7 @@ export function SignupForm() {
                   Create this account with {emailFromQuery || "the invited email"} to join the workspace.
                 </div>
               ) : null}
+              <BrowserTimeZoneField />
 
               <FormTextField
                 label="Work email"

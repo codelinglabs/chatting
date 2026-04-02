@@ -1,6 +1,7 @@
-import { createHash, randomBytes, scrypt as nodeScrypt, timingSafeEqual } from "node:crypto";
+import { randomBytes, scrypt as nodeScrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { resumeOwnerOnboardingForUser } from "@/lib/auth-owner-onboarding";
+import { hashSessionToken } from "@/lib/auth-session-token";
 import { getAuthSecret } from "@/lib/env.server";
 import { normalizeReferralCode, validateReferralCodeForSignup } from "@/lib/referrals";
 import { updateUserOwnerOnboardingIntent } from "@/lib/repositories/auth-owner-onboarding-repository";
@@ -36,12 +37,6 @@ async function ensureEmailAvailable(email: string) {
   }
 }
 
-export function hashSessionToken(token: string) {
-  return createHash("sha256")
-    .update(`${getAuthSecret()}:${token}`)
-    .digest("hex");
-}
-
 export function mapUser(row: AuthIdentity | AuthSessionUserRecord | AuthUserRecord): AuthIdentity {
   return {
     id: row.id,
@@ -70,6 +65,7 @@ async function verifyPasswordHash(password: string, storedHash: string) {
 
 async function createAuthUser(input: {
   email: string;
+  emailVerifiedAt?: string | null;
   onboardingCompletedAt: string | null;
   onboardingStep: "customize" | "done";
   ownerOnboardingStage?: "account_created" | "complete";
@@ -82,6 +78,7 @@ async function createAuthUser(input: {
     userId,
     email: input.email,
     passwordHash: await hashPassword(input.password),
+    emailVerifiedAt: input.emailVerifiedAt ?? null,
     onboardingStep: input.onboardingStep,
     onboardingCompletedAt: input.onboardingCompletedAt,
     ownerOnboardingStage: input.ownerOnboardingStage ?? "complete",
@@ -179,21 +176,24 @@ export async function signUpInvitedUser(input: {
 
   const user = await createAuthUser({
     email,
+    emailVerifiedAt: new Date().toISOString(),
     onboardingCompletedAt: new Date().toISOString(),
     onboardingStep: "done",
     ownerOnboardingStage: "complete",
     password
   });
-  await acceptTeamInvite({ inviteId: input.inviteId, userId: user.id, email });
+  const invite = await acceptTeamInvite({ inviteId: input.inviteId, userId: user.id, email });
 
-  return user;
+  return {
+    ...user,
+    workspaceOwnerId: invite.ownerUserId
+  };
 }
 
 export async function signInUser(email: string, password: string) {
   const row = await findAuthUserByEmail(normalizeEmail(email));
-  if (!row) {
-    return null;
-  }
-
-  return (await verifyPasswordHash(password.trim(), row.password_hash)) ? mapUser(row) : null;
+  if (!row) return null;
+  if (!(await verifyPasswordHash(password.trim(), row.password_hash))) return null;
+  if (!row.email_verified_at) throw new Error("EMAIL_NOT_VERIFIED");
+  return mapUser(row);
 }

@@ -36,6 +36,7 @@ describe("auth edge cases", () => {
     mocks.findExistingUserIdByEmail.mockResolvedValue(null);
     mocks.validateReferralCodeForSignup.mockResolvedValue(undefined);
     mocks.validateTeamInvite.mockResolvedValue(undefined);
+    mocks.acceptTeamInvite.mockResolvedValue({ ownerUserId: "owner_123", alreadyAccepted: false });
     mocks.resumeOwnerOnboardingForUser.mockResolvedValue("complete");
     mocks.updateUserOwnerOnboardingIntent.mockResolvedValue(undefined);
     mocks.getWorkspaceAccess.mockResolvedValue({ ownerUserId: "owner_1", role: "admin" });
@@ -71,7 +72,13 @@ describe("auth edge cases", () => {
   it("handles sign-in password mismatches, production cookies, and logout without a token", async () => {
     await signUpUser({ email: "owner@acme.com", password: "password123", websiteUrl: "https://acme.com" });
     const insertedUser = mocks.insertAuthUser.mock.calls.at(-1)?.[0];
-    mocks.findAuthUserByEmail.mockResolvedValueOnce({ id: insertedUser.userId, email: "owner@acme.com", created_at: "2026-03-29T00:00:00.000Z", password_hash: insertedUser.passwordHash });
+    mocks.findAuthUserByEmail.mockResolvedValueOnce({
+      id: insertedUser.userId,
+      email: "owner@acme.com",
+      created_at: "2026-03-29T00:00:00.000Z",
+      password_hash: insertedUser.passwordHash,
+      email_verified_at: "2026-03-29T00:00:00.000Z"
+    });
     await expect(signInUser("owner@acme.com", "wrong-password")).resolves.toBeNull();
 
     const previousEnv = process.env.NODE_ENV;

@@ -2,10 +2,11 @@ import { randomBytes } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AUTH_REQUEST_PATH_HEADER, AUTH_SESSION_COOKIE_NAME, buildLoginPath } from "@/lib/auth-redirect";
+import { hashSessionToken } from "@/lib/auth-session-token";
 import { isProductionRuntime } from "@/lib/env";
 import { deleteAuthSessionByTokenHash, findCurrentUserByTokenHash, insertAuthSession } from "@/lib/repositories/auth-repository";
 import { getWorkspaceAccess } from "@/lib/workspace-access";
-import { hashSessionToken, mapUser } from "./auth-credentials";
+import { mapUser } from "./auth-credentials";
 
 export {
   changeUserPassword,
@@ -17,7 +18,7 @@ export { resumeOwnerOnboardingForUser } from "./auth-owner-onboarding";
 
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 
-export async function setUserSession(userId: string) {
+export async function setUserSession(userId: string, activeWorkspaceOwnerId?: string | null) {
   const sessionId = randomBytes(16).toString("hex");
   const token = randomBytes(32).toString("hex");
   const cookieStore = await cookies();
@@ -25,7 +26,8 @@ export async function setUserSession(userId: string) {
   await insertAuthSession({
     sessionId,
     userId,
-    tokenHash: hashSessionToken(token)
+    tokenHash: hashSessionToken(token),
+    activeWorkspaceOwnerId: activeWorkspaceOwnerId ?? null
   });
 
   cookieStore.set(AUTH_SESSION_COOKIE_NAME, token, {
@@ -60,7 +62,7 @@ export async function getCurrentUser() {
   }
 
   const user = mapUser(row);
-  const workspace = await getWorkspaceAccess(user.id);
+  const workspace = await getWorkspaceAccess(user.id, row.active_workspace_owner_id ?? undefined);
   return {
     ...user,
     workspaceOwnerId: workspace.ownerUserId,

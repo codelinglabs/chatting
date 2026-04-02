@@ -43,6 +43,7 @@ export function AuthForms({
   const [loginState, loginFormAction] = useActionState(loginAction, INITIAL_AUTH_STATE);
   const lastLoginToastErrorRef = useRef<string | null>(null);
   const handleCreateAccount = () => router.push(`/signup${inviteQuery}` as never);
+  const handleBackToSignIn = () => handleModeChange("signin");
 
   useEffect(() => {
     if (loginState.ok) {
@@ -127,7 +128,6 @@ export function AuthForms({
           isInviteFlow={isInviteFlow}
           onCreateAccount={handleCreateAccount}
           onForgotPassword={() => handleModeChange("forgot")}
-          onResendVerification={() => handleModeChange("verify")}
           password={loginState.fields.password}
           redirectTo={redirectTo}
           submitAction={handleLoginAction}
@@ -138,7 +138,7 @@ export function AuthForms({
         <ForgotPasswordView
           email={loginState.fields.email}
           isSubmitting={passwordSubmitting}
-          onBackToSignIn={() => handleModeChange("signin")}
+          onBackToSignIn={handleBackToSignIn}
           onSubmit={handleForgotSubmit}
         />
       ) : null}
@@ -151,7 +151,7 @@ export function AuthForms({
         <ResendVerificationView
           email={loginState.fields.email}
           isSubmitting={passwordSubmitting}
-          onBackToSignIn={() => handleModeChange("signin")}
+          onBackToSignIn={handleBackToSignIn}
           onSubmit={handleResendSubmit}
         />
       ) : null}
@@ -159,7 +159,7 @@ export function AuthForms({
       {mode === "success" ? (
         <AuthSuccessView
           body={successCopy.body}
-          onBackToSignIn={() => handleModeChange("signin")}
+          onBackToSignIn={handleBackToSignIn}
           onCreateAccount={handleCreateAccount}
           title={successCopy.title}
         />

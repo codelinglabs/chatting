@@ -79,7 +79,7 @@ describe("auth session helpers", () => {
     mocks.resumeOwnerOnboardingForUser.mockResolvedValue("complete");
     mocks.updateUserOwnerOnboardingIntent.mockResolvedValue(undefined);
     mocks.validateTeamInvite.mockResolvedValue(undefined);
-    mocks.acceptTeamInvite.mockResolvedValue(undefined);
+    mocks.acceptTeamInvite.mockResolvedValue({ ownerUserId: "owner_123", alreadyAccepted: false });
     mocks.headers.mockResolvedValue(new Headers());
   });
 
@@ -151,7 +151,9 @@ describe("auth session helpers", () => {
       password: "password123"
     });
 
+    const insertedUser = mocks.insertAuthUser.mock.calls.at(-1)?.[0];
     expect(mocks.resumeOwnerOnboardingForUser).not.toHaveBeenCalled();
+    expect(insertedUser.emailVerifiedAt).toBeTruthy();
     expect(mocks.acceptTeamInvite).toHaveBeenCalledWith({
       inviteId: "invite_123",
       userId: expect.any(String),

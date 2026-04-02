@@ -2,6 +2,7 @@ import { getGenericAuthErrorMessage } from "./auth-error-messages";
 
 export function formatAuthError(message: string, mode: "login" | "signup") {
   if (message === "EMAIL_TAKEN") return "That email already has an account.";
+  if (message === "EMAIL_NOT_VERIFIED") return "Verify your email before signing in. Check your inbox for the verification link.";
   if (message === "WEAK_PASSWORD") return "Use at least 8 characters for the password.";
   if (message === "MISSING_PASSWORD") return "Password is required.";
   if (message === "MISSING_EMAIL") return "Work email is required.";
@@ -15,9 +16,6 @@ export function formatAuthError(message: string, mode: "login" | "signup") {
   if (message === "INVITE_ALREADY_ACCEPTED") return "That team invite has already been accepted.";
   if (message === "INVITE_EMAIL_MISMATCH") return "Sign in with the email address that received this invite.";
   if (message === "INVITE_OWNER_CONFLICT") return "You already own this workspace.";
-  if (message === "INVITE_WORKSPACE_CONFLICT") {
-    return "This account already owns another workspace, so it can't join this one yet.";
-  }
 
   return getGenericAuthErrorMessage(mode);
 }
@@ -25,6 +23,7 @@ export function formatAuthError(message: string, mode: "login" | "signup") {
 export function isExpectedAuthError(message: string) {
   return (
     message === "EMAIL_TAKEN" ||
+    message === "EMAIL_NOT_VERIFIED" ||
     message === "WEAK_PASSWORD" ||
     message === "MISSING_PASSWORD" ||
     message === "MISSING_EMAIL" ||

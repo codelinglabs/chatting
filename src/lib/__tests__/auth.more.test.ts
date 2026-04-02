@@ -66,7 +66,8 @@ describe("auth more", () => {
       id: insertedUser.userId,
       email: "owner@acme.com",
       created_at: "2026-03-29T00:00:00.000Z",
-      password_hash: insertedUser.passwordHash
+      password_hash: insertedUser.passwordHash,
+      email_verified_at: "2026-03-29T00:00:00.000Z"
     });
     mocks.cookies.mockResolvedValue(cookieStore);
 
@@ -75,9 +76,11 @@ describe("auth more", () => {
       email: "owner@acme.com",
       createdAt: "2026-03-29T00:00:00.000Z"
     });
-    await setUserSession(insertedUser.userId);
+    await setUserSession(insertedUser.userId, "owner_1");
 
-    expect(mocks.insertAuthSession).toHaveBeenCalledWith(expect.objectContaining({ userId: insertedUser.userId }));
+    expect(mocks.insertAuthSession).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: insertedUser.userId, activeWorkspaceOwnerId: "owner_1" })
+    );
     expect(cookieStore.set).toHaveBeenCalledWith(
       "chatly_session",
       expect.any(String),
@@ -87,13 +90,21 @@ describe("auth more", () => {
 
   it("rejects invalid sign-in and password-change paths before updating the password", async () => {
     await expect(signInUser("missing@acme.com", "password123")).resolves.toBeNull();
+    await signUpUser({ email: "owner@acme.com", password: "password123", websiteUrl: "https://acme.com" });
+    const insertedUser = mocks.insertAuthUser.mock.calls.at(-1)?.[0];
+    mocks.findAuthUserByEmail.mockResolvedValueOnce({
+      id: insertedUser.userId,
+      email: "owner@acme.com",
+      created_at: "2026-03-29T00:00:00.000Z",
+      password_hash: insertedUser.passwordHash,
+      email_verified_at: null
+    });
+    await expect(signInUser("owner@acme.com", "password123")).rejects.toThrow("EMAIL_NOT_VERIFIED");
     await expect(changeUserPassword("user_1", "", "password123")).rejects.toThrow("MISSING_CURRENT_PASSWORD");
     await expect(changeUserPassword("user_1", "password123", "short")).rejects.toThrow("WEAK_PASSWORD");
     mocks.findAuthUserById.mockResolvedValueOnce(null);
     await expect(changeUserPassword("user_1", "password123", "betterpassword")).rejects.toThrow("USER_NOT_FOUND");
 
-    await signUpUser({ email: "owner@acme.com", password: "password123", websiteUrl: "https://acme.com" });
-    const insertedUser = mocks.insertAuthUser.mock.calls.at(-1)?.[0];
     mocks.findAuthUserById.mockResolvedValueOnce({ password_hash: insertedUser.passwordHash });
     await expect(changeUserPassword("user_1", "wrong-password", "betterpassword")).rejects.toThrow("INVALID_CURRENT_PASSWORD");
   });

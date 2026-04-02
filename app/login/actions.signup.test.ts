@@ -6,6 +6,7 @@ import {
   INITIAL_STATE,
   resetActionMocks,
   signupAction,
+  timeZoneMocks,
   verificationMocks
 } from "./actions.test-helpers";
 
@@ -68,7 +69,8 @@ describe("signup actions", () => {
         email: "new@chatly.example",
         password: "password123",
         websiteUrl: "https://chatly.example",
-        referralCode: "AFF-ABC123"
+        referralCode: "AFF-ABC123",
+        timezone: "Europe/London"
       })
     );
 
@@ -90,6 +92,10 @@ describe("signup actions", () => {
       referralCode: "AFF-ABC123"
     });
     expect(authMocks.setUserSession).not.toHaveBeenCalled();
+    expect(timeZoneMocks.persistPreferredTimeZoneForUser).toHaveBeenCalledWith(
+      "user_signup",
+      "Europe/London"
+    );
     expect(dataMocks.getPostAuthPath).not.toHaveBeenCalled();
     expect(verificationMocks.requestEmailVerificationForUserId).toHaveBeenCalledWith("user_signup");
     expect(emailMocks.sendAccountWelcomeEmail).toHaveBeenCalledWith({
@@ -100,7 +106,11 @@ describe("signup actions", () => {
   });
 
   it("creates invited teammate accounts without onboarding a new workspace", async () => {
-    authMocks.signUpInvitedUser.mockResolvedValueOnce({ id: "user_member", email: "teammate@chatly.example" });
+    authMocks.signUpInvitedUser.mockResolvedValueOnce({
+      id: "user_member",
+      email: "teammate@chatly.example",
+      workspaceOwnerId: "owner_123"
+    });
 
     const result = await signupAction(
       INITIAL_STATE,
@@ -123,6 +133,7 @@ describe("signup actions", () => {
       email: "teammate@chatly.example",
       password: "password123"
     });
+    expect(authMocks.setUserSession).toHaveBeenCalledWith("user_member", "owner_123");
     expect(verificationMocks.requestEmailVerificationForUserId).not.toHaveBeenCalled();
     expect(emailMocks.sendAccountWelcomeEmail).not.toHaveBeenCalled();
   });

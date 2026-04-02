@@ -19,7 +19,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       initialMode={initialMode}
       resetToken={params.token ?? ""}
       inviteId={params.invite ?? ""}
-      inviteEmail={params.email ?? ""}
+      inviteEmail={params.invite ? params.email ?? "" : ""}
       redirectTo={params.redirectTo ?? ""}
     />
   );

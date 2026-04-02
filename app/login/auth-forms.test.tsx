@@ -79,8 +79,6 @@ describe("auth forms", () => {
     expect(html).toContain("Sign in");
     expect(html).toContain("Create one");
     expect(html).toContain("Forgot password?");
-    expect(html).toContain("Remember me");
-    expect(html).toContain("Resend verification email");
     expect(html).toContain("2,400+");
     expect(html).toContain("1.2m");
   });
