@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Added sitemap/robots, homepage SEO metadata and copy, author profile pages, and keyword-targeted blog routes to improve public search discovery.
 - Owner signup now stays on the signup page with inline verification messaging, password login blocks unverified accounts, and the sign-in form drops the dead remember-me/resend-verification clutter.
 - Signup verification now lets people jump back to the signup form from the "Check your email" screen so they can correct details and resubmit without leaving the flow.
 - Deleted the unused legacy `/onboarding/team` route and its tests so onboarding no longer carries a dead team-setup endpoint.
@@ -109,6 +110,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Public Site & Auth
 
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
+- Marketing SEO now ships a generated sitemap/robots setup, homepage-specific metadata and copy, crawlable blog/free-tools links, author profile pages, and keyword-targeted blog slugs and aliases.
 - The signup verification state now includes a return path back to the signup form so people can correct a mistyped email or other account details before submitting again.
 - Auth forms now pull forgot/reset/resend server actions from the dedicated password-actions module, and shared auth redirect helpers stay typed for Next route redirects during builds.
 - The root app shell now loads the hosted Grometrics analytics runtime with the production `usechatting.com` domain and website id.

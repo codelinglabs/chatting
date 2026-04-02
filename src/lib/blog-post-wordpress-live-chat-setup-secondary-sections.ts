@@ -1,39 +1,79 @@
-import { cta, list, paragraph, section } from "@/lib/blog-block-factories";
-import type { BlogSection } from "@/lib/blog-types";
+import { CHATTING_STARTER_PLAN_LINE } from "@/lib/pricing";
+import { cta, faq, list, paragraph, section } from "@/lib/blog-block-factories";
 
 export const wordpressLiveChatSetupSecondarySections = [
-  section("option-b-plugin", "Option B: Using a plugin", [
-    paragraph("Step 1: Install WPCode"),
-    list(["Go to Plugins → Add New", "Search for \"WPCode\"", "Install and activate"], true),
-    paragraph("Step 2: Add your snippet"),
-    list(["Go to Code Snippets → Add Snippet", "Choose \"Add Your Custom Code\"", "Give it a name: \"Chatting Live Chat\"", "Set code type to \"HTML Snippet\"", "Paste your Chatting code", "Set location to \"Site Wide Header\"", "Toggle to \"Active\"", "Save"], true),
-    paragraph("Same result, slightly more steps.")
+  section("use-cases", "WordPress live chat for different sites", [
+    paragraph("The setup is the same, but the way you use chat should match the kind of site you run."),
+    list([
+      "Service business: show chat on services, pricing, and contact pages to capture leads",
+      "WooCommerce store: focus on product, cart, and shipping pages to remove buying friction",
+      "Membership or course site: answer pre-signup questions before someone commits",
+      "Agency or freelancer site: qualify leads quickly, then move them to email or a booking link"
+    ])
   ]),
-  section("customizing-for-wordpress", "Customizing for WordPress", [
-    paragraph("Show on specific pages only: In Chatting settings, go to Widget → Display Rules and set URL patterns like `/contact/*`, `/pricing`, `/shop/*`."),
-    paragraph("Different messages for different pages:"),
-    list(["Blog posts: \"Enjoying the article? Let me know if you have questions!\"", "Pricing page: \"Need help choosing a plan? I'm happy to compare.\"", "Contact page: \"Rather chat than fill out a form? Go ahead!\""]),
-    paragraph("Working with page builders: Chatting works with Elementor, Divi, Beaver Builder, Gutenberg, and WPBakery. The widget loads site-wide regardless of which builder you use for individual pages.")
+  section("working-with-tools", "Working with popular WordPress tools", [
+    list([
+      "Page builders like Elementor, Divi, Beaver Builder, and Gutenberg: no special setup, because the widget loads site-wide from the header",
+      "Caching plugins: if the widget does not appear right away, clear cache and test again in incognito",
+      "Security plugins: if external scripts are blocked, allow the Chatting widget script domain",
+      "WooCommerce: chat works well on product, cart, and returns-heavy pages"
+    ])
   ]),
-  section("wordpress-com-users", "WordPress.com users", [
-    list(["Free/Personal/Premium plans: Cannot add custom code", "Business plan+: Can add custom code via plugins or Customizer"]),
-    paragraph("You need at least the Business plan to add Chatting.")
+  section("wordpress-com", "WordPress.com vs. WordPress.org", [
+    paragraph("Self-hosted WordPress.org gives you full control, so either the direct snippet method or a code plugin works fine."),
+    paragraph("As of April 2026, WordPress.com limits full JavaScript installs to plugin-enabled plans. At the time of writing, that includes Personal, Premium, Business, and Commerce. Free sites still have code restrictions."),
+    paragraph("If you are on a restricted WordPress.com plan, you will need to upgrade before adding a live chat script.")
   ]),
-  section("common-questions", "Common questions", [
-    {
-      type: "faq",
-      items: [
-        { question: "Will this conflict with other plugins?", answer: "Very unlikely. Chatting loads independently and doesn't interact with WordPress plugins." },
-        { question: "Does it work with caching plugins?", answer: "Yes. WP Rocket, W3 Total Cache, LiteSpeed Cache — all fine. The widget loads separately from your cached pages." },
-        { question: "What about WooCommerce?", answer: "Works perfectly. Add chat to your store pages and help customers buy with confidence." },
-        { question: "Can I show different agents for different pages?", answer: "Not different agents, but you can route conversations. In Chatting, set up rules to tag conversations from specific pages, then filter your inbox." },
-        { question: "What if my theme doesn't have header.php?", answer: "Modern block themes might use different structures. Use the WPCode plugin method instead — it works universally." }
-      ]
-    }
+  section("managing-chat", "Managing chat on WordPress", [
+    list([
+      "Turn on browser notifications so new chats do not get missed",
+      "Set business hours and an honest offline message",
+      "Build saved replies for the questions you answer most often",
+      "Review your first 30-50 conversations and tighten weak pages based on what people ask"
+    ]),
+    paragraph("For many teams, chat is not just support. It is lead capture, sales reassurance, and a faster path to real conversations.")
   ]),
-  section("after-installation", "After installation", [
-    list(["Enable browser notifications — Settings → Notifications", "Set up offline hours — Settings → Availability", "Create saved replies — Settings → Saved Replies", "Turn on email alerts — Settings → Notifications", "Invite team members — Settings → Team"], true),
-    paragraph("Your widget is live. Your visitors are waiting."),
-    cta("Open your Chatting inbox", "", "Open your Chatting inbox", "/login")
+  section("after-installation", "After installation: quick wins", [
+    list([
+      "Week 1: respond quickly and note the top repeat questions",
+      "Week 2: add one proactive message to your most valuable page",
+      "Week 3: turn repeated answers into saved replies",
+      "Week 4: review which pages drive the most chats and improve those pages"
+    ], true),
+    cta(
+      "Ready to add chat to your WordPress site?",
+      `5 minutes, no bloated plugin, and ${CHATTING_STARTER_PLAN_LINE}.`,
+      "Get started free",
+      "/login"
+    )
+  ]),
+  section("faq", "FAQ", [
+    faq([
+      {
+        question: "Do I need a plugin, or is the code snippet enough?",
+        answer:
+          "The code snippet is enough. A plugin only helps you inject the same snippet without editing theme files."
+      },
+      {
+        question: "Will this slow down my WordPress site?",
+        answer:
+          "Modern chat widgets are designed to load asynchronously, so they should not block the initial page render. It is still smart to measure the impact on your own site."
+      },
+      {
+        question: "Does it work with my theme or page builder?",
+        answer:
+          "Usually yes. Because the widget sits on top of the site rather than inside your layout, it works across most themes and builders."
+      },
+      {
+        question: "What if my theme update removes the code?",
+        answer:
+          "That can happen if you edited a theme file directly. A child theme or a code snippets plugin is the safer long-term option."
+      },
+      {
+        question: "How do I add live chat to WordPress for free?",
+        answer:
+          `Start with Chatting's free tier. Right now that means ${CHATTING_STARTER_PLAN_LINE}.`
+      }
+    ])
   ])
 ];

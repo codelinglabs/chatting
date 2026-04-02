@@ -1,0 +1,27 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" rx="40" fill="#F8FAFC"/>
+  <rect x="72" y="56" width="1056" height="518" rx="34" fill="url(#panel)"/>
+  <rect x="140" y="128" width="296" height="330" rx="30" fill="#FFFFFF" stroke="#DBEAFE" stroke-width="2"/>
+  <rect x="480" y="104" width="580" height="392" rx="32" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
+  <rect x="174" y="168" width="160" height="24" rx="12" fill="#DBEAFE"/>
+  <rect x="174" y="212" width="214" height="16" rx="8" fill="#E2E8F0"/>
+  <rect x="174" y="242" width="188" height="16" rx="8" fill="#E2E8F0"/>
+  <rect x="174" y="298" width="228" height="58" rx="22" fill="#2563EB"/>
+  <rect x="522" y="146" width="196" height="58" rx="22" fill="#F1F5F9"/>
+  <rect x="760" y="146" width="220" height="58" rx="22" fill="#DBEAFE"/>
+  <rect x="522" y="236" width="420" height="20" rx="10" fill="#E2E8F0"/>
+  <rect x="522" y="274" width="356" height="20" rx="10" fill="#E2E8F0"/>
+  <rect x="522" y="334" width="498" height="88" rx="26" fill="#EFF6FF"/>
+  <circle cx="226" cy="418" r="44" fill="#DBEAFE"/>
+  <circle cx="980" cy="392" r="16" fill="#10B981"/>
+  <text x="140" y="530" fill="#0F172A" font-family="Fraunces, serif" font-size="48" font-weight="600">
+    Live Chat Software for Small Teams
+  </text>
+  <defs>
+    <linearGradient id="panel" x1="100" y1="80" x2="1100" y2="540" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.48" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#EFF6FF"/>
+    </linearGradient>
+  </defs>
+</svg>

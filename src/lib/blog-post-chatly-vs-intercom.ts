@@ -10,8 +10,8 @@ export const chatlyVsIntercomPost: BlogPost = {
   subtitle:
     "Intercom is powerful. It's also $500+/month and built for enterprises. Here's how Chatting compares for teams who don't need all that.",
   seoTitle: "Chatting vs Intercom: Which Live Chat Is Right for Small Teams?",
-  publishedAt: "2026-03-29T09:00:00.000Z",
-  updatedAt: "2026-03-29T09:00:00.000Z",
+  publishedAt: "2026-03-27T09:00:00.000Z",
+  updatedAt: "2026-03-27T09:00:00.000Z",
   readingTime: 8,
   authorSlug: "tina",
   categorySlug: "comparisons",

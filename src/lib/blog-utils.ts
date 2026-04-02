@@ -27,7 +27,8 @@ export function buildBlogPostingSchema(post: BlogPostWithDetails) {
     image: buildAbsoluteUrl(post.image.src),
     author: {
       "@type": "Person",
-      name: post.author.name
+      name: post.author.name,
+      url: buildAbsoluteUrl(`/blog/authors/${post.author.slug}`)
     },
     publisher: {
       "@type": "Organization",

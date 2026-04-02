@@ -152,17 +152,18 @@ function BlogBlock({ block }: { block: BlogSectionBlock }) {
 }
 
 export function BlogArticleBody({ post }: { post: BlogPostWithDetails }) {
+  const hasPostCta = post.sections.some((section) => section.blocks.some((block) => block.type === "cta"));
+
   return (
     <div className="blog-prose">
       {post.sections.map((section, index) => {
-        const hasSectionCta = section.blocks.some((block) => block.type === "cta");
         return (
           <section key={section.id} id={section.id} className="scroll-mt-28">
             <h2>{section.title}</h2>
             {section.blocks.map((block, blockIndex) => (
               <BlogBlock key={`${section.id}-${block.type}-${blockIndex}`} block={block} />
             ))}
-            {index === 1 && post.showInlineCta !== false && !hasSectionCta ? <BlogInlineCta /> : null}
+            {index === 1 && post.showInlineCta !== false && !hasPostCta ? <BlogInlineCta /> : null}
           </section>
         );
       })}

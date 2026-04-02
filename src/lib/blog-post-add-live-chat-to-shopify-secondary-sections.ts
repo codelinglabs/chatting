@@ -1,41 +1,95 @@
-import { cta, list, paragraph, quote, section } from "@/lib/blog-block-factories";
+import { CHATTING_GROWTH_MONTHLY_PRICE, CHATTING_STARTER_PLAN_LINE } from "@/lib/pricing";
+import { comparison, cta, faq, list, paragraph, quote, section } from "@/lib/blog-block-factories";
 import type { BlogSection } from "@/lib/blog-types";
 
 export const addLiveChatToShopifySecondarySections = [
-  section("alternative-code-injection", "Alternative: Use Shopify's code injection (even easier)", [
-    list(["Go to Online Store → Themes → Customize", "Click Theme Settings (gear icon)", "Scroll down to Custom code or Additional scripts", "Paste your Chatting code", "Save"], true),
-    paragraph("Same result, no file editing.")
+  section("common-mistakes", "Common mistakes to avoid", [
+    paragraph("A few bad habits make live chat feel annoying instead of helpful."),
+    paragraph("Being too aggressive:"),
+    quote("\"Hey! Ready to buy? Here's 10% off! Don't leave!!!\""),
+    paragraph("Better:"),
+    quote("\"Hey there. Let me know if you have any questions about the product.\""),
+    list([
+      "Don't fire multiple proactive messages on the same visit",
+      "Don't offer live chat if nobody is realistically watching it",
+      "Don't fake live support with a clumsy bot menu",
+      "Don't leave business hours vague if your team isn't online all day"
+    ])
   ]),
-  section("customizing-for-shopify", "Customizing for Shopify stores", [
-    paragraph("Show on specific pages only: In Chatting, go to Settings → Widget → Display Rules. Set \"Show only on\" and enter your page paths, for example `/products/*`, `/cart`, `/collections/*`."),
-    paragraph("Hide on checkout: Shopify's checkout is hosted separately, so your widget won't appear there by default — no action needed."),
-    paragraph("Trigger proactive messages:"),
-    list(["Cart page: \"Questions before you check out? I'm here!\"", "Pricing page: \"Need help choosing? Happy to compare options.\"", "Product page (30+ seconds): \"Want more info about this product?\""])
+  section("measuring-success", "Measuring success", [
+    paragraph("After your first month, watch a handful of practical numbers:"),
+    list([
+      "Chat engagement rate: what percentage of visitors start a chat",
+      "Response time: how quickly your team replies",
+      "Chat-to-conversion rate: how often chats turn into orders",
+      "Questions by page: which pages generate the most confusion or hesitation"
+    ]),
+    paragraph("If engagement is low, work on the welcome message and proactive triggers. If engagement is high but conversions are weak, improve the scripts and product-page clarity.")
   ]),
-  section("offline-behavior", "What happens when you're offline?", [
-    paragraph("Set your business hours in Chatting settings."),
-    list(["Online: Widget shows your welcome message, visitors can chat live", "Offline: Widget shows an offline message and email form"]),
-    quote("\"We're away right now, but leave your email and we'll get back to you within a few hours!\""),
-    paragraph("All offline messages go to your inbox for follow-up.")
+  section("apps-vs-snippet", "Shopify live chat apps vs. code snippet", [
+    comparison(["Shopify App Store app", "Code snippet"], [
+      { label: "Install", values: ["Usually one-click", "Takes a couple of extra minutes"] },
+      { label: "Flexibility", values: ["Limited to app marketplace options", "Works with whichever chat tool fits best"] },
+      { label: "Performance overhead", values: ["Another app in the stack", "Lightweight embed"] },
+      { label: "Cost structure", values: ["Can include Shopify app markup", "Usually just the chat-tool price"] }
+    ], 1),
+    paragraph("For most stores, the snippet route is just as easy in practice and gives you more flexibility.")
   ]),
-  section("tracking-performance", "Tracking performance", [
-    list(["Conversations started: How many visitors are engaging", "Top pages: Where customers have the most questions", "Response time: How fast you're replying", "Resolution rate: How many questions you're answering"]),
-    paragraph("Use this data to write better product descriptions, fix confusing UX, and identify common questions for your FAQ.")
+  section("roi", "The ROI of Shopify live chat", [
+    paragraph("Here's a conservative example."),
+    comparison(["Without live chat", "With live chat"], [
+      { label: "Monthly visitors", values: ["5,000", "5,000"] },
+      { label: "Conversion rate", values: ["2.5%", "2.875%"] },
+      { label: "Average order value", values: ["$75", "$75"] },
+      { label: "Monthly revenue", values: ["$9,375", "$10,725"] }
+    ], 1),
+    paragraph("That extra lift is $1,350/month in additional revenue."),
+    paragraph(`If your live chat spend starts at ${CHATTING_GROWTH_MONTHLY_PRICE}, the math gets attractive very quickly.`)
+  ]),
+  section("getting-started", "Getting started", [
+    list([
+      "Sign up for a chat tool",
+      "Customize your colors and welcome message",
+      "Add the code to your Shopify theme",
+      "Test the widget in an incognito window",
+      "Create 3-5 saved replies for common questions",
+      "Add one proactive message for product pages",
+      "Set your business hours and offline message"
+    ], true),
+    cta(
+      "Ready to turn visitors into customers?",
+      `Add live chat to your Shopify store in 5 minutes. ${CHATTING_STARTER_PLAN_LINE}.`,
+      "Get started free",
+      "/login"
+    )
   ]),
   section("faq", "FAQ", [
-    {
-      type: "faq",
-      items: [
-        { question: "Will this slow down my store?", answer: "No. The Chatting widget loads asynchronously (that `async` in the code) so it doesn't block your page. Impact on load time is <0.1 seconds." },
-        { question: "Does it work on mobile?", answer: "Yes. The widget is fully responsive and works on all devices." },
-        { question: "Can I customize the widget colors more?", answer: "Yes. Chatting lets you customize colors, welcome message, team name, avatar style, and position. Growth removes the Chatting branding entirely." },
-        { question: "What if I use a page builder like PageFly?", answer: "Same process — add the code to theme.liquid. The widget will appear on all pages, including PageFly pages." },
-        { question: "Can I have different messages on different pages?", answer: "Yes, with display rules and triggered messages. Set up page-specific welcome messages in Settings → Automation." }
-      ]
-    }
-  ]),
-  section("next-steps", "Next steps", [
-    list(["Set up saved replies — Answer common questions instantly", "Enable notifications — Never miss a message", "Invite your team — Share the workload"], true),
-    cta("Get started with Chatting", "Starter includes 50 conversations/month. No credit card required.", "Get started with Chatting", "/login")
+    faq([
+      {
+        question: "Will live chat slow down my Shopify store?",
+        answer:
+          "No. The Chatting widget is loaded through a lightweight external script and does not block the rest of the page from rendering."
+      },
+      {
+        question: "What if I can't be online all day?",
+        answer:
+          "Set business hours and use an offline message that collects email addresses. Many Shopify stores only staff chat during their peak hours and still get strong results."
+      },
+      {
+        question: "Do I need a dedicated support person?",
+        answer:
+          "Usually no. Many small stores can handle their daily chat volume alongside normal store operations as long as saved replies and alerts are set up properly."
+      },
+      {
+        question: "Which Shopify plan do I need?",
+        answer:
+          "The snippet-based install works across Shopify plans because you're adding the widget to the theme, not relying on a special Shopify tier."
+      },
+      {
+        question: "Can I use chat for sales, not just support?",
+        answer:
+          "Absolutely. Some of the best Shopify chat workflows are sales-first: pre-purchase questions, product recommendations, and shipping reassurance."
+      }
+    ])
   ])
 ];

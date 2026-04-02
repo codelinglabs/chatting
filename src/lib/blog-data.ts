@@ -1,7 +1,9 @@
 import { addLiveChatToShopifyPost } from "@/lib/blog-post-add-live-chat-to-shopify";
+import { bestLiveChatForStartupsPost } from "@/lib/blog-post-best-live-chat-for-startups";
 import { bestIntercomAlternativesSmallTeamsPost } from "@/lib/blog-post-best-intercom-alternatives-small-teams";
 import { chatlyVsIntercomPost } from "@/lib/blog-post-chatly-vs-intercom";
 import { chatlyVsZendeskPost } from "@/lib/blog-post-chatly-vs-zendesk";
+import { liveChatSoftwareSmallTeamsPost } from "@/lib/blog-post-live-chat-software-small-teams";
 import { liveChatVsContactFormsPost } from "@/lib/blog-post-live-chat-vs-contact-forms";
 import { reduceResponseTimeUnderTwoMinutesPost } from "@/lib/blog-post-reduce-response-time-under-2-minutes";
 import { wordpressLiveChatSetupPost } from "@/lib/blog-post-wordpress-live-chat-setup";
@@ -28,8 +30,8 @@ const authors: BlogAuthor[] = [
       "Tina works with founder-led teams to tighten support loops, reduce response lag, and turn more conversations into customers without overbuilding the process.",
     initials: "T",
     links: [
-      { label: "Twitter", href: "https://twitter.com/chattinghq" },
-      { label: "LinkedIn", href: "https://www.linkedin.com/company/chatting" }
+      { label: "Twitter", href: "https://x.com/tina_jjjj" },
+      { label: "LinkedIn", href: "https://www.linkedin.com/in/jj-tina/" }
     ]
   }
 ];
@@ -80,6 +82,8 @@ export const blogCategories: BlogCategory[] = [
 ];
 
 const posts: BlogPost[] = [
+  bestLiveChatForStartupsPost,
+  liveChatSoftwareSmallTeamsPost,
   chatlyVsIntercomPost,
   liveChatVsContactFormsPost,
   addLiveChatToShopifyPost,
@@ -88,6 +92,9 @@ const posts: BlogPost[] = [
   wordpressLiveChatSetupPost,
   bestIntercomAlternativesSmallTeamsPost
 ];
+
+const publishedAuthorSlugs = new Set(posts.map((post) => post.authorSlug));
+const publishedAuthors = authors.filter((author) => publishedAuthorSlugs.has(author.slug));
 
 function withDetails(post: BlogPost): BlogPostWithDetails {
   const author = authors.find((entry) => entry.slug === post.authorSlug);
@@ -107,6 +114,14 @@ export function getAllBlogPosts() {
     .map(withDetails);
 }
 
+export function getAllBlogAuthors() {
+  return publishedAuthors;
+}
+
+export function getBlogAuthorBySlug(slug: string) {
+  return publishedAuthors.find((author) => author.slug === slug) || null;
+}
+
 export function getFeaturedBlogPost() {
   return getAllBlogPosts().find((post) => post.featured) || getAllBlogPosts()[0];
 }
@@ -114,6 +129,10 @@ export function getFeaturedBlogPost() {
 export function getBlogPostBySlug(slug: string) {
   const post = posts.find((entry) => entry.slug === slug || entry.aliases?.includes(slug));
   return post ? withDetails(post) : null;
+}
+
+export function getBlogPostsByAuthor(authorSlug: string) {
+  return getAllBlogPosts().filter((post) => post.author.slug === authorSlug);
 }
 
 export function getBlogPostsByCategory(categorySlug: BlogCategorySlug | "all") {

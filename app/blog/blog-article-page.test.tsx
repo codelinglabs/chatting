@@ -33,11 +33,13 @@ describe("blog article page", () => {
     );
 
     expect(html).toContain("Contact forms are where leads go to die");
-    expect(html).toContain("Ready to talk to your visitors?");
+    expect(html).toContain("Add live chat to your site");
+    expect(html).not.toContain("Ready to talk to your visitors?");
     expect(html).toContain("The uncomfortable truth about contact forms");
     expect(html).toContain("You might also like");
-    expect(html).toContain("Your next customer is on your site right now.");
+    expect(html).toContain("Create your widget");
     expect(html).toContain("application/ld+json");
+    expect(html).toContain("/blog/authors/tina");
   });
 
   it("renders the Intercom comparison using the SEO copy", () => {
@@ -57,7 +59,7 @@ describe("blog article page", () => {
   });
 
   it("does not stack the shared inline CTA under an article CTA block", () => {
-    const post = getBlogPostBySlug("best-intercom-alternatives-small-teams");
+    const post = getBlogPostBySlug("intercom-alternatives-small-business");
 
     expect(post).not.toBeNull();
 

@@ -1,5 +1,5 @@
+import Link from "next/link";
 import { ButtonLink } from "./components/ui/Button";
-import { CheckIcon } from "./dashboard/dashboard-ui";
 import { pillars } from "./landing-page-data";
 import { PillarIcon, SectionLabel } from "./landing-page-primitives";
 
@@ -12,40 +12,46 @@ export function LandingTopSections() {
           <section className="grid gap-16 px-2 pb-20 pt-16 lg:grid-cols-[minmax(0,1fr)_396px] lg:items-center lg:pt-24">
             <div className="max-w-2xl">
               <h1 className="display-font text-5xl leading-[0.96] text-slate-900 sm:text-6xl lg:text-7xl">
-                Talk to your visitors.
+                Live chat
                 <br />
-                <span className="text-blue-600">Not at them.</span>
+                <span className="text-blue-600">for small teams. No tickets. No enterprise bloat.</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
-                Live chat that feels like a conversation between friends, not a support ticket.
-                Built for small teams who care about every customer.
+                White-label your widget, watch live visitors, reply from a shared inbox, and keep the same
+                conversation going by email when nobody is online.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <ButtonLink
-                  href="/login"
+                  href="/signup"
                   trailingIcon={<span aria-hidden="true">→</span>}
                 >
-                  Start chatting free
+                  Start free
                 </ButtonLink>
                 <ButtonLink
-                  href="#features"
+                  href="#pricing"
                   variant="secondary"
                 >
-                  See it in action
+                  See pricing
                 </ButtonLink>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600">
+                <a href="#how-it-works" className="transition hover:text-slate-900">
+                  See how install works
+                </a>
               </div>
 
               <div className="mt-10">
                 <p className="max-w-md text-sm leading-6 text-slate-500">
-                  Trusted by 2,400+ teams who reply in minutes, not hours.
+                  Operating hours, proactive chat, install verification, analytics exports, and weekly reports.
                 </p>
               </div>
             </div>
 
             <div className="relative mx-auto w-full max-w-[396px]">
               <div className="float-badge pointer-events-none absolute left-6 -top-12 z-10 hidden rounded-full border border-amber-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-[0_18px_50px_rgba(15,23,42,0.08)] xl:block">
-                ⚡ Reply in 1.2 min
+                White-label widget
               </div>
               <div className="relative">
                 <div className="absolute inset-x-10 top-0 h-24 rounded-b-full bg-blue-100/70 blur-3xl" />
@@ -56,7 +62,7 @@ export function LandingTopSections() {
                         <span aria-hidden="true">👋</span>
                         <span className="text-sm font-semibold">Chatting Team</span>
                       </div>
-                      <p className="mt-1 text-xs text-white/80">Online • Replies in minutes</p>
+                      <p className="mt-1 text-xs text-white/80">Online • Shared inbox live</p>
                     </div>
                     <div className="flex items-center gap-4 text-lg text-white/90">
                       <span aria-hidden="true">−</span>
@@ -75,7 +81,7 @@ export function LandingTopSections() {
                         style={{ animationDelay: "120ms" }}
                       >
                         Hey! Happy to help. What would you like to know? 😊
-                        <div className="mt-2 text-[11px] text-blue-100">2:35 PM ✓✓</div>
+                        <div className="mt-2 text-[11px] text-blue-100">2:35 PM</div>
                       </div>
                       <div
                         className="message-enter max-w-[68%] rounded-[18px] rounded-bl-md bg-slate-100 px-4 py-3 text-sm text-slate-700"
@@ -112,24 +118,31 @@ export function LandingTopSections() {
           <div className="grid gap-12 px-2 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="max-w-2xl">
               <h2 className="display-font text-4xl leading-tight text-slate-900 sm:text-5xl">
-                Your visitors have questions. Right now.
+                Talk to visitors while they&apos;re still deciding
               </h2>
               <p className="mt-5 text-xl font-medium leading-8 text-slate-800 sm:text-2xl">
-                They're on your pricing page. They're hovering over the buy button.
+                They&apos;re on your pricing page. They&apos;re hovering over the buy button.
               </p>
               <p className="mt-6 text-lg leading-8 text-slate-600">
-                They just need one quick answer, but your contact form sends them into a black hole.
+                They just need one quick answer, but without live chat they disappear into a contact form or leave for
+                someone easier to reach.
               </p>
               <p className="mt-4 text-lg leading-8 text-slate-600">
-                By the time you email back, they've already found a competitor who was actually there.
+                No tickets, no queue theater, no support-suite detour. Just a faster way to answer while intent is still high.
               </p>
             </div>
             <div className="flex flex-col justify-center lg:pl-12">
-              <div className="h-1.5 w-32 rounded-full bg-blue-600" />
-              <div className="mt-8 text-7xl font-bold tracking-tight text-slate-900">67%</div>
-              <p className="mt-4 max-w-xs text-xl font-semibold leading-8 text-slate-900">
-                of visitors leave without buying when they can't get instant answers
-              </p>
+              <div className="rounded-[28px] border border-slate-200 bg-[#FFFBF5] p-8 shadow-[0_18px_44px_rgba(15,23,42,0.05)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-600">What small teams need</p>
+                <h3 className="mt-4 text-3xl font-semibold leading-tight text-slate-900">
+                  Website chat that helps you answer now, then follow up later without switching tools.
+                </h3>
+                <ul className="mt-6 space-y-3 text-sm leading-7 text-slate-600">
+                  <li>White-label widget with colors, welcome copy, operating hours, and proactive prompts</li>
+                  <li>Live visitors, real-time inbox updates, and shared context while someone is still browsing</li>
+                  <li>Offline email capture plus threaded follow-up replies when the team is away</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -138,12 +151,13 @@ export function LandingTopSections() {
       <section id="features" className="bg-slate-50">
         <div className="mx-auto w-full max-w-[1240px] px-4 py-24 sm:px-6 lg:px-8">
           <div className="max-w-3xl px-2">
-            <SectionLabel>Why Chatting</SectionLabel>
+            <SectionLabel>Shipped Strengths</SectionLabel>
             <h2 className="display-font mt-5 text-4xl text-slate-900 sm:text-5xl">
-              Be there the moment it matters
+              The product story is simple: widget, visitors, inbox
             </h2>
             <p className="mt-5 text-lg leading-8 text-slate-600">
-              Real conversations that turn browsers into buyers, without the enterprise complexity.
+              Chatting is built for small teams that want website live chat, not a help desk, not a CRM, and not a
+              suite full of ticketing ceremony.
             </p>
           </div>
 
@@ -155,10 +169,6 @@ export function LandingTopSections() {
                 </div>
                 <h3 className="mt-5 text-2xl font-semibold text-slate-900">{pillar.title}</h3>
                 <p className="mt-4 text-sm leading-7 text-slate-600">{pillar.body}</p>
-                <div className="mt-6 border-t border-slate-200 pt-5">
-                  <div className="text-xl font-semibold text-slate-900">{pillar.stat}</div>
-                  <p className="mt-1 text-sm text-slate-500">{pillar.meta}</p>
-                </div>
               </article>
             ))}
           </div>

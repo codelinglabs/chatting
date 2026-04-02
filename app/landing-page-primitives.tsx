@@ -6,16 +6,27 @@ const LANDING_NAV_ITEMS = [
   { href: "#features", label: "Features" },
   { href: "#pricing", label: "Pricing" },
   { href: "#how-it-works", label: "How it works" },
-  { href: "#docs", label: "Docs" }
+  { href: "/free-tools", label: "Free Tools" },
+  { href: "/blog", label: "Blog" }
 ] as const;
 
 const TEXT_LINK_CLASS = "text-sm font-medium text-slate-600 transition hover:text-slate-900";
 
 export function NavLink({ href, children }: { href: string; children: string }) {
+  const className = `inline-flex h-9 items-center rounded-full px-3 ${TEXT_LINK_CLASS} hover:bg-white lg:h-auto lg:px-0 lg:hover:bg-transparent`;
+
+  if (href.startsWith("/")) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+
   return (
     <a
       href={href}
-      className={`inline-flex h-9 items-center rounded-full px-3 ${TEXT_LINK_CLASS} hover:bg-white lg:h-auto lg:px-0 lg:hover:bg-transparent`}
+      className={className}
     >
       {children}
     </a>
@@ -64,9 +75,9 @@ export function LandingHeader() {
             <Link href="/login" className={TEXT_LINK_CLASS}>
               Sign in
             </Link>
-            <ButtonLink href="/login" size="md">
+            <ButtonLink href="/signup" size="md">
               <span className="sm:hidden">Start free</span>
-              <span className="hidden sm:inline">Start free trial</span>
+              <span className="hidden sm:inline">Start free</span>
             </ButtonLink>
           </div>
         </div>

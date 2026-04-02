@@ -1,15 +1,20 @@
+import Link from "next/link";
 import type { BlogAuthor, BlogPostWithDetails } from "@/lib/blog-types";
 import { BlogAuthorAvatar, BlogCategoryBadge } from "./blog-primitives";
 import { BlogPostCard } from "./blog-home-sections";
 
 export function BlogAuthorCard({ author }: { author: BlogAuthor }) {
+  const authorHref = `/blog/authors/${author.slug}`;
+
   return (
     <section className="rounded-[24px] bg-slate-50 px-6 py-6 sm:flex sm:items-start sm:gap-5">
       <div className="shrink-0">
         <BlogAuthorAvatar author={author} size="lg" />
       </div>
       <div className="mt-4 sm:mt-0">
-        <h3 className="text-xl font-semibold text-slate-900">{author.name}</h3>
+        <Link href={authorHref} className="inline-block">
+          <h3 className="text-xl font-semibold text-slate-900 transition hover:text-blue-700">{author.name}</h3>
+        </Link>
         <p className="mt-1 text-sm text-slate-500">{author.role}</p>
         <p className="mt-3 text-[15px] leading-7 text-slate-600">{author.bio}</p>
         <div className="mt-4 flex gap-4 text-sm font-medium text-blue-600">
@@ -25,6 +30,8 @@ export function BlogAuthorCard({ author }: { author: BlogAuthor }) {
 }
 
 export function BlogArticleHeader({ post }: { post: BlogPostWithDetails }) {
+  const authorHref = `/blog/authors/${post.author.slug}`;
+
   return (
     <section className="mx-auto max-w-4xl px-4 pb-10 pt-10 text-center sm:px-6 lg:px-8 lg:pb-12 lg:pt-16">
       <BlogCategoryBadge category={post.category} />
@@ -32,7 +39,9 @@ export function BlogArticleHeader({ post }: { post: BlogPostWithDetails }) {
       <p className="mx-auto mt-5 max-w-3xl text-xl leading-8 text-slate-600">{post.subtitle}</p>
       <div className="mt-8 flex items-center justify-center gap-3 text-sm text-slate-500">
         <BlogAuthorAvatar author={post.author} />
-        <span className="font-medium text-slate-900">{post.author.name}</span>
+        <Link href={authorHref} className="font-medium text-slate-900 transition hover:text-blue-700">
+          {post.author.name}
+        </Link>
       </div>
     </section>
   );

@@ -26,13 +26,13 @@ describe("landing page", () => {
   it("renders the main marketing sections", () => {
     const html = renderToStaticMarkup(<HomePage />);
 
-    expect(html).toContain("Talk to your visitors.");
-    expect(html).toContain("Not at them.");
-    expect(html).toContain("Trusted by 2,400+ teams");
-    expect(html).toContain("Your visitors have questions. Right now.");
-    expect(html).toContain("Teams who switched never looked back");
-    expect(html).toContain("Simple, transparent pricing");
-    expect(html).toContain("Your next customer is on your site right now.");
+    expect(html).toContain("Live chat");
+    expect(html).toContain("for small teams. No tickets. No enterprise bloat.");
+    expect(html).toContain("Talk to visitors while they&#x27;re still deciding");
+    expect(html).toContain("Operating hours, proactive chat, install verification, analytics exports, and weekly reports.");
+    expect(html).toContain("Everything small teams actually need");
+    expect(html).toContain("Capture the email, then keep the thread going");
+    expect(html).toContain("Install, verify, and go live in minutes");
   });
 
   it("renders the sticky header with a mobile nav row", () => {
@@ -44,7 +44,8 @@ describe("landing page", () => {
     expect(html).toContain("Features");
     expect(html).toContain("Pricing");
     expect(html).toContain("How it works");
-    expect(html).toContain("Docs");
+    expect(html).toContain("Free Tools");
+    expect(html).toContain("Blog");
     expect(html).toContain("Start free");
   });
 
