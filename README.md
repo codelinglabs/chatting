@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Signup verification now lets people jump back to the signup form from the "Check your email" screen so they can correct details and resubmit without leaving the flow.
 - Deleted the unused legacy `/onboarding/team` route and its tests so onboarding no longer carries a dead team-setup endpoint.
 - Removed the forced `site` suffix from default owner workspace names so new email-domain-based sites no longer ship customer-facing labels like `Heypond site`.
 - Added root TypeScript support for Vitest globals so colocated test files keep passing Next build type-checks.
@@ -107,6 +108,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Public Site & Auth
 
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
+- The signup verification state now includes a return path back to the signup form so people can correct a mistyped email or other account details before submitting again.
 - Auth forms now pull forgot/reset/resend server actions from the dedicated password-actions module, and shared auth redirect helpers stay typed for Next route redirects during builds.
 - The root app shell now loads the hosted Grometrics analytics runtime with the production `usechatting.com` domain and website id.
 - The root app shell now skips Grometrics on localhost-style hosts during local development while still loading it on deployed hosts.

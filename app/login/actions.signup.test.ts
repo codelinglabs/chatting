@@ -59,9 +59,8 @@ describe("signup actions", () => {
     expect(result.error).toBe("We couldn't create your account right now. Please try again in a moment.");
   });
 
-  it("creates a session on successful signup", async () => {
+  it("keeps owner signup on the page instead of starting an app session", async () => {
     authMocks.signUpUser.mockResolvedValueOnce({ id: "user_signup", email: "new@chatly.example" });
-    dataMocks.getPostAuthPath.mockResolvedValueOnce("/onboarding?step=customize");
 
     const result = await signupAction(
       INITIAL_STATE,
@@ -76,7 +75,7 @@ describe("signup actions", () => {
     expect(result).toEqual({
       ok: true,
       error: null,
-      nextPath: "/onboarding?step=customize",
+      nextPath: null,
       fields: {
         email: "new@chatly.example",
         password: "password123",
@@ -90,8 +89,8 @@ describe("signup actions", () => {
       websiteUrl: "https://chatly.example",
       referralCode: "AFF-ABC123"
     });
-    expect(authMocks.setUserSession).toHaveBeenCalledWith("user_signup");
-    expect(dataMocks.getPostAuthPath).toHaveBeenCalledWith("user_signup");
+    expect(authMocks.setUserSession).not.toHaveBeenCalled();
+    expect(dataMocks.getPostAuthPath).not.toHaveBeenCalled();
     expect(verificationMocks.requestEmailVerificationForUserId).toHaveBeenCalledWith("user_signup");
     expect(emailMocks.sendAccountWelcomeEmail).toHaveBeenCalledWith({
       to: "new@chatly.example",

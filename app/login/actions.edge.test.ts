@@ -66,7 +66,7 @@ describe("login actions edge cases", () => {
     });
   });
 
-  it("maps production signup setup errors and keeps signup successful when follow-up emails fail", async () => {
+  it("maps production signup setup errors and keeps owner signup on the page when follow-up emails fail", async () => {
     process.env.NODE_ENV = "production";
 
     authMocks.signUpUser.mockRejectedValueOnce(new Error("AUTH_SECRET missing"));
@@ -80,7 +80,6 @@ describe("login actions edge cases", () => {
     });
 
     authMocks.signUpUser.mockResolvedValueOnce({ id: "user_1", email: "alex@example.com" });
-    dataMocks.getPostAuthPath.mockResolvedValueOnce("/onboarding?step=customize");
     verificationMocks.requestEmailVerificationForUserId.mockRejectedValueOnce(new Error("mail down"));
     emailMocks.sendAccountWelcomeEmail.mockRejectedValueOnce(new Error("smtp down"));
 
@@ -91,9 +90,9 @@ describe("login actions edge cases", () => {
       )
     ).resolves.toMatchObject({
       ok: true,
-      nextPath: "/onboarding?step=customize"
+      nextPath: null
     });
-    expect(authMocks.setUserSession).toHaveBeenCalledWith("user_1");
+    expect(authMocks.setUserSession).not.toHaveBeenCalled();
     expect(verificationMocks.requestEmailVerificationForUserId).toHaveBeenCalledWith("user_1");
   });
 });

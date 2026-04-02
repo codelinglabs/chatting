@@ -52,19 +52,19 @@ describe("signup form actions", () => {
   beforeEach(() => vi.stubGlobal("FormData", MockFormData as unknown as typeof FormData));
   afterEach(() => vi.unstubAllGlobals());
 
-  it("prefetches onboarding and submits the standalone signup flow", async () => {
+  it("lets people reopen the standalone signup form from the verification notice", async () => {
     const { SignupForm, reactMocks, router, signupAction } = await loadSignupForm({ ref: "hello" });
     signupAction.mockResolvedValue({
       ok: true,
       error: null,
-      nextPath: "/dashboard",
+      nextPath: null,
       fields: { email: "hello@example.com", password: "Password123!", websiteUrl: "https://example.com", referralCode: "HELLO" }
     });
 
     reactMocks.beginRender();
     let tree = SignupForm();
     await runMockEffects(reactMocks.effects);
-    expect(router.prefetch).toHaveBeenCalledWith("/onboarding?step=customize");
+    expect(router.prefetch).not.toHaveBeenCalled();
 
     collectElements(tree, (element) => element.type === "form")[0]?.props.onSubmit({
       preventDefault: vi.fn(),
@@ -81,7 +81,22 @@ describe("signup form actions", () => {
 
     const submittedFormData = signupAction.mock.calls[0]?.[1] as MockFormData;
     expect(submittedFormData.get("referralCode")).toBe("HELLO");
-    expect(router.replace).toHaveBeenCalledWith("/dashboard");
+    expect(router.replace).not.toHaveBeenCalled();
+    reactMocks.beginRender();
+    tree = SignupForm();
+    let html = renderToStaticMarkup(tree);
+    expect(html).toContain("Check your email");
+    expect(html).toContain("hello@example.com");
+
+    collectElements(tree, (element) => typeof element.type === "function" && element.props.children === "Back to sign up")[0]?.props.onClick();
+
+    reactMocks.beginRender();
+    tree = SignupForm();
+    html = renderToStaticMarkup(tree);
+    expect(html).toContain("Create your account");
+    expect(html).toContain("Website URL");
+    expect(html).toContain("Referral code");
+    expect(html).toContain("hello@example.com");
   });
 
   it("keeps invite signup routing intact and toasts submit failures", async () => {

@@ -40,6 +40,24 @@ async function getOwnerPostAuthPath(userId: string) {
   }
 }
 
+async function sendOwnerSignupFollowUps(user: { id: string; email: string }) {
+  try {
+    await requestEmailVerificationForUserId(user.id);
+  } catch (verificationError) {
+    console.error("signup verification email failed", verificationError);
+  }
+
+  try {
+    await sendAccountWelcomeEmail({
+      to: user.email,
+      firstName: user.email.split("@")[0] || "there",
+      dashboardUrl: `${getPublicAppUrl()}/dashboard`
+    });
+  } catch (emailError) {
+    console.error("signup welcome email failed", emailError);
+  }
+}
+
 export async function loginAction(
   _previousState: AuthActionState,
   formData: FormData
@@ -107,32 +125,22 @@ export async function signupAction(
       ? await signUpInvitedUser({ inviteId, email, password })
       : await signUpUser({ email, password, websiteUrl, referralCode });
 
-    await setUserSession(user.id);
-
-    if (!inviteId) {
-      try {
-        await requestEmailVerificationForUserId(user.id);
-      } catch (verificationError) {
-        console.error("signup verification email failed", verificationError);
-      }
-
-      try {
-        await sendAccountWelcomeEmail({
-          to: user.email,
-          firstName: user.email.split("@")[0] || "there",
-          dashboardUrl: `${getPublicAppUrl()}/dashboard`
-        });
-      } catch (emailError) {
-        console.error("signup welcome email failed", emailError);
-      }
+    if (inviteId) {
+      await setUserSession(user.id);
+      return {
+        ok: true,
+        error: null,
+        nextPath: "/dashboard",
+        fields
+      };
     }
 
-    const nextPath = inviteId ? "/dashboard" : await getPostAuthPath(user.id);
+    await sendOwnerSignupFollowUps(user);
 
     return {
       ok: true,
       error: null,
-      nextPath,
+      nextPath: null,
       fields
     };
   } catch (error) {
