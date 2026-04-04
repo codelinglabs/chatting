@@ -1,0 +1,28 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" rx="40" fill="#F8FAFC"/>
+  <rect x="76" y="62" width="1048" height="506" rx="34" fill="url(#bg)"/>
+  <rect x="126" y="126" width="370" height="308" rx="28" fill="#FFFFFF"/>
+  <rect x="532" y="126" width="542" height="308" rx="28" fill="#EFF6FF"/>
+  <rect x="166" y="172" width="126" height="24" rx="12" fill="#DBEAFE"/>
+  <rect x="166" y="222" width="290" height="18" rx="9" fill="#CBD5E1"/>
+  <rect x="166" y="262" width="248" height="18" rx="9" fill="#CBD5E1"/>
+  <rect x="166" y="322" width="176" height="52" rx="18" fill="#2563EB"/>
+  <circle cx="610" cy="208" r="24" fill="#BFDBFE"/>
+  <rect x="648" y="188" width="282" height="18" rx="9" fill="#0F172A"/>
+  <rect x="648" y="224" width="202" height="16" rx="8" fill="#94A3B8"/>
+  <rect x="590" y="286" width="322" height="84" rx="24" fill="#FFFFFF"/>
+  <rect x="942" y="256" width="92" height="92" rx="24" fill="#2563EB"/>
+  <path d="M617 322H826" stroke="#CBD5E1" stroke-width="14" stroke-linecap="round"/>
+  <path d="M617 352H760" stroke="#CBD5E1" stroke-width="14" stroke-linecap="round"/>
+  <path d="M972 303H1004" stroke="white" stroke-width="14" stroke-linecap="round"/>
+  <path d="M988 287V319" stroke="white" stroke-width="14" stroke-linecap="round"/>
+  <text x="126" y="508" fill="#0F172A" font-family="Fraunces, serif" font-size="42" font-weight="600">E-commerce Live Chat</text>
+  <text x="126" y="554" fill="#334155" font-family="DM Sans, Arial, sans-serif" font-size="28" font-weight="500">Support that scales without a 24/7 team</text>
+  <defs>
+    <linearGradient id="bg" x1="108" y1="82" x2="1088" y2="544" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFF6FF"/>
+      <stop offset="0.55" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFF7ED"/>
+    </linearGradient>
+  </defs>
+</svg>

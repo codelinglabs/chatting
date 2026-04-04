@@ -36,6 +36,7 @@ describe("blog article page", () => {
     expect(html).toContain("Add live chat to your site");
     expect(html).not.toContain("Ready to talk to your visitors?");
     expect(html).toContain("The uncomfortable truth about contact forms");
+    expect(html).toContain("Related guides inside this topic");
     expect(html).toContain("You might also like");
     expect(html).toContain("Create your widget");
     expect(html).toContain("application/ld+json");
@@ -52,6 +53,7 @@ describe("blog article page", () => {
     );
 
     expect(html).toContain("Chatting vs Intercom: The honest comparison");
+    expect(html).toContain("Related guides inside this topic");
     expect(html).toContain("The short version");
     expect(html).toContain("Pricing: The elephant in the room");
     expect(html).toContain("Is Chatting really comparable to Intercom?");
@@ -68,6 +70,7 @@ describe("blog article page", () => {
     );
 
     expect(html).toContain("1. Chatting — Best for simplicity");
+    expect(html).toContain("Related guides inside this topic");
     expect(html).toContain("Try Chatting free");
     expect(html).not.toContain("Ready to talk to your visitors?");
   });

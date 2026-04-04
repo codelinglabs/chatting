@@ -14,6 +14,6 @@ export const reduceResponseTimeUnderTwoMinutesPost: BlogPost = {
   authorSlug: "tina",
   categorySlug: "live-chat-tips",
   image: { src: "/blog/reduce-response-time-under-2-minutes.svg", alt: "Speed-focused dashboard artwork with response timers and chat snippets." },
-  relatedSlugs: ["live-chat-vs-contact-forms", "add-live-chat-to-shopify", "chatting-vs-zendesk"],
+  relatedSlugs: ["ecommerce-live-chat-support", "live-chat-vs-contact-forms", "shopify-live-chat"],
   sections: [...reduceResponseTimePrimarySections, ...reduceResponseTimeSecondarySections]
 };

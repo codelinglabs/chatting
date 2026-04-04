@@ -1,5 +1,6 @@
 import type { BlogCalloutTone, BlogPostWithDetails, BlogSectionBlock } from "@/lib/blog-types";
 import { BlogInlineCta } from "./blog-email-capture";
+import { BlogInlineRelatedLinks } from "./blog-inline-related-links";
 import { BlogComparisonTable } from "./blog-comparison-table";
 
 const calloutStyles: Record<BlogCalloutTone, string> = {
@@ -151,8 +152,15 @@ function BlogBlock({ block }: { block: BlogSectionBlock }) {
   return <BlogComparisonTable block={block} />;
 }
 
-export function BlogArticleBody({ post }: { post: BlogPostWithDetails }) {
+export function BlogArticleBody({
+  post,
+  relatedPosts
+}: {
+  post: BlogPostWithDetails;
+  relatedPosts: BlogPostWithDetails[];
+}) {
   const hasPostCta = post.sections.some((section) => section.blocks.some((block) => block.type === "cta"));
+  const inlineRelatedIndex = Math.max(1, Math.min(2, post.sections.length - 2));
 
   return (
     <div className="blog-prose">
@@ -164,6 +172,7 @@ export function BlogArticleBody({ post }: { post: BlogPostWithDetails }) {
               <BlogBlock key={`${section.id}-${block.type}-${blockIndex}`} block={block} />
             ))}
             {index === 1 && post.showInlineCta !== false && !hasPostCta ? <BlogInlineCta /> : null}
+            {index === inlineRelatedIndex ? <BlogInlineRelatedLinks posts={relatedPosts} /> : null}
           </section>
         );
       })}

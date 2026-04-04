@@ -20,6 +20,6 @@ export const addLiveChatToShopifyPost: BlogPost = {
     alt: "Shopify storefront artwork with a live chat widget and support inbox."
   },
   aliases: ["add-live-chat-to-shopify"],
-  relatedSlugs: ["wordpress-live-chat-setup", "live-chat-vs-contact-forms", "live-chat-software-small-teams"],
+  relatedSlugs: ["ecommerce-live-chat-support", "live-chat-vs-contact-forms", "live-chat-software-small-teams"],
   sections: [...addLiveChatToShopifyPrimarySections, ...addLiveChatToShopifySecondarySections]
 };

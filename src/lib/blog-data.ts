@@ -3,6 +3,7 @@ import { bestLiveChatForStartupsPost } from "@/lib/blog-post-best-live-chat-for-
 import { bestIntercomAlternativesSmallTeamsPost } from "@/lib/blog-post-best-intercom-alternatives-small-teams";
 import { chatlyVsIntercomPost } from "@/lib/blog-post-chatly-vs-intercom";
 import { chatlyVsZendeskPost } from "@/lib/blog-post-chatly-vs-zendesk";
+import { ecommerceLiveChatSupportPost } from "@/lib/blog-post-ecommerce-live-chat-support";
 import { liveChatSoftwareSmallTeamsPost } from "@/lib/blog-post-live-chat-software-small-teams";
 import { liveChatVsContactFormsPost } from "@/lib/blog-post-live-chat-vs-contact-forms";
 import { reduceResponseTimeUnderTwoMinutesPost } from "@/lib/blog-post-reduce-response-time-under-2-minutes";
@@ -82,6 +83,7 @@ export const blogCategories: BlogCategory[] = [
 ];
 
 const posts: BlogPost[] = [
+  ecommerceLiveChatSupportPost,
   bestLiveChatForStartupsPost,
   liveChatSoftwareSmallTeamsPost,
   chatlyVsIntercomPost,

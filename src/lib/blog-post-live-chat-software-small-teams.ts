@@ -19,6 +19,6 @@ export const liveChatSoftwareSmallTeamsPost: BlogPost = {
     src: "/blog/live-chat-software-small-teams.svg",
     alt: "Illustrated team inbox and chat widget representing live chat software for small teams."
   },
-  relatedSlugs: ["best-intercom-alternatives-small-teams", "chatting-vs-intercom", "live-chat-vs-contact-forms"],
+  relatedSlugs: ["ecommerce-live-chat-support", "intercom-alternatives-small-business", "live-chat-vs-contact-forms"],
   sections: [...liveChatSoftwareSmallTeamsPrimarySections, ...liveChatSoftwareSmallTeamsSecondarySections]
 };

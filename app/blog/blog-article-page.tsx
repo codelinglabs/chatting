@@ -44,7 +44,7 @@ export function BlogArticlePage({
           </aside>
 
           <article>
-            <BlogArticleBody post={post} />
+            <BlogArticleBody post={post} relatedPosts={relatedPosts} />
           </article>
 
           <aside className="hidden lg:block">

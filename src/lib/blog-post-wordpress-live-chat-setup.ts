@@ -16,6 +16,6 @@ export const wordpressLiveChatSetupPost: BlogPost = {
   categorySlug: "how-to-guides",
   image: { src: "/blog/wordpress-live-chat-setup.svg", alt: "WordPress dashboard-themed artwork with a live chat installation snippet." },
   aliases: ["wordpress-live-chat-setup"],
-  relatedSlugs: ["shopify-live-chat", "reduce-response-time-under-2-minutes", "live-chat-vs-contact-forms"],
+  relatedSlugs: ["shopify-live-chat", "ecommerce-live-chat-support", "live-chat-software-small-teams"],
   sections: [...wordpressLiveChatSetupPrimarySections, ...wordpressLiveChatSetupSecondarySections]
 };

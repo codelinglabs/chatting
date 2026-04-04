@@ -13,6 +13,6 @@ export const liveChatVsContactFormsPost: BlogPost = {
   authorSlug: "tina",
   categorySlug: "conversion",
   image: { src: "/blog/live-chat-vs-contact-forms.svg", alt: "Comparison artwork showing a stiff contact form versus an active live chat conversation." },
-  relatedSlugs: ["reduce-response-time-under-2-minutes", "add-live-chat-to-shopify", "chatting-vs-intercom"],
+  relatedSlugs: ["ecommerce-live-chat-support", "reduce-response-time-under-2-minutes", "shopify-live-chat"],
   sections: liveChatVsContactFormsSections
 };

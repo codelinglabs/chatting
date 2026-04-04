@@ -19,6 +19,6 @@ export const bestLiveChatForStartupsPost: BlogPost = {
     src: "/blog/best-live-chat-for-startups.svg",
     alt: "Startup-themed illustration showing a chat widget, shared inbox, and launch rocket."
   },
-  relatedSlugs: ["live-chat-software-small-teams", "intercom-alternatives-small-business", "chatting-vs-zendesk"],
+  relatedSlugs: ["live-chat-software-small-teams", "intercom-alternatives-small-business", "ecommerce-live-chat-support"],
   sections: [...bestLiveChatForStartupsPrimarySections, ...bestLiveChatForStartupsSecondarySections]
 };
