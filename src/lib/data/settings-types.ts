@@ -1,5 +1,21 @@
 import type { DashboardBillingSummary } from "@/lib/data/billing-types";
 import type { DashboardEmailTemplate } from "@/lib/email-templates";
+import type {
+  DashboardAutomationContext,
+  DashboardAutomationSettings
+} from "@/lib/data/settings-automation-types";
+export type {
+  DashboardAutomationAssignRule,
+  DashboardAutomationAwayWhen,
+  DashboardAutomationContext,
+  DashboardAutomationFaqEntry,
+  DashboardAutomationFaqSource,
+  DashboardAutomationPagePrompt,
+  DashboardAutomationPromptDelaySeconds,
+  DashboardAutomationRuleCondition,
+  DashboardAutomationSettings,
+  DashboardAutomationTagRule
+} from "@/lib/data/settings-automation-types";
 
 export type DashboardSettingsProfile = {
   firstName: string;
@@ -24,6 +40,18 @@ export type DashboardSettingsEmail = {
   emailSignature: string;
 };
 
+export type DashboardSettingsReports = {
+  weeklyReportEnabled: boolean;
+  weeklyReportSendTime: string;
+  weeklyReportIncludePersonalStats: boolean;
+  workspaceWeeklyReportsEnabled: boolean;
+  workspaceIncludeTeamLeaderboard: boolean;
+  workspaceAiInsightsEnabled: boolean;
+  canManageWorkspaceReports: boolean;
+  recipientTimeZone: string | null;
+  teamTimeZone: string | null;
+};
+
 export type DashboardNotificationDeliverySettings = DashboardSettingsNotifications & {
   notificationEmail: string;
 };
@@ -31,6 +59,22 @@ export type DashboardNotificationDeliverySettings = DashboardSettingsNotificatio
 export type DashboardEmailTemplateSettings = {
   profile: DashboardSettingsProfile;
   email: DashboardSettingsEmail;
+};
+
+export type DashboardSavedReply = {
+  id: string;
+  title: string;
+  body: string;
+  tags: string[];
+  updatedAt: string;
+};
+
+export type DashboardHelpCenterArticle = {
+  id: string;
+  title: string;
+  slug: string;
+  body: string;
+  updatedAt: string;
 };
 
 export type DashboardTeamMember = {
@@ -57,17 +101,34 @@ export type DashboardTeamInvite = {
 
 export type DashboardSettingsData = {
   profile: DashboardSettingsProfile;
+  teamName?: string;
   notifications: DashboardSettingsNotifications;
   email: DashboardSettingsEmail;
+  reports?: DashboardSettingsReports;
+  automation?: DashboardAutomationSettings;
+  automationContext?: DashboardAutomationContext;
   teamMembers: DashboardTeamMember[];
   teamInvites: DashboardTeamInvite[];
   billing: DashboardBillingSummary;
 };
 
+export type UpdateDashboardSettingsReportsInput = Pick<
+  DashboardSettingsReports,
+  | "weeklyReportEnabled"
+  | "weeklyReportSendTime"
+  | "weeklyReportIncludePersonalStats"
+  | "workspaceWeeklyReportsEnabled"
+  | "workspaceIncludeTeamLeaderboard"
+  | "workspaceAiInsightsEnabled"
+>;
+
 export type UpdateDashboardSettingsInput = {
   profile: DashboardSettingsProfile;
+  teamName?: string;
   notifications: DashboardSettingsNotifications;
   email: DashboardSettingsEmail;
+  reports?: UpdateDashboardSettingsReportsInput;
+  automation?: DashboardAutomationSettings;
   password?: {
     currentPassword: string;
     newPassword: string;

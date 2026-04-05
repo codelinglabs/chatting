@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Built a dedicated Automation settings editor for offline behavior, routing, FAQ suggestions, and proactive messages.
 - Added sitemap/robots, homepage SEO metadata and copy, author profile pages, and keyword-targeted blog routes to improve public search discovery.
 - Owner signup now stays on the signup page with inline verification messaging, password login blocks unverified accounts, and the sign-in form drops the dead remember-me/resend-verification clutter.
 - Signup verification now lets people jump back to the signup form from the "Check your email" screen so they can correct details and resubmit without leaving the flow.
@@ -153,6 +154,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Dashboard widget settings now preview online, away, and offline states directly in settings, and inbox thread ordering stays pinned to real recency instead of moving touched threads to the top.
 - Dashboard navigation now relies on the route-level skeleton only, and inbox thread selection clears stale loading state without the extra shell overlay layer.
 - Dashboard conversation previews now stay message-only, and the thread detail sidebar preserves the original visitor page URL from when the conversation started instead of drifting with later navigation.
+- Dashboard settings now include a dedicated Automation editor for offline behavior, routing, FAQ suggestions, and proactive messages.
 - Dashboard unread badges now clear immediately on thread open and stay live across the shell header and sidebar when visitor messages or read events stream in.
 - Dashboard inbox install prompts now disappear once the widget is live and share the same install-state wiring across the sidebar card and empty conversation list.
 - Dashboard home now uses dedicated metrics, recent-conversations, and sidebar modules with cleaner empty states.
