@@ -1,5 +1,10 @@
 # Social Content Generator from Uncommitted Git Changes
 
+Before generating content, read:
+- `/Users/tina/Code/chatly/digital_marketing/chatting-product-context.md`
+
+Use product context for product truth, voice, fit, and messaging rules. If anything conflicts, product context wins.
+
 ## YOUR FIRST ACTION
 
 Run these commands to see what's been built:
@@ -129,44 +134,17 @@ Match narrative weight to change weight:
 
 ## PRODUCT CONTEXT (ALWAYS APPLY)
 
-**Chatting** = Live chat platform built specifically for small teams
+Read `/Users/tina/Code/chatly/digital_marketing/chatting-product-context.md` before generating.
 
-### What It Does
+Use it for pricing, features, positioning, competitive framing, voice, fit, and messaging rules.
 
-Puts a chat widget on your website that connects visitors to your team instantly:
+Apply these high-level defaults on top of it:
 
-- Real-time messaging with < 100ms latency
-- Visitor tracking (see who's on your site, what page they're viewing)
-- Team inbox (all conversations in one place)
-- Analytics (response times, resolution rates, busiest hours)
-- Offline mode (email collection + reply by email)
-- All setup in under 5 minutes
-
-### Target Users
-
-Small teams (2-20 people) who:
-
-- Can't afford Intercom ($500+/mo)
-- Don't need Zendesk's enterprise complexity
-- Want to talk to visitors, not manage tickets
-- Care about every customer
-
-### Key Differentiator
-
-Built for small teams, priced for small teams. No enterprise bloat. Real-time that actually feels real-time.
-
-### Replaces
-
-- Expensive enterprise chat (Intercom, Drift)
-- Clunky support desks (Zendesk, Freshdesk)
-- Contact forms that go nowhere
-- Missed opportunities on your pricing page
-
-### Pricing
-
-- **Free**: 50 conversations/mo, 1 team member
-- **Growth**: $29/mo (unlimited conversations, 5 team members)
-- **Pro**: $79/mo (unlimited everything, API access, white-label)
+- Chatting is live chat built for small teams
+- real-time should feel real-time
+- keep the human in the loop
+- use AI to help the teammate, not replace the conversation
+- default angle: visitors with intent should have a fast way to ask the question that is blocking conversion
 
 ---
 
@@ -283,7 +261,7 @@ Otherwise output: `Skip (no major milestone)`
 #### 6) Peerlist
 
 - 2-3 sentences, builder update tone
-- Include: "Chatting is live chat built for small teams — real-time messaging, visitor tracking, and a team inbox, all for $29/mo."
+- Include: "Chatting is live chat built for small teams — real-time messaging, visitor tracking, and a team inbox, starting free with Growth from $20/mo."
 
 ---
 

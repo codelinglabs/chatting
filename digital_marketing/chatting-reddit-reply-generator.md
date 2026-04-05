@@ -2,6 +2,8 @@
 
 Use this prompt to generate Reddit replies whose business goal is to sell Chatting without sounding like an ad.
 
+Read `/Users/tina/Code/chatly/digital_marketing/chatting-product-context.md` for product truth, voice, fit, and messaging rules. If anything conflicts, the product-context file wins.
+
 ---
 
 ## Prompt Template
@@ -21,13 +23,8 @@ You are writing a Reddit comment to sell Chatting to a founder, marketer, or sma
 
 Before writing, read `/Users/tina/Code/chatly/digital_marketing/chatting-product-context.md`.
 
-Treat that file as the single source of truth for:
-- pricing and plans
-- feature claims
-- positioning and competitive framing
-- what Chatting is not
-
-If this prompt, an older example, or your memory conflicts with that file, the product-context file wins.
+Use it for pricing, features, positioning, voice, fit, and messaging rules.
+If anything conflicts, product context wins.
 
 ## WHAT CHATTING ACTUALLY FITS BEST
 

@@ -4,7 +4,7 @@ Reusable prompts for writing Chatting blog content that sounds like Chatting ins
 
 If pricing, plans, positioning, or feature claims change, update `/Users/tina/Code/chatly/digital_marketing/chatting-product-context.md` first.
 
-If this file, an older prompt, or model memory conflicts with that product-context file, the product-context file wins.
+Read `/Users/tina/Code/chatly/digital_marketing/chatting-product-context.md` for product truth, voice, fit, and messaging rules. If anything conflicts, the product-context file wins.
 
 Last updated: 2026-04-05
 
@@ -15,7 +15,7 @@ Last updated: 2026-04-05
 1. Read `/Users/tina/Code/chatly/digital_marketing/chatting-product-context.md` first.
 2. Pick the prompt shape that matches the article type.
 3. Replace the placeholders.
-4. Keep the output in Chatting's voice: direct, sharp, small-team focused, anti-bloat.
+4. Keep the output within those shared rules.
 
 These prompts are for:
 - general Chatting SEO blog posts
@@ -41,13 +41,8 @@ Your job is not to write generic SEO content. Your job is to write a post that:
 Before writing, read:
 /Users/tina/Code/chatly/digital_marketing/chatting-product-context.md
 
-Treat that file as the single source of truth for:
-- pricing and plans
-- feature claims
-- positioning and competitive framing
-- what Chatting is not
-
-If this prompt, another prompt, or your memory conflicts with that file, the product-context file wins.
+Use it for pricing, features, positioning, voice, fit, and messaging rules.
+If anything conflicts, product context wins.
 
 ## Context
 
@@ -154,7 +149,7 @@ You are writing a Chatting comparison post.
 Before writing, read:
 /Users/tina/Code/chatly/digital_marketing/chatting-product-context.md
 
-If this prompt conflicts with that file, the product-context file wins.
+Use it for product truth, voice, fit, and messaging rules. If anything conflicts, product context wins.
 
 ## Context
 
@@ -249,7 +244,7 @@ You are writing a how-to article for Chatting.
 Before writing, read:
 /Users/tina/Code/chatly/digital_marketing/chatting-product-context.md
 
-If this prompt conflicts with that file, the product-context file wins.
+Use it for product truth, voice, fit, and messaging rules. If anything conflicts, product context wins.
 
 ## Context
 
@@ -331,7 +326,7 @@ You are turning a Reddit thread or post into a Chatting SEO blog article.
 Before writing, read:
 /Users/tina/Code/chatly/digital_marketing/chatting-product-context.md
 
-If this prompt conflicts with that file, the product-context file wins.
+Use it for product truth, voice, fit, and messaging rules. If anything conflicts, product context wins.
 
 ## Source Context
 
@@ -423,7 +418,7 @@ direct, practical, sharp, anti-bloat, small-team focused.
 Before writing, read:
 /Users/tina/Code/chatly/digital_marketing/chatting-product-context.md
 
-If this prompt conflicts with that file, the product-context file wins.
+Use it for product truth, voice, fit, and messaging rules. If anything conflicts, product context wins.
 
 Audience:
 small businesses, startups, founder-led teams, lean support/sales teams.
