@@ -20,6 +20,9 @@
 - **Atomic**: One logical unit of work per commit (one refactor, one feature, one fix)
 - **Comprehensive**: Cover all related changes across the codebase — no partial commits
 - **Precise**: Only changes since last checkpoint, never bundled/unrelated work
+- **Short Subject**: The title must be short, specific, and single-purpose
+- **No Overloaded Subjects**: Do not cram multiple ideas into the title with words like `and`; if the title needs that, split the commit
+- **Detail Lives In The Body**: Keep the title lean and put the full explanation in the grouped body sections
 - **Descriptive**: Message clearly explains what changed and why
 - **Commit Message Approval**: Before any `git add`/`git commit`, always present the full, comprehensive, well-indented commit message for approval and wait for explicit user confirmation.
 
@@ -60,6 +63,15 @@
 <optional: context, tradeoffs, or follow-up notes>
 ```
 
+#### Commit Subject Rules
+
+- The subject line should read like one clean label for the commit, not a changelog sentence
+- Prefer noun-phrase or single-purpose summaries like `fix: widget reconnect handling`
+- Avoid overloaded subjects like `fix: stabilize widget reconnect handling and inbox toast behavior`
+- If the subject needs `and`, it is usually two commits
+- Keep the title short enough that the body carries the detail
+- Stage matching `README.md` and `src/lib/changelog-data.ts` hunks per commit rather than bundling all doc updates together
+
 **Types**: feat, fix, refactor, docs, chore, test, style
 
 **Example**:
@@ -90,7 +102,12 @@ Once user approves the commit:
 2. **Update README.md — Key Modules section**
    - Update the relevant module area with new capabilities
 
+3. **Update the public changelog**
+   - Add or update the relevant entry in `src/lib/changelog-data.ts` so the shipped change is reflected on `/changelog`
+
 **README Key Modules Sync (Required)**: For each user-approved commit, update both `README.md` sections: `## Recent Updates` and the relevant area(s) under `## 🚀 Key Modules`. Do not consider the task complete until both are updated for the shipped feature.
+
+**Changelog Sync (Required)**: For each user-approved commit that changes user-visible behavior, marketing surfaces, pricing, onboarding, or operations, update `src/lib/changelog-data.ts` in the same pass. Do not consider the task complete until the public changelog reflects the shipped change.
 
 #### Quick Reference
 
@@ -99,12 +116,14 @@ Once user approves the commit:
 - Wait for explicit user approval
 - Run verification before committing
 - Update README after every commit
+- Update the public changelog for shipped user-visible changes
 
 ❌ **Don't**:
 - Auto-commit anything ever
 - Bundle unrelated changes
 - Write vague messages like "updates" or "fixes"
 - Skip README updates
+- Skip changelog updates for shipped product changes
 
 ---
 

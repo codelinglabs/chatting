@@ -30,8 +30,9 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Built a dedicated Automation settings editor for offline behavior, routing, FAQ suggestions, and proactive messages.
 - Wired automation into the live widget so FAQ suggestions, routing, and proactive prompts now run against real visitor sessions.
 - Settings sections now navigate by URL so each settings area can load as its own server-driven view.
-- Added sitemap/robots, homepage SEO metadata and copy, author profile pages, and keyword-targeted blog routes to improve public search discovery.
 - Saved replies now live in a dedicated settings area with cleaner modal-based management.
+- Added sitemap/robots, homepage SEO metadata and copy, author profile pages, and keyword-targeted blog routes to improve public search discovery.
+- Simplified the public landing proof section by hiding the metrics/testimonials strip and removing the empty divider row from the three feature cards.
 - Owner signup now stays on the signup page with inline verification messaging, password login blocks unverified accounts, and the sign-in form drops the dead remember-me/resend-verification clutter.
 - Signup verification now lets people jump back to the signup form from the "Check your email" screen so they can correct details and resubmit without leaving the flow.
 - Deleted the unused legacy `/onboarding/team` route and its tests so onboarding no longer carries a dead team-setup endpoint.
@@ -126,6 +127,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
 - Marketing SEO now ships a generated sitemap/robots setup, homepage-specific metadata and copy, crawlable blog/free-tools links, author profile pages, and keyword-targeted blog slugs and aliases.
 - The marketing blog now includes a Chatting-first small-business live-chat comparison post aimed at high-intent buyers evaluating chat tools.
+- The public landing now hides the metrics/testimonials proof strip, and the three feature cards no longer render empty footer dividers when no stat copy is configured.
 - The signup verification state now includes a return path back to the signup form so people can correct a mistyped email or other account details before submitting again.
 - Auth forms now pull forgot/reset/resend server actions from the dedicated password-actions module, and shared auth redirect helpers stay typed for Next route redirects during builds.
 - The root app shell now loads the hosted Grometrics analytics runtime with the production `usechatting.com` domain and website id.
@@ -156,6 +158,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - Embeddable widget with optimistic sending, typing, conversation polling, and install detection.
 - The shipped widget runtime now reads branding-aware site config, sends fuller visitor context to public config/status routes, and refreshes site state on route changes.
+- The live widget now runs Automation FAQ suggestions, proactive prompts, and profile-aware routing inputs from the public automation payload.
 - Widget settings now persist customizable offline and away titles/messages, and the live widget renders those saved empty-state messages from site config.
 - Public API endpoints for conversation messages, status, typing, site config, and attachments.
 
@@ -163,17 +166,16 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - People now stores contact memory with saved profiles, statuses, custom fields, and in-place profile editing.
 - Inbox contact editing and visitor-note flows now stay aligned with the new People experience across the dashboard.
-- The live widget now runs Automation FAQ suggestions, proactive prompts, and profile-aware routing inputs from the public automation payload.
 - Shared dashboard shell with focused pages for inbox, visitors, analytics, team, settings, and widget setup.
+- Dashboard settings now include a dedicated Automation editor for offline behavior, routing, FAQ suggestions, and proactive messages.
+- Settings sections now navigate by real section URLs so each area can load as a cleaner server-driven view.
+- Saved replies now live in their own dedicated settings area with standalone management.
 - Dashboard thread detail now routes inline retry actions through the exported inbox state handler again so failed optimistic replies can resend reliably.
 - Dashboard shell now syncs each teammate's browser timezone so timezone-aware scheduled emails can use local delivery windows.
 - Dashboard live updates now share one `/dashboard/live` connection per tab, route unread and conversation refreshes through targeted endpoints, and keep visitors current with incremental session/message patches plus manual full-refresh fallback.
-- Settings sections now navigate by real section URLs so each area can load as a cleaner server-driven view.
 - Dashboard widget settings now preview online, away, and offline states directly in settings, and inbox thread ordering stays pinned to real recency instead of moving touched threads to the top.
 - Dashboard navigation now relies on the route-level skeleton only, and inbox thread selection clears stale loading state without the extra shell overlay layer.
-- Saved replies now live in their own dedicated settings area with standalone management.
 - Dashboard conversation previews now stay message-only, and the thread detail sidebar preserves the original visitor page URL from when the conversation started instead of drifting with later navigation.
-- Dashboard settings now include a dedicated Automation editor for offline behavior, routing, FAQ suggestions, and proactive messages.
 - Dashboard unread badges now clear immediately on thread open and stay live across the shell header and sidebar when visitor messages or read events stream in.
 - Dashboard inbox install prompts now disappear once the widget is live and share the same install-state wiring across the sidebar card and empty conversation list.
 - Dashboard home now uses dedicated metrics, recent-conversations, and sidebar modules with cleaner empty states.

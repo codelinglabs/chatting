@@ -2,7 +2,10 @@
 
 **Finding Your First 1,000 Users**
 
-Live chat for teams who care. $29/mo. 5-minute setup.
+Live chat for teams who care. Starts free.
+
+Current pricing, plan, and feature claims for marketing copy live in `/Users/tina/Code/chatly/digital_marketing/chatting-product-context.md`.
+Update that file first when positioning changes, then sync this playbook if any channel copy needs to change.
 
 ---
 
@@ -53,7 +56,7 @@ Live chat for teams who care. $29/mo. 5-minute setup.
 - [ ] Implement OAuth flow with Shopify
 - [ ] Build embedded admin app with Polaris components
 - [ ] Create Theme App Extension for widget
-- [ ] Implement Shopify Billing API ($29/mo subscription)
+- [ ] Implement Shopify Billing API (Starter + Growth billing)
 - [ ] Add GDPR webhook endpoints
 - [ ] Test performance impact on store
 - [ ] Record Loom walkthrough for reviewers
@@ -75,13 +78,13 @@ Live chat for teams who care. $29/mo. 5-minute setup.
 > Talk to visitors before they bounce
 
 **Short Description (260 chars):**
-> Live chat built for small Shopify teams. See who's on your site, answer questions in real-time, and convert more visitors. $29/mo flat — no per-seat pricing. Installs in 5 minutes.
+> Live chat built for small Shopify teams. See who's on your site, answer questions in real-time, and convert more visitors. Free to start, Growth from $20/mo with up to 3 team members included.
 
 **Key Benefits:**
 1. See visitors browsing your store in real-time
 2. Answer questions before they abandon cart
 3. Works on all devices, all themes
-4. One price, unlimited conversations
+4. Simple pricing, unlimited conversations on Growth
 
 ### Getting to "Built for Shopify" Badge
 
@@ -152,8 +155,8 @@ I built Chatting because I was tired of watching potential customers leave my si
 Chatting puts a chat widget on your site that connects visitors to your team instantly:
 - See who's browsing in real-time
 - < 100ms message latency
-- $29/mo flat (no per-seat pricing)
-- 5-minute setup
+- free to start, Growth from $20/mo
+- simple shared inbox for your team
 
 We're live today with a special offer for the PH community: [your offer]
 
@@ -256,7 +259,7 @@ Would love your feedback — what features would make this useful for you?
 ```
 I'd look at a few options depending on your budget:
 
-- If you're a small team and price-conscious, check out Chatting ($29/mo flat, no per-seat pricing)
+- If you're a small team and price-conscious, check out Chatting (Starter is free, Growth starts at $20/mo)
 - If you need AI bots and email marketing, Intercom (but $300+/mo)
 - If you want free, Crisp has a decent free tier
 
@@ -265,7 +268,7 @@ What's your main use case — support or sales?
 
 **When someone complains about Intercom pricing:**
 ```
-Yeah, Intercom's pricing has gotten crazy. We switched to Chatting last month — $29/mo for 5 team members, unlimited conversations.
+Yeah, Intercom's pricing has gotten crazy. We switched to Chatting last month — Growth starts at $20/mo with up to 3 team members included, then scales with volume pricing.
 
 It doesn't have all the bells and whistles (no email marketing, no product tours) but if you just need solid live chat, it does the job.
 
@@ -329,7 +332,7 @@ Happy to share more if helpful.
 
 **Positioning:**
 ```
-Chatting is live chat built specifically for small teams. Unlike enterprise tools that charge per seat and require weeks of setup, Chatting installs in 5 minutes and costs $29/mo flat — no matter how many team members you have.
+Chatting is live chat built specifically for small teams. It starts free, Growth starts at $20/mo with up to 3 team members included before volume pricing kicks in, and it stays focused on real-time conversations, visitor context, and a simple shared inbox instead of enterprise support layers.
 
 Best for: Small businesses, e-commerce stores, SaaS startups with 2-20 employees who want real-time customer conversations without enterprise complexity.
 ```
