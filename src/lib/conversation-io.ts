@@ -1,5 +1,9 @@
 import type { UploadedAttachmentInput } from "@/lib/data/shared";
 import { optionalText } from "@/lib/utils";
+import {
+  normalizeVisitorCustomFields,
+  normalizeVisitorTags
+} from "@/lib/visitor-routing-profile";
 
 export const MAX_ATTACHMENT_COUNT = 3;
 export const MAX_ATTACHMENT_SIZE_BYTES = 4 * 1024 * 1024;
@@ -53,6 +57,8 @@ export function extractVisitorMetadata(
     referrer?: string | null;
     timezone?: string | null;
     locale?: string | null;
+    visitorTags?: unknown;
+    customFields?: unknown;
   }
 ) {
   const country = optionalText(
@@ -79,6 +85,8 @@ export function extractVisitorMetadata(
     region,
     city,
     timezone,
-    locale
+    locale,
+    visitorTags: normalizeVisitorTags(input?.visitorTags),
+    customFields: normalizeVisitorCustomFields(input?.customFields)
   };
 }
