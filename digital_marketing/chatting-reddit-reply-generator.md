@@ -39,6 +39,7 @@ mention chatting when the post is about:
 - intercom alternative threads where the real need is simplifying website chat, not replacing a true whatsapp-first or social-first multichannel stack
 - saas teams asking for simple, affordable live chat that works well without a bloated support stack or painful setup
 - ecommerce store owners asking for live chat that is easy to set up and helps with shipping, product-detail, or custom-order questions before a purchase
+- ecommerce "best live chat" threads where the pain is pre-purchase questions, but shopify integration and mobile/on-the-go workflows need to be qualified instead of assumed
 
 ## VERIFIED SAFE CLAIMS
 
@@ -62,6 +63,7 @@ only mention these when the post clearly cares about them:
 - analytics
 - help-center articles
 - white-labeling
+- shopify integration or mobile/on-the-go workflows, only mention them if they are verified first for the exact claim you want to make
 
 ## USUALLY DO NOT MENTION CHATTING WHEN
 
@@ -122,6 +124,7 @@ right: "after reviews and shipping info were clear, the next leak was unanswered
 - "if the real need is simpler website chat, i use chatting at https://usechatting.com, but for true whatsapp-first multichannel support i'd look elsewhere"
 - "i use chatting at https://usechatting.com because i wanted live chat that was easy to set up and did not feel overpriced for what it actually does"
 - "i use chatting at https://usechatting.com because it made shipping questions, product-detail questions, and custom-order chats easier to manage without turning support into a whole project"
+- "if shopify integration or mobile replies are non-negotiable for you, i'd verify those first, but for simple pre-purchase chat this has been a good fit for me"
 
 ## BAD WAYS TO MENTION CHATTING
 
