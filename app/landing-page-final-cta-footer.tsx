@@ -67,13 +67,9 @@ export function LandingFinalCtaFooter() {
                 <ul className="mt-4 space-y-3 text-sm text-blue-100/80">
                   {group.links.map((link) => (
                     <li key={link.label}>
-                      {"href" in link ? (
-                        <Link className="transition hover:text-white" href={link.href}>
-                          {link.label}
-                        </Link>
-                      ) : (
-                        <span>{link.label}</span>
-                      )}
+                      <Link className="transition hover:text-white" href={link.href}>
+                        {link.label}
+                      </Link>
                     </li>
                   ))}
                 </ul>

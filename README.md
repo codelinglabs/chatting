@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Tightened public landing route typing so shared nav and footer links stay build-safe.
 - Tightened repo changelog rules so public entries stay customer-facing and skip internal-only filler.
 - Added People contact profiles with saved contact history, statuses, custom fields, and in-place profile editing.
 - Stabilized inbox contact editing, visitor notes, and the supporting dashboard settings flows around the new People experience.
@@ -125,6 +126,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Public Site & Auth
 
+- Shared landing navigation and footer links now stay aligned with Next route typing during production builds.
 - Newsletter signups now preserve source updates correctly even for first-time subscribers.
 - Public marketing regression coverage now matches the current blog, legal, and pricing copy.
 - Editorial landing page with modular sections and brand-aligned auth entry flows.

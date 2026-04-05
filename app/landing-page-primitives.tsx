@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import Link from "next/link";
 import { ButtonLink } from "./components/ui/Button";
 import { ChatBubbleIcon, EyeIcon, UsersIcon } from "./dashboard/dashboard-ui";
@@ -12,12 +13,12 @@ const LANDING_NAV_ITEMS = [
 
 const TEXT_LINK_CLASS = "text-sm font-medium text-slate-600 transition hover:text-slate-900";
 
-export function NavLink({ href, children }: { href: string; children: string }) {
+export function NavLink({ href, children }: { href: Route | `#${string}`; children: string }) {
   const className = `inline-flex h-9 items-center rounded-full px-3 ${TEXT_LINK_CLASS} hover:bg-white lg:h-auto lg:px-0 lg:hover:bg-transparent`;
 
   if (href.startsWith("/")) {
     return (
-      <Link href={href} className={className}>
+      <Link href={href as Route} className={className}>
         {children}
       </Link>
     );
