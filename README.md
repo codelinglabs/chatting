@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Published a Chatting-first comparison post covering the best live chat tools for small businesses and where Chatting, Crisp, Tidio, HubSpot, and tawk.to fit.
 - Built a dedicated Automation settings editor for offline behavior, routing, FAQ suggestions, and proactive messages.
 - Wired automation into the live widget so FAQ suggestions, routing, and proactive prompts now run against real visitor sessions.
 - Settings sections now navigate by URL so each settings area can load as its own server-driven view.
@@ -115,6 +116,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
 - Marketing SEO now ships a generated sitemap/robots setup, homepage-specific metadata and copy, crawlable blog/free-tools links, author profile pages, and keyword-targeted blog slugs and aliases.
+- The marketing blog now includes a Chatting-first small-business live-chat comparison post aimed at high-intent buyers evaluating chat tools.
 - The signup verification state now includes a return path back to the signup form so people can correct a mistyped email or other account details before submitting again.
 - Auth forms now pull forgot/reset/resend server actions from the dedicated password-actions module, and shared auth redirect helpers stay typed for Next route redirects during builds.
 - The root app shell now loads the hosted Grometrics analytics runtime with the production `usechatting.com` domain and website id.
