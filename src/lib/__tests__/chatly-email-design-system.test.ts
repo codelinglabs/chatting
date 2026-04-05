@@ -1,21 +1,18 @@
-import {
-  renderAccountWelcomeEmail,
-  renderEmailVerificationEmail,
-  renderTeamInvitationEmail
-} from "@/lib/chatly-transactional-emails";
+import { renderAccountWelcomeEmail, renderEmailVerificationEmail, renderTeamInvitationEmail } from "@/lib/chatly-transactional-emails";
 import {
   renderDailyDigestEmail,
   renderMentionNotificationEmail,
   renderNewMessageNotificationEmail,
   renderWeeklyPerformanceEmail
 } from "@/lib/chatly-notification-emails";
-import {
-  renderProductUpdateEmail,
-  renderTrialExpiredEmail,
-  renderTrialEndingReminderEmail
-} from "@/lib/chatly-marketing-emails";
+import { renderProductUpdateEmail, renderTrialExpiredEmail, renderTrialEndingReminderEmail } from "@/lib/chatly-marketing-emails";
 
 describe("chatly email design system", () => {
+  function expectTableFirstSharedLayout(html: string) {
+    expect(html).toContain('role="presentation" width="100%"');
+    expect(html.match(/<div style=/g)?.length ?? 0).toBe(1);
+  }
+
   it("renders transactional emails with the shared shell", () => {
     const welcome = renderAccountWelcomeEmail({
       firstName: "Alex",
@@ -34,9 +31,12 @@ describe("chatly email design system", () => {
 
     expect(welcome.subject).toBe("Welcome to Chatting — let's get you set up");
     expect(welcome.bodyHtml).toContain("max-width:600px");
+    expectTableFirstSharedLayout(welcome.bodyHtml);
     expect(verification.bodyText).toContain("This link expires in 24 hours.");
     expect(verification.bodyHtml).not.toContain("✉");
+    expectTableFirstSharedLayout(verification.bodyHtml);
     expect(invite.bodyHtml).toContain("Continue to Invitation");
+    expectTableFirstSharedLayout(invite.bodyHtml);
     expect(invite.bodyText).toContain("Continue to Invitation:");
   });
 
@@ -78,11 +78,56 @@ describe("chatly email design system", () => {
       inboxUrl: "https://chatly.example/dashboard"
     });
     const weekly = renderWeeklyPerformanceEmail({
-      dateRange: "Mar 22 – Mar 28, 2026",
-      highlights: ["47 conversations (↑12% from last week)", "1.4 min average response time"],
-      busiestHours: "Peak: Tuesday 2-3pm (12 conversations)",
-      topPages: ["/pricing — 18 conversations", "/features — 11 conversations"],
-      reportUrl: "https://chatly.example/dashboard/analytics"
+      teamName: "Acme Support",
+      dateRange: "Mar 22 to Mar 28",
+      previewText: "47 conversations, 1.4 min avg response time",
+      reportUrl: "https://chatly.example/dashboard/analytics?range=last_week",
+      settingsUrl: "https://chatly.example/dashboard/settings?section=reports",
+      widgetUrl: "https://chatly.example/dashboard/widget",
+      quietWeek: false,
+      metrics: [
+        { label: "Conversations", value: "47", trendLabel: "↑ 12% vs last week", trendTone: "positive", trendDirection: "up" },
+        { label: "Avg response", value: "1.4 min", trendLabel: "↓ 18% vs last week", trendTone: "positive", trendDirection: "down" },
+        { label: "Resolution rate", value: "92%", trendLabel: "↑ 3% vs last week", trendTone: "positive", trendDirection: "up" },
+        { label: "Satisfaction", value: "4.8 / 5", trendLabel: "↑ 0.2 vs last week", trendTone: "positive", trendDirection: "up" }
+      ],
+      heatmapHours: ["8am", "9", "10", "11", "12", "1pm", "2", "3", "4", "5", "6", "7"],
+      heatmapRows: [
+        { label: "Mon", cells: Array.from({ length: 12 }, (_, index) => ({ count: index === 0 ? 2 : 0, intensity: index === 0 ? "medium" : "empty" })) },
+        { label: "Tue", cells: Array.from({ length: 12 }, (_, index) => ({ count: index === 6 ? 12 : 0, intensity: index === 6 ? "peak" : "empty" })) },
+        { label: "Wed", cells: Array.from({ length: 12 }, () => ({ count: 0, intensity: "empty" })) },
+        { label: "Thu", cells: Array.from({ length: 12 }, () => ({ count: 0, intensity: "empty" })) },
+        { label: "Fri", cells: Array.from({ length: 12 }, () => ({ count: 0, intensity: "empty" })) },
+        { label: "Sat", cells: Array.from({ length: 12 }, () => ({ count: 0, intensity: "empty" })) },
+        { label: "Sun", cells: Array.from({ length: 12 }, () => ({ count: 0, intensity: "empty" })) }
+      ],
+      peakLabel: "Tue 2pm-3pm (12 conversations)",
+      topPages: [{ label: "/pricing", count: 18, widthPercent: 100 }, { label: "/features", count: 11, widthPercent: 61 }],
+      insight: "Response time improved 18% week over week, which usually shows up fastest in visitor confidence.",
+      tip: { text: "Save a few quick replies for common questions to keep first-response time down.", href: "https://chatly.example/dashboard/settings?section=savedReplies", label: "Create saved replies" },
+      teamPerformance: [
+        {
+          userId: "user_1",
+          name: "Sarah Chen",
+          initials: "SC",
+          conversationsLabel: "38 conversations",
+          avgResponseLabel: "52s avg",
+          resolutionLabel: "96% resolved",
+          satisfactionLabel: "⭐ 4.9",
+          conversationCount: 38
+        }
+      ],
+      personalPerformanceByUserId: {},
+      recipientUserId: "user_1",
+      personalPerformance: {
+        userId: "user_1",
+        name: "Sarah Chen",
+        conversationsLabel: "38 conversations",
+        avgResponseLabel: "52s avg",
+        resolutionLabel: "96% resolved",
+        satisfactionLabel: "⭐ 4.9",
+        teamAverageLabel: "1.1m avg · 91% resolved · ⭐ 4.7"
+      }
     });
     const mention = renderMentionNotificationEmail({
       mentionerName: "Sarah",
@@ -94,10 +139,18 @@ describe("chatly email design system", () => {
 
     expect(message.subject).toBe("New message from Alex");
     expect(message.bodyHtml).toContain("Reply Now");
+    expectTableFirstSharedLayout(message.bodyHtml);
     expect(digest.bodyHtml).toContain("Open conversations");
-    expect(weekly.bodyText).toContain("View Full Report → https://chatly.example/dashboard/analytics");
+    expect(digest.bodyHtml).toContain('height="108"');
+    expectTableFirstSharedLayout(digest.bodyHtml);
+    expect(weekly.bodyText).toContain("View Full Analytics → https://chatly.example/dashboard/analytics?range=last_week");
+    expect(weekly.bodyText).toContain("Team performance:");
+    expect(weekly.bodyHtml).toContain("Your stats");
+    expect(weekly.bodyHtml).toContain("Team performance");
+    expectTableFirstSharedLayout(weekly.bodyHtml);
     expect(mention.subject).toBe("Sarah mentioned you in a conversation");
     expect(mention.bodyHtml).toContain("View Conversation");
+    expectTableFirstSharedLayout(mention.bodyHtml);
   });
 
   it("renders marketing and lifecycle emails with the shared foundation", () => {
@@ -127,12 +180,17 @@ describe("chatly email design system", () => {
 
     expect(trialEnding.subject).toBe("Your trial ends in 3 days");
     expect(trialEnding.bodyHtml).toContain("Upgrade Now");
+    expectTableFirstSharedLayout(trialEnding.bodyHtml);
     expect(productUpdate.subject).toBe("New in Chatting: Smarter visitor routing");
     expect(productUpdate.bodyHtml).toContain("Read Full Changelog");
+    expectTableFirstSharedLayout(productUpdate.bodyHtml);
+    expect(expired.bodyText).toContain("Growth pricing");
     expect(expired.bodyText).toContain(
-      "Growth - $20/month for 1-3 members, then $6/member from 4-9, $5/member from 10-24, and $4/member from 25-49"
+      "Starts at $20/month for up to 3 members, then $6/member from 4-9, $5/member from 10-24, and $4/member from 25-49"
     );
+    expect(expired.bodyHtml).toContain("Growth pricing");
     expect(expired.bodyHtml).toContain("Proactive chat");
-    expect(expired.bodyHtml).toContain("Visitor tracking");
+    expect(expired.bodyHtml).toContain("1-3 team members included");
+    expectTableFirstSharedLayout(expired.bodyHtml);
   });
 });

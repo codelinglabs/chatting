@@ -38,6 +38,9 @@ describe("conversation transcript email renderer", () => {
     expect(rendered.bodyHtml).toContain("border-radius:12px 12px 4px 12px");
     expect(rendered.bodyHtml).toContain(">Chatting</td>");
     expect(rendered.bodyHtml).toContain("Powered by <strong style=\"color:#475569;\">Chatting</strong>");
+    expect(rendered.bodyHtml.indexOf(">Try Chatting Free →<")).toBeGreaterThan(
+      rendered.bodyHtml.indexOf(">Continue on the web<")
+    );
   });
 
   it("hides Chatting footer sections for unbranded paid transcripts", () => {
@@ -81,6 +84,6 @@ describe("conversation transcript email renderer", () => {
     );
 
     expect(rendered.bodyHtml).not.toContain("cdn.chatly.example/team-avatar.png");
-    expect(rendered.bodyHtml).toContain(">CT</div>");
+    expect(rendered.bodyHtml).toContain(">CT</td>");
   });
 });

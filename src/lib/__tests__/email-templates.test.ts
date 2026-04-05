@@ -66,7 +66,7 @@ describe("email templates", () => {
     expect(rendered.bodyText).toContain("Yes: https://chatly.example/yes");
     expect(rendered.bodyHtml).toContain("Best,<br />Chatting Team");
     expect(rendered.bodyHtml).toContain('href="https://chatly.example/yes"');
-    expect(rendered.bodyHtml).toContain(">Helpful?</div>");
+    expect(rendered.bodyHtml).toContain(">Helpful?</td>");
   });
 
   it("ships the updated default transcript copy", () => {

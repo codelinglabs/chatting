@@ -23,6 +23,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Stabilized inbox contact editing, visitor notes, and the supporting dashboard settings flows around the new People experience.
 - Fixed newsletter signup source syncing for brand-new subscribers.
 - Refreshed blog, legal, and pricing regressions to match current public-site copy.
+- Refreshed email rendering regressions to match current markup and delivery wiring.
 - Published a Chatting-first comparison post covering the best live chat tools for small businesses and where Chatting, Crisp, Tidio, HubSpot, and tawk.to fit.
 - Added a reusable digital-marketing prompt library for Chatting SEO posts, including master, comparison, how-to, and Reddit-to-article prompts.
 - Built a dedicated Automation settings editor for offline behavior, routing, FAQ suggestions, and proactive messages.
@@ -191,6 +192,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Billing & Operations
 
+- Email rendering coverage now matches the current shared HTML shell and rendered delivery path.
 - Shared public app URL helpers now default generated widget snippets and app links to `https://usechatting.com` instead of localhost when `NEXT_PUBLIC_APP_URL` is unset.
 - The root Next.js proxy now returns `404` for common WordPress probe paths like `xmlrpc.php`, `wp-login.php`, and `*/wp-includes/wlwmanifest.xml` so bot noise is cheaper to absorb.
 - Cloud Run deployment now builds from standalone Next.js output, ships through repo Docker/Cloud Build config, and suppresses duplicate startup scheduler windows with shared DB claims plus advisory locks.
