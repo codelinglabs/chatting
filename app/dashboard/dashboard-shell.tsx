@@ -39,7 +39,12 @@ type DashboardShellProps = {
   notificationSettings: DashboardSettingsNotifications;
 };
 
-export function DashboardShell({ children, userEmail, unreadCount, notificationSettings }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  userEmail,
+  unreadCount,
+  notificationSettings
+}: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { displayName, firstName, initials } = getDashboardIdentity(userEmail);

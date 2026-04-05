@@ -47,7 +47,8 @@ describe("visitor notes edge cases", () => {
 
     await expect(getConversationVisitorNote("conv_1", "user_123")).resolves.toEqual({
       note: null,
-      updatedAt: null
+      updatedAt: null,
+      mentions: []
     });
     expect(mocks.findVisitorNoteRow).toHaveBeenCalledWith("site_1", "email", "alex@example.com");
   });
@@ -58,6 +59,7 @@ describe("visitor notes edge cases", () => {
       identity_type: "email",
       identity_value: "alex@example.com",
       note: "VIP visitor",
+      mentions_json: [],
       updated_at: "2026-03-29T10:00:00.000Z"
     });
 
@@ -69,7 +71,8 @@ describe("visitor notes edge cases", () => {
       })
     ).resolves.toEqual({
       note: "VIP visitor",
-      updatedAt: "2026-03-29T10:00:00.000Z"
+      updatedAt: "2026-03-29T10:00:00.000Z",
+      mentions: []
     });
     expect(mocks.findVisitorNoteRow).toHaveBeenCalledWith("site_1", "email", "alex@example.com");
   });
@@ -81,6 +84,7 @@ describe("visitor notes edge cases", () => {
         siteId: "site_1",
         sessionId: "session_1",
         note: "Follow up",
+        mentions: [],
         userId: "user_123"
       })
     ).resolves.toBeNull();
@@ -93,9 +97,10 @@ describe("visitor notes edge cases", () => {
       session_id: "session_1"
     });
 
-    await expect(updateConversationVisitorNote("conv_1", "   ", "user_123")).resolves.toEqual({
+    await expect(updateConversationVisitorNote("conv_1", "   ", [], "user_123")).resolves.toEqual({
       note: null,
-      updatedAt: null
+      updatedAt: null,
+      mentions: []
     });
     expect(mocks.deleteVisitorNoteRow).toHaveBeenCalledWith("site_1", "session", "session_1");
   });
@@ -106,6 +111,7 @@ describe("visitor notes edge cases", () => {
       identity_type: "email",
       identity_value: "alex@example.com",
       note: "Needs enterprise pricing",
+      mentions_json: [],
       updated_at: "2026-03-29T12:00:00.000Z"
     });
 
@@ -114,11 +120,13 @@ describe("visitor notes edge cases", () => {
         siteId: "site_1",
         email: "alex@example.com",
         note: "  Needs enterprise pricing  ",
+        mentions: [],
         userId: "user_123"
       })
     ).resolves.toEqual({
       note: "Needs enterprise pricing",
-      updatedAt: "2026-03-29T12:00:00.000Z"
+      updatedAt: "2026-03-29T12:00:00.000Z",
+      mentions: []
     });
   });
 });

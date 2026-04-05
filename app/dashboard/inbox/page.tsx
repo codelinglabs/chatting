@@ -2,6 +2,7 @@ import { requireUser } from "@/lib/auth";
 import {
   getConversationById,
   getDashboardStats,
+  listDashboardTeamMembers,
   listConversationSummaries,
   listSitesForUser
 } from "@/lib/data";
@@ -16,10 +17,11 @@ type DashboardInboxPageProps = {
 export default async function DashboardInboxPage({ searchParams }: DashboardInboxPageProps) {
   const user = await requireUser();
   const params = await searchParams;
-  const [conversations, stats, sites] = await Promise.all([
+  const [conversations, stats, sites, teamMembers] = await Promise.all([
     listConversationSummaries(user.id),
     getDashboardStats(user.id),
-    listSitesForUser(user.id)
+    listSitesForUser(user.id),
+    listDashboardTeamMembers(user.id)
   ]);
 
   const activeId = params.id || null;
@@ -32,6 +34,7 @@ export default async function DashboardInboxPage({ searchParams }: DashboardInbo
       initialSites={sites}
       initialConversations={conversations}
       initialActiveConversation={activeConversation}
+      initialTeamMembers={teamMembers}
     />
   );
 }

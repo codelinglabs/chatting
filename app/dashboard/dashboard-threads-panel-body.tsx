@@ -1,9 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { ConversationSummary } from "@/lib/types";
 import { classNames, truncate } from "@/lib/utils";
 import { conversationRowDetails } from "./dashboard-conversation-display";
+import { ConversationAssigneeBadge, findConversationAssignee } from "./dashboard-conversation-assignee";
 import { DashboardLink } from "./dashboard-shell";
 import type { DashboardThreadsPanelProps } from "./dashboard-threads-panel-header";
 import { CheckIcon, SearchIcon } from "./dashboard-ui";
@@ -40,11 +40,13 @@ function EmptyThreadsState({
 
 function renderConversationRow({
   conversation,
+  teamMembers,
   activeConversationId,
   highlightedConversationId,
   onSelectConversation
 }: {
-  conversation: ConversationSummary;
+  conversation: DashboardThreadsPanelProps["conversations"][number];
+  teamMembers: DashboardThreadsPanelProps["teamMembers"];
   activeConversationId?: string;
   highlightedConversationId?: string | null;
   onSelectConversation?: (conversationId: string) => void;
@@ -57,6 +59,7 @@ function renderConversationRow({
     secondaryFallback: conversation.siteName,
     previewFallback: "No messages yet"
   });
+  const assignee = findConversationAssignee(teamMembers ?? [], conversation.assignedUserId);
 
   return (
     <DashboardLink
@@ -107,6 +110,10 @@ function renderConversationRow({
               {truncate(details.preview, 48)}
             </p>
           </div>
+
+          <div className="mt-2">
+            <ConversationAssigneeBadge assignee={assignee} compact />
+          </div>
         </div>
       </div>
     </DashboardLink>
@@ -115,13 +122,14 @@ function renderConversationRow({
 
 export function renderThreadsBody({
   conversations,
+  teamMembers,
   activeConversationId,
   highlightedConversationId,
   onSelectConversation,
   widgetInstalled,
   showEmptyList,
   showEmptySearch
-}: Pick<DashboardThreadsPanelProps, "conversations" | "activeConversationId" | "highlightedConversationId" | "onSelectConversation"> & {
+}: Pick<DashboardThreadsPanelProps, "conversations" | "teamMembers" | "activeConversationId" | "highlightedConversationId" | "onSelectConversation"> & {
   widgetInstalled: boolean;
   showEmptyList: boolean;
   showEmptySearch: boolean;
@@ -152,5 +160,5 @@ export function renderThreadsBody({
     );
   }
 
-  return <div className="space-y-1">{conversations.map((conversation) => renderConversationRow({ conversation, activeConversationId, highlightedConversationId, onSelectConversation }))}</div>;
+  return <div className="space-y-1">{conversations.map((conversation) => renderConversationRow({ conversation, teamMembers, activeConversationId, highlightedConversationId, onSelectConversation }))}</div>;
 }

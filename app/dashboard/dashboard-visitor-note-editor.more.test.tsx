@@ -15,7 +15,7 @@ function getTextarea(tree: ReactNode) {
     (element) =>
       typeof element.type === "function" &&
       "onChange" in (element.props ?? {}) &&
-      "rows" in (element.props ?? {})
+      "value" in (element.props ?? {})
   )[0];
 }
 
@@ -40,8 +40,25 @@ async function loadVisitorNoteEditor() {
 
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("../ui/form-controls", () => ({
-    FormButton: ({ children, ...props }: { children: ReactNode }) => <button {...props}>{children}</button>,
-    FormTextarea: (props: Record<string, unknown>) => <textarea {...props} />
+    FormButton: ({ children, ...props }: { children: ReactNode }) => <button {...props}>{children}</button>
+  }));
+  vi.doMock("./dashboard-visitor-note-mention-field", () => ({
+    DashboardVisitorNoteMentionField: ({
+      value,
+      onChange,
+      mentionableUsers: _mentionableUsers,
+      ...props
+    }: {
+      value: string;
+      onChange: (nextValue: string) => void;
+    }) => (
+      <textarea
+        {...props}
+        rows={5}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    )
   }));
   vi.doMock("../ui/toast-provider", () => ({ useToast: () => ({ showToast }) }));
 
@@ -73,7 +90,7 @@ describe("dashboard visitor note editor more", () => {
     await flushAsyncWork();
     reactMocks.beginRender();
     tree = DashboardVisitorNoteEditor({ siteId: "site_1", email: "alex@example.com" });
-    getTextarea(tree)?.props.onChange({ target: { value: "" } });
+    getTextarea(tree)?.props.onChange("");
     reactMocks.beginRender();
     tree = DashboardVisitorNoteEditor({ siteId: "site_1", email: "alex@example.com" });
     getButton(tree)?.props.onClick();
@@ -86,7 +103,7 @@ describe("dashboard visitor note editor more", () => {
       expect.objectContaining({ method: "GET", cache: "no-store" })
     );
     expect(showToast).toHaveBeenCalledWith("success", "Visitor note cleared.");
-    expect(renderToStaticMarkup(tree)).toContain("Saved and shared across this visitor&#x27;s conversations.");
+    expect(renderToStaticMarkup(tree)).toContain("Updated");
   });
 
   it("prefers the conversation identity over site params when both are present", async () => {
@@ -110,6 +127,48 @@ describe("dashboard visitor note editor more", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/dashboard/visitor-note?conversationId=conv_1",
       expect.objectContaining({ method: "GET", cache: "no-store" })
+    );
+  });
+
+  it("shows a warning toast after save when a mention needs follow-up", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ok: true, note: "First touchpoint", updatedAt: "2026-03-29T10:00:00.000Z" })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          ok: true,
+          note: "@tina please confirm",
+          updatedAt: "2026-03-29T10:05:00.000Z",
+          sent: [],
+          ambiguous: ["tina"],
+          unresolved: [],
+          disabled: []
+        })
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { DashboardVisitorNoteEditor, reactMocks, showToast } = await loadVisitorNoteEditor();
+    reactMocks.beginRender();
+    DashboardVisitorNoteEditor({ conversationId: "conv_1" });
+    await runMockEffects(reactMocks.effects);
+    await flushAsyncWork();
+    reactMocks.beginRender();
+    let tree = DashboardVisitorNoteEditor({ conversationId: "conv_1" });
+
+    getTextarea(tree)?.props.onChange("@tina please confirm");
+    reactMocks.beginRender();
+    tree = DashboardVisitorNoteEditor({ conversationId: "conv_1" });
+    getButton(tree)?.props.onClick();
+    await flushAsyncWork();
+
+    expect(showToast).toHaveBeenCalledWith("success", "Visitor note saved.");
+    expect(showToast).toHaveBeenCalledWith(
+      "warning",
+      "Some mentions need attention.",
+      "Pick a more specific teammate for @tina."
     );
   });
 });

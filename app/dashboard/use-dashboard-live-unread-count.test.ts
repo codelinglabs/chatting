@@ -66,7 +66,7 @@ describe("useDashboardLiveUnreadCount", () => {
 
     eventSource.onmessage({ data: "not-json" });
     eventSource.onmessage({ data: JSON.stringify({ type: "connected" }) });
-    eventSource.onmessage({ data: JSON.stringify({ type: "message.created", sender: "founder", conversationId: "conv_1" }) });
+    eventSource.onmessage({ data: JSON.stringify({ type: "message.created", sender: "team", conversationId: "conv_1" }) });
     expect(fetchMock).not.toHaveBeenCalled();
 
     eventSource.onmessage({ data: JSON.stringify({ type: "message.created", sender: "user", conversationId: "conv_1" }) });

@@ -1,0 +1,55 @@
+import { createConversationThread } from "../../../app/dashboard/use-dashboard-actions.test-helpers";
+import {
+  buildDashboardAiAssistPrompt,
+  parseDashboardAiAssistResult,
+  validateDashboardAiAssistRequest
+} from "@/lib/dashboard-ai-assist";
+
+describe("dashboard ai assist helpers", () => {
+  it("validates supported actions and rewrite draft requirements", () => {
+    expect(
+      validateDashboardAiAssistRequest({ action: "summarize", conversationId: "conv_1" })
+    ).toBeNull();
+    expect(
+      validateDashboardAiAssistRequest({ action: "rewrite", conversationId: "conv_1", draft: "   " })
+    ).toBe("draft-required");
+    expect(
+      validateDashboardAiAssistRequest({ action: "archive", conversationId: "conv_1" })
+    ).toBe("unknown-action");
+  });
+
+  it("builds prompts with conversation context and parses result payloads", () => {
+    const conversation = createConversationThread({
+      pageUrl: "https://example.com/pricing",
+      tags: ["pricing"],
+      messages: [
+        {
+          id: "msg_1",
+          conversationId: "conv_1",
+          sender: "user",
+          content: "Do you charge per seat?",
+          createdAt: "2026-04-02T12:00:00.000Z",
+          attachments: []
+        }
+      ]
+    });
+
+    const prompt = buildDashboardAiAssistPrompt({
+      action: "reply",
+      conversation
+    });
+
+    expect(prompt).toContain("Site: Main site");
+    expect(prompt).toContain("Visitor: Do you charge per seat?");
+    expect(parseDashboardAiAssistResult("summarize", '{"summary":"Visitor is pricing-sensitive.","focus":"Answer the seat question."}')).toEqual({
+      action: "summarize",
+      summary: "Visitor is pricing-sensitive.",
+      focus: "Answer the seat question."
+    });
+    expect(parseDashboardAiAssistResult("tags", '{"tags":["pricing","bug"],"summary":"Pricing question with a reported bug."}')).toEqual({
+      action: "tags",
+      tags: ["pricing", "bug"],
+      summary: "Pricing question with a reported bug."
+    });
+  });
+});

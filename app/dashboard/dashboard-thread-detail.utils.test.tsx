@@ -50,7 +50,7 @@ describe("dashboard thread detail utils", () => {
         {
           id: "msg_2",
           conversationId: "conv_1",
-          sender: "founder",
+          sender: "team",
           content: "Hello",
           createdAt: "2026-03-29T11:15:00.000Z",
           attachments: []
@@ -74,7 +74,7 @@ describe("dashboard thread detail utils", () => {
       renderAttachments({
         id: "msg_1",
         conversationId: "conv_1",
-        sender: "founder",
+        sender: "team",
         content: "",
         createdAt: "2026-03-29T11:15:00.000Z",
         attachments: [

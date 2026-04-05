@@ -25,13 +25,13 @@ describe("toast provider", () => {
     reactMocks.beginRender();
     let tree = module.ToastProvider({ children: <div>child</div> });
     const showToast = (tree as ReactElement).props.value.showToast as (
-      tone: "success" | "error",
+      tone: "success" | "warning" | "error",
       title: string,
       message?: string
     ) => void;
 
     showToast("success", "One");
-    showToast("error", "Two", "Broken");
+    showToast("warning", "Two", "Heads up");
     showToast("success", "Three");
     showToast("error", "Four");
 
@@ -40,6 +40,7 @@ describe("toast provider", () => {
     const html = renderToStaticMarkup(tree);
     expect(html).not.toContain("One");
     expect(html).toContain("Two");
+    expect(html).toContain("Heads up");
     expect(html).toContain("Three");
     expect(html).toContain("Four");
 

@@ -65,8 +65,10 @@ describe("dashboard threads panel", () => {
         initialWidgetInstalled={false}
         widgetSiteIds={["site_1"]}
         threadFilter="all"
+        assignmentFilter="all"
         searchQuery=""
         onThreadFilterChange={vi.fn()}
+        onAssignmentFilterChange={vi.fn()}
         onSearchQueryChange={vi.fn()}
       />
     );
@@ -77,8 +79,10 @@ describe("dashboard threads panel", () => {
         initialWidgetInstalled
         widgetSiteIds={["site_1"]}
         threadFilter="all"
+        assignmentFilter="all"
         searchQuery=""
         onThreadFilterChange={vi.fn()}
+        onAssignmentFilterChange={vi.fn()}
         onSearchQueryChange={vi.fn()}
       />
     );
@@ -89,8 +93,10 @@ describe("dashboard threads panel", () => {
         initialWidgetInstalled={false}
         widgetSiteIds={["site_1"]}
         threadFilter="open"
+        assignmentFilter="unassigned"
         searchQuery="pricing"
         onThreadFilterChange={vi.fn()}
+        onAssignmentFilterChange={vi.fn()}
         onSearchQueryChange={vi.fn()}
       />
     );
@@ -118,8 +124,10 @@ describe("dashboard threads panel", () => {
         activeConversationId="conv_1"
         highlightedConversationId="conv_2"
         threadFilter="resolved"
+        assignmentFilter="assignedToTeammate"
         searchQuery="pricing"
         onThreadFilterChange={vi.fn()}
+        onAssignmentFilterChange={vi.fn()}
         onSearchQueryChange={vi.fn()}
       />
     );
@@ -132,6 +140,7 @@ describe("dashboard threads panel", () => {
 
   it("forwards filter, search, clear, and select handlers", async () => {
     const onThreadFilterChange = vi.fn();
+    const onAssignmentFilterChange = vi.fn();
     const onSearchQueryChange = vi.fn();
     const onClearSearch = vi.fn();
     const onSelectConversation = vi.fn();
@@ -145,9 +154,11 @@ describe("dashboard threads panel", () => {
       activeConversationId: "conv_1",
       highlightedConversationId: "conv_2",
       threadFilter: "all",
+      assignmentFilter: "all",
       searchQuery: "pricing",
       searchInputId: "search",
       onThreadFilterChange,
+      onAssignmentFilterChange,
       onSearchQueryChange,
       onClearSearch,
       onSelectConversation
@@ -162,6 +173,8 @@ describe("dashboard threads panel", () => {
     const preventDefault = vi.fn();
 
     buttons[1]?.props.onClick();
+    const selects = collectElements(tree, (element) => element.type === "select");
+    selects[0]?.props.onChange({ currentTarget: { value: "mine" } });
     input?.props.onChange({ currentTarget: { value: "vip" } });
     buttons.at(-1)?.props.onClick();
     links[0]?.props.onClick({
@@ -174,6 +187,7 @@ describe("dashboard threads panel", () => {
     });
 
     expect(onThreadFilterChange).toHaveBeenCalledWith("open");
+    expect(onAssignmentFilterChange).toHaveBeenCalledWith("mine");
     expect(onSearchQueryChange).toHaveBeenCalledWith("vip");
     expect(onClearSearch).toHaveBeenCalled();
     expect(preventDefault).toHaveBeenCalled();

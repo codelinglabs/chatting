@@ -48,13 +48,16 @@ describe("dashboard shell layout", () => {
       subtitle: "Here's what's happening with your conversations"
     });
     expect(routeHeaderText("/dashboard/analytics", "Tina", "Hello").title).toBe("Analytics");
+    expect(routeHeaderText("/dashboard/help-center", "Tina", "Hello").title).toBe("Help center");
     expect(routeHeaderText("/dashboard/unknown", "Tina", "Hello").title).toBe("Dashboard");
     expect(dashboardGreeting(null)).toBe("Hello");
     expect(dashboardGreeting(9)).toBe("Good morning");
   });
 
   it("renders mobile and desktop navigation chrome", () => {
-    const mobileHtml = renderToStaticMarkup(<MobileChrome pathname="/dashboard/inbox" unreadCount={3} />);
+    const mobileHtml = renderToStaticMarkup(
+      <MobileChrome pathname="/dashboard/inbox" unreadCount={3} />
+    );
     const sidebarHtml = renderToStaticMarkup(
       <DesktopSidebar
         pathname="/dashboard/visitors"
@@ -68,10 +71,12 @@ describe("dashboard shell layout", () => {
     expect(mobileHtml).toContain("Chatting");
     expect(mobileHtml).toContain("Log out");
     expect(mobileHtml).toContain("Inbox");
+    expect(mobileHtml).toContain("Help center");
     expect(mobileHtml).toContain(">3<");
-    expect(sidebarHtml).toContain("Visitors");
+    expect(sidebarHtml).toContain("People");
     expect(sidebarHtml).toContain("tina@usechatting.com");
     expect(sidebarHtml).toContain("Chatting");
+    expect(sidebarHtml).not.toContain("Teams");
   });
 
   it("renders the dashboard header with and without the inbox unread badge", () => {

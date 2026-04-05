@@ -1,6 +1,7 @@
 const mocks = vi.hoisted(() => ({
   getConversationVisitorNote: vi.fn(),
   getSiteVisitorNote: vi.fn(),
+  resolveVisitorNoteMentionResolution: vi.fn(),
   sendConversationMentionNotifications: vi.fn(),
   updateConversationVisitorNote: vi.fn(),
   updateSiteVisitorNote: vi.fn(),
@@ -14,6 +15,8 @@ vi.mock("@/lib/data", () => ({
   updateSiteVisitorNote: mocks.updateSiteVisitorNote
 }));
 vi.mock("@/lib/mention-notifications", () => ({
+  listMentionableTeammates: vi.fn(),
+  resolveVisitorNoteMentionResolution: mocks.resolveVisitorNoteMentionResolution,
   sendConversationMentionNotifications: mocks.sendConversationMentionNotifications
 }));
 vi.mock("@/lib/route-helpers", () => ({
@@ -34,6 +37,14 @@ describe("visitor note route extra coverage", () => {
         workspaceOwnerId: "owner_1"
       }
     });
+    mocks.resolveVisitorNoteMentionResolution.mockResolvedValue({
+      mentions: [],
+      sent: [],
+      ambiguous: [],
+      unresolved: [],
+      disabled: [],
+      recipients: []
+    });
   });
 
   it("returns auth responses and missing records for gets", async () => {
@@ -52,7 +63,7 @@ describe("visitor note route extra coverage", () => {
   it("loads and saves site-scoped notes", async () => {
     mocks.getSiteVisitorNote.mockResolvedValueOnce({ note: "Warm lead" });
     const loaded = await GET(new Request("https://chatting.test?siteId=site_1&sessionId=session_1"));
-    expect(await loaded.json()).toEqual({ ok: true, note: "Warm lead" });
+    expect(await loaded.json()).toEqual({ ok: true, note: "Warm lead", mentionableUsers: [] });
 
     const formData = new FormData();
     formData.set("siteId", "site_1");
@@ -60,7 +71,14 @@ describe("visitor note route extra coverage", () => {
     formData.set("note", "Follow up tomorrow");
     mocks.updateSiteVisitorNote.mockResolvedValueOnce({ note: "Follow up tomorrow" });
     const saved = await POST(new Request("https://chatting.test", { method: "POST", body: formData }));
-    expect(await saved.json()).toEqual({ ok: true, note: "Follow up tomorrow" });
+    expect(await saved.json()).toEqual({
+      ok: true,
+      note: "Follow up tomorrow",
+      sent: [],
+      ambiguous: [],
+      unresolved: [],
+      disabled: []
+    });
   });
 
   it("covers post validation and site-scoped not-found responses", async () => {
@@ -92,7 +110,11 @@ describe("visitor note route extra coverage", () => {
     expect(await response.json()).toEqual({
       ok: true,
       note: "@Tina can you take this one?",
-      updatedAt: "2026-03-30T15:44:00.000Z"
+      updatedAt: "2026-03-30T15:44:00.000Z",
+      sent: [],
+      ambiguous: [],
+      unresolved: [],
+      disabled: []
     });
   });
 });

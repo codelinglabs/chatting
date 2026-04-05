@@ -65,6 +65,7 @@ export function createConversationSummary(
     siteId: "site_1",
     siteName: "Main site",
     email: "visitor@example.com",
+    assignedUserId: null,
     sessionId: "session_1",
     status: "open",
     createdAt: "2026-03-29T10:00:00.000Z",
@@ -131,6 +132,7 @@ export function createDashboardActionsHarness(options?: {
   const activeConversationState = createStateRecorder<ConversationThread | null>(activeConversation);
   const savingSiteIdState = createStateRecorder<string | null>(null);
   const savingEmailState = createStateRecorder(false);
+  const assigningConversationState = createStateRecorder(false);
   const sendingReplyState = createStateRecorder(Boolean(options?.sendingReply));
   const updatingStatusState = createStateRecorder(false);
   const answeredConversationsState = createStateRecorder(0);
@@ -154,6 +156,7 @@ export function createDashboardActionsHarness(options?: {
     setActiveConversation: activeConversationState.set,
     setSavingSiteId: savingSiteIdState.set,
     setSavingEmail: savingEmailState.set,
+    setAssigningConversation: assigningConversationState.set,
     setSendingReply: sendingReplyState.set,
     setUpdatingStatus: updatingStatusState.set,
     setAnsweredConversations: answeredConversationsState.set,
@@ -171,6 +174,7 @@ export function createDashboardActionsHarness(options?: {
     actions,
     activeConversationState,
     activeTypingConversationIdRef,
+    assigningConversationState,
     answeredConversationsState,
     bannerState,
     clearTypingSignal,

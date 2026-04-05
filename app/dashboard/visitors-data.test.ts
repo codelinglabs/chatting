@@ -52,6 +52,7 @@ describe("buildVisitorRecords", () => {
     expect(records[0].currentPage).toBe("/docs");
     expect(records[0].latestConversationId).toBe("conv_1");
     expect(records[0].online).toBe(true);
+    expect(records[0].timezone).toBe("Europe/London");
   });
 
   it("creates visitor records for passive sessions without conversations", () => {

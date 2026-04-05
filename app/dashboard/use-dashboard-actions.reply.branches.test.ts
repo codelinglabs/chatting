@@ -97,7 +97,7 @@ describe("dashboard reply action branch coverage", () => {
       message: {
         id: "msg_2",
         conversationId: "conv_1",
-        sender: "founder",
+        sender: "team",
         content: "Sent with files",
         createdAt: "2026-03-29T11:00:00.000Z",
         attachments: []

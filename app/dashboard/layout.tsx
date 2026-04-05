@@ -20,7 +20,11 @@ export default async function DashboardLayout({
   const unreadCount = conversations.reduce((count, conversation) => count + conversation.unreadCount, 0);
 
   return (
-    <DashboardShell userEmail={user.email} unreadCount={unreadCount} notificationSettings={notificationSettings}>
+    <DashboardShell
+      userEmail={user.email}
+      unreadCount={unreadCount}
+      notificationSettings={notificationSettings}
+    >
       {children}
     </DashboardShell>
   );

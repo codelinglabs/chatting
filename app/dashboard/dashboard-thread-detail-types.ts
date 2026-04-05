@@ -1,20 +1,24 @@
 import type { FormEvent } from "react";
+import type { DashboardTeamMember } from "@/lib/data/settings-types";
 import type { ConversationStatus, ConversationSummary, ConversationThread } from "@/lib/types";
 
 export type DashboardThreadDetailProps = {
   activeConversation: ConversationThread | null;
   loadingConversationSummary: ConversationSummary | null;
   savingEmail: boolean;
+  assigningConversation?: boolean;
   sendingReply: boolean;
   updatingStatus: boolean;
   isVisitorTyping: boolean;
   isLiveDisconnected: boolean;
   teamName: string;
   teamInitials: string;
+  teamMembers?: DashboardTeamMember[];
   showSidebarInline?: boolean;
   showSidebarDrawer?: boolean;
   showBackButton?: boolean;
   onSaveConversationEmail: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  onConversationAssignmentChange?: (assignedUserId: string | null) => Promise<void>;
   onSendReply: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   onRetryReply: (messageId: string) => Promise<void>;
   onConversationStatusChange: (status: ConversationStatus) => Promise<void>;

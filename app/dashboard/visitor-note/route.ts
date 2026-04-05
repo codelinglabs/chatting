@@ -4,7 +4,11 @@ import {
   updateConversationVisitorNote,
   updateSiteVisitorNote
 } from "@/lib/data";
-import { sendConversationMentionNotifications } from "@/lib/mention-notifications";
+import {
+  listMentionableTeammates,
+  resolveVisitorNoteMentionResolution,
+  sendConversationMentionNotifications
+} from "@/lib/mention-notifications";
 import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
 
 function readIdentity(request: Request) {
@@ -32,7 +36,17 @@ export async function GET(request: Request) {
       return jsonError("not-found", 404);
     }
 
-    return jsonOk(note);
+    let mentionableUsers: Awaited<ReturnType<typeof listMentionableTeammates>> = [];
+    try {
+      mentionableUsers = await listMentionableTeammates({
+        workspaceOwnerId: auth.user.workspaceOwnerId,
+        mentionerUserId: auth.user.id
+      });
+    } catch (error) {
+      console.error("visitor note mentionable teammates failed", error);
+    }
+
+    return jsonOk({ ...note, mentionableUsers });
   }
 
   if (!siteId || (!email && !sessionId)) {
@@ -50,7 +64,7 @@ export async function GET(request: Request) {
     return jsonError("site-not-found", 404);
   }
 
-  return jsonOk(note);
+  return jsonOk({ ...note, mentionableUsers: [] });
 }
 
 export async function POST(request: Request) {
@@ -65,13 +79,24 @@ export async function POST(request: Request) {
   const sessionId = String(formData.get("sessionId") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const note = String(formData.get("note") ?? "");
+  const mentionResolution = await resolveNoteMentions(
+    note,
+    auth.user.workspaceOwnerId,
+    auth.user.id
+  );
 
   if (conversationId) {
-    const saved = await updateConversationVisitorNote(conversationId, note, auth.user.id);
+    const saved = await updateConversationVisitorNote(
+      conversationId,
+      note,
+      mentionResolution.mentions,
+      auth.user.id
+    );
     if (!saved) {
       return jsonError("not-found", 404);
     }
 
+    const mentionResult = pickMentionResult(mentionResolution);
     if (saved.note) {
       try {
         await sendConversationMentionNotifications({
@@ -80,14 +105,15 @@ export async function POST(request: Request) {
           updatedAt: saved.updatedAt,
           mentionerUserId: auth.user.id,
           mentionerEmail: auth.user.email,
-          workspaceOwnerId: auth.user.workspaceOwnerId
+          workspaceOwnerId: auth.user.workspaceOwnerId,
+          mentionResolution
         });
       } catch (error) {
         console.error("conversation mention notification failed", error);
       }
     }
 
-    return jsonOk(saved);
+    return jsonOk({ ...saved, ...mentionResult });
   }
 
   if (!siteId || (!email && !sessionId)) {
@@ -99,6 +125,7 @@ export async function POST(request: Request) {
     sessionId: sessionId || null,
     email: email || null,
     note,
+    mentions: mentionResolution.mentions,
     userId: auth.user.id
   });
 
@@ -106,5 +133,40 @@ export async function POST(request: Request) {
     return jsonError("site-not-found", 404);
   }
 
-  return jsonOk(saved);
+  return jsonOk({ ...saved, ...pickMentionResult(mentionResolution) });
+}
+
+function emptyMentionResult() {
+  return { sent: [], ambiguous: [], unresolved: [], disabled: [] };
+}
+
+function pickMentionResult(result: {
+  sent: string[];
+  ambiguous: string[];
+  unresolved: string[];
+  disabled: string[];
+}) {
+  return {
+    sent: result.sent,
+    ambiguous: result.ambiguous,
+    unresolved: result.unresolved,
+    disabled: result.disabled
+  };
+}
+
+async function resolveNoteMentions(
+  note: string,
+  workspaceOwnerId: string,
+  mentionerUserId: string
+) {
+  try {
+    return await resolveVisitorNoteMentionResolution({
+      note,
+      workspaceOwnerId,
+      mentionerUserId
+    });
+  } catch (error) {
+    console.error("visitor note mention resolution failed", error);
+    return { mentions: [], recipients: [], ...emptyMentionResult() };
+  }
 }

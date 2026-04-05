@@ -45,6 +45,7 @@ async function loadDashboardState(options?: { pathname?: string; search?: string
     createDashboardActions: () => ({
       handleSiteTitleSave: vi.fn(),
       handleSaveConversationEmail: vi.fn(),
+      handleConversationAssignmentChange: vi.fn(),
       handleReplySend: vi.fn(),
       handleReplyRetry: vi.fn(),
       handleConversationStatusChange: vi.fn(),

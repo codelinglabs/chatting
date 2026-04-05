@@ -20,7 +20,7 @@ export function renderDashboardThreadDetailTimeline(input: {
             <div key={`day-${entry.value}-${index}`} className="py-1 text-center text-xs text-slate-400">
               <span>&#9472;&#9472; {entry.value} &#9472;&#9472;</span>
             </div>
-          ) : entry.value.sender === "founder" ? (
+          ) : entry.value.sender === "team" ? (
             <div key={entry.value.id} className="flex justify-end">
               <div className="flex max-w-[70%] items-end gap-2">
                 <div className="min-w-0 text-right">

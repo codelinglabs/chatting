@@ -24,6 +24,26 @@ function collectElements(node: ReactNode, predicate: (element: ReactElement) => 
   ];
 }
 
+function buttonByLabel(node: ReactNode, label: string) {
+  return collectElements(
+    node,
+    (element) =>
+      element.type === "button" &&
+      (element.props["aria-label"] === label ||
+        String(JSON.stringify(element.props.children ?? "")).includes(label))
+  )[0];
+}
+
+function getComposerTextarea(node: ReactNode) {
+  return collectElements(
+    node,
+    (element) =>
+      typeof element.props?.onFocus === "function" &&
+      typeof element.props?.onInput === "function" &&
+      typeof element.props?.onKeyDown === "function"
+  )[0];
+}
+
 function baseProps() {
   return {
     loadingConversationSummary: null,
@@ -86,7 +106,7 @@ describe("dashboard thread detail", () => {
             {
               id: "msg_2",
               conversationId: "conv_1",
-              sender: "founder",
+              sender: "team",
               content: "Happy to help",
               createdAt: "2026-03-29T11:15:00.000Z",
               attachments: []
@@ -106,8 +126,10 @@ describe("dashboard thread detail", () => {
     expect(html).toContain("Visitor is typing...");
     expect(html).toContain("Happy to help");
     expect(html).toContain("Reopen");
+    expect(html).toContain("Saved replies");
+    expect(html).toContain("Suggest reply");
     expect(html).toContain("sidebar:conv_1");
-    expect(html).toContain("Visitor info");
+    expect(html).toContain("Contact info");
   });
 
   it("wires reply and navigation handlers from the composed tree", () => {
@@ -119,15 +141,14 @@ describe("dashboard thread detail", () => {
       showSidebarInline: false
     });
 
-    const buttons = collectElements(tree, (element) => element.type === "button");
-    const textarea = collectElements(tree, (element) => element.type === "textarea")[0];
+    const textarea = getComposerTextarea(tree);
     const form = collectElements(tree, (element) => element.type === "form")[0];
     const requestSubmit = vi.fn();
     const preventDefault = vi.fn();
 
-    buttons[0]?.props.onClick();
-    buttons[1]?.props.onClick();
-    buttons[2]?.props.onClick();
+    buttonByLabel(tree, "Back to conversations")?.props.onClick();
+    buttonByLabel(tree, "Resolve")?.props.onClick();
+    buttonByLabel(tree, "Open visitor info")?.props.onClick();
     textarea?.props.onFocus({ currentTarget: { value: "Hello" } });
     textarea?.props.onInput({ currentTarget: { value: "Hello again" } });
     textarea?.props.onBlur();

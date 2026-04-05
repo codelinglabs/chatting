@@ -2,35 +2,38 @@
 
 import { useEffect } from "react";
 
+const PRESENCE_HEARTBEAT_INTERVAL_MS = 30000;
+
 export function useDashboardPresenceHeartbeat() {
   useEffect(() => {
     let intervalId: number | null = null;
+    const isVisible = () => document.visibilityState === "visible";
 
     const sendHeartbeat = () => {
       fetch("/dashboard/presence", { method: "POST", keepalive: true }).catch(() => {});
     };
 
+    const stopHeartbeat = () => {
+      if (intervalId === null) {
+        return;
+      }
+
+      window.clearInterval(intervalId);
+      intervalId = null;
+    };
+
     const startHeartbeat = () => {
-      if (document.visibilityState !== "visible") {
+      stopHeartbeat();
+      if (!isVisible()) {
         return;
       }
 
       sendHeartbeat();
-      if (intervalId !== null) {
-        window.clearInterval(intervalId);
-      }
-      intervalId = window.setInterval(sendHeartbeat, 30000);
-    };
-
-    const stopHeartbeat = () => {
-      if (intervalId !== null) {
-        window.clearInterval(intervalId);
-        intervalId = null;
-      }
+      intervalId = window.setInterval(sendHeartbeat, PRESENCE_HEARTBEAT_INTERVAL_MS);
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
+      if (isVisible()) {
         startHeartbeat();
       } else {
         stopHeartbeat();
@@ -38,7 +41,7 @@ export function useDashboardPresenceHeartbeat() {
     };
 
     const handleFocus = () => {
-      if (document.visibilityState === "visible") {
+      if (isVisible()) {
         sendHeartbeat();
       }
     };

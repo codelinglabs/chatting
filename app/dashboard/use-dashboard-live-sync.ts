@@ -9,7 +9,7 @@ type LiveEvent = {
   siteId?: string;
   sessionId?: string;
   pageUrl?: string | null;
-  sender?: "user" | "founder";
+  sender?: "user" | "team";
   actor?: "visitor" | "team";
   typing?: boolean;
 };
@@ -73,9 +73,9 @@ export function useDashboardLiveSync({
           return;
         }
 
-        const skipFounderThreadRefresh =
+        const skipTeamThreadRefresh =
           event.type === "message.created" &&
-          event.sender === "founder" &&
+          event.sender === "team" &&
           Boolean(event.conversationId) &&
           (() => {
             const timestamp = recentOptimisticReplyAtRef.current.get(event.conversationId!);
@@ -91,11 +91,16 @@ export function useDashboardLiveSync({
             return true;
           })();
 
-        if (skipFounderThreadRefresh) {
+        if (skipTeamThreadRefresh) {
           return;
         }
 
         if (event.type === "conversation.updated" && event.conversationId) {
+          if (activeConversationIdRef.current === event.conversationId) {
+            void refreshConversation(event.conversationId);
+            return;
+          }
+
           void refreshConversationSummary(event.conversationId);
           return;
         }

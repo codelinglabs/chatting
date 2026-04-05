@@ -12,6 +12,7 @@ import {
   PeopleIcon,
   UsersIcon
 } from "./dashboard-ui";
+import { HelpCenterIcon } from "./dashboard-help-center-icon";
 
 export type NavItem = {
   label: string;
@@ -37,12 +38,13 @@ export const DashboardNavigationContext = createContext<DashboardNavigationConte
 export const PRIMARY_NAV: readonly NavItem[] = [
   { label: "Home", href: "/dashboard", icon: HouseIcon },
   { label: "Inbox", href: "/dashboard/inbox", icon: InboxIcon, showsBadge: true },
-  { label: "Visitors", href: "/dashboard/visitors", icon: PeopleIcon },
+  { label: "People", href: "/dashboard/visitors", icon: PeopleIcon },
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChartIcon }
 ] as const;
 
 export const SETTINGS_NAV: readonly NavItem[] = [
   { label: "Widget", href: "/dashboard/widget", icon: PaintbrushIcon },
+  { label: "Help center", href: "/dashboard/help-center", icon: HelpCenterIcon },
   { label: "Team", href: "/dashboard/team", icon: UsersIcon },
   { label: "Settings", href: "/dashboard/settings", icon: GearIcon }
 ] as const;

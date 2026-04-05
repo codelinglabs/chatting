@@ -14,13 +14,17 @@ export function createMockReactHooks(options: MockReactHooksOptions = {}) {
   const effects: Array<() => void | (() => void)> = [];
   const states: StateRecord<unknown>[] = [];
   const refs: Array<{ current: unknown }> = [];
+  const memoValues: unknown[] = [];
+  const memoDeps: Array<unknown[] | undefined> = [];
   let stateIndex = 0;
   let refIndex = 0;
+  let memoIndex = 0;
 
   return {
     beginRender() {
       stateIndex = 0;
       refIndex = 0;
+      memoIndex = 0;
       effects.length = 0;
     },
     effects,
@@ -32,7 +36,24 @@ export function createMockReactHooks(options: MockReactHooksOptions = {}) {
       return {
         ...actual,
         startTransition: (callback: () => void) => callback(),
-        useMemo: vi.fn((factory: () => unknown) => factory()),
+        useMemo: vi.fn((factory: () => unknown, dependencies?: unknown[]) => {
+          const currentIndex = memoIndex++;
+          const previousDeps = memoDeps[currentIndex];
+          const shouldReuse =
+            previousDeps &&
+            dependencies &&
+            previousDeps.length === dependencies.length &&
+            previousDeps.every((value, index) => Object.is(value, dependencies[index]));
+
+          if (shouldReuse) {
+            return memoValues[currentIndex];
+          }
+
+          const nextValue = factory();
+          memoValues[currentIndex] = nextValue;
+          memoDeps[currentIndex] = dependencies;
+          return nextValue;
+        }),
         useEffect: vi.fn((callback: () => void | (() => void)) => {
           effects.push(callback);
         }),

@@ -13,7 +13,7 @@ export type ReplySummarySnapshot = Pick<
   "updatedAt" | "lastMessageAt" | "lastMessagePreview"
 >;
 
-type RetryableReply = ThreadMessage & { sender: "founder"; failed: true };
+type RetryableReply = ThreadMessage & { sender: "team"; failed: true };
 
 type BuildOptimisticReplyInput = {
   content: string;
@@ -46,9 +46,9 @@ export function buildOptimisticReply({
   }
 
   return {
-    id: `optimistic-founder-${crypto.randomUUID()}`,
+    id: `optimistic-team-${crypto.randomUUID()}`,
     conversationId,
-    sender: "founder",
+    sender: "team",
     content,
     createdAt,
     attachments: createOptimisticAttachmentUrls(files),
@@ -69,15 +69,13 @@ export function findRetryableReply(messages: ThreadMessage[], messageId: string)
   return (
     messages.find(
       (message): message is RetryableReply =>
-        message.id === messageId && message.sender === "founder" && Boolean(message.failed)
+        message.id === messageId && message.sender === "team" && Boolean(message.failed)
     ) ?? null
   );
 }
 
-export function hasPostedFounderReply(messages: ThreadMessage[], ignoredMessageId?: string) {
-  return messages.some(
-    (message) => message.sender === "founder" && message.id !== ignoredMessageId && !message.failed
-  );
+export function hasPostedTeamReply(messages: ThreadMessage[], ignoredMessageId?: string) {
+  return messages.some((message) => message.sender === "team" && message.id !== ignoredMessageId && !message.failed);
 }
 
 export function parseReplyFiles(formData: FormData) {

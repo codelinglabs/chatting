@@ -1,6 +1,8 @@
 const mocks = vi.hoisted(() => ({
   getConversationVisitorNote: vi.fn(),
   getSiteVisitorNote: vi.fn(),
+  listMentionableTeammates: vi.fn(),
+  resolveVisitorNoteMentionResolution: vi.fn(),
   sendConversationMentionNotifications: vi.fn(),
   updateConversationVisitorNote: vi.fn(),
   updateSiteVisitorNote: vi.fn(),
@@ -14,6 +16,8 @@ vi.mock("@/lib/data", () => ({
   updateSiteVisitorNote: mocks.updateSiteVisitorNote
 }));
 vi.mock("@/lib/mention-notifications", () => ({
+  listMentionableTeammates: mocks.listMentionableTeammates,
+  resolveVisitorNoteMentionResolution: mocks.resolveVisitorNoteMentionResolution,
   sendConversationMentionNotifications: mocks.sendConversationMentionNotifications
 }));
 
@@ -38,6 +42,17 @@ describe("dashboard visitor-note route", () => {
         workspaceOwnerId: "owner_123"
       }
     });
+    mocks.listMentionableTeammates.mockResolvedValue([
+      { userId: "user_tina", displayName: "Tina Bauer", handle: "tina-bauer" }
+    ]);
+    mocks.resolveVisitorNoteMentionResolution.mockResolvedValue({
+      mentions: [],
+      sent: [],
+      ambiguous: [],
+      unresolved: [],
+      disabled: [],
+      recipients: []
+    });
   });
 
   it("loads a conversation-scoped visitor note", async () => {
@@ -54,7 +69,8 @@ describe("dashboard visitor-note route", () => {
     expect(await response.json()).toEqual({
       ok: true,
       note: "Asked about enterprise rollout.",
-      updatedAt: "2026-03-29T10:00:00.000Z"
+      updatedAt: "2026-03-29T10:00:00.000Z",
+      mentionableUsers: [{ userId: "user_tina", displayName: "Tina Bauer", handle: "tina-bauer" }]
     });
   });
 
@@ -84,12 +100,17 @@ describe("dashboard visitor-note route", () => {
       sessionId: "session_1",
       email: null,
       note: "Warm lead from pricing page.",
+      mentions: [],
       userId: "user_123"
     });
     expect(await response.json()).toEqual({
       ok: true,
       note: "Warm lead from pricing page.",
-      updatedAt: "2026-03-29T11:00:00.000Z"
+      updatedAt: "2026-03-29T11:00:00.000Z",
+      sent: [],
+      ambiguous: [],
+      unresolved: [],
+      disabled: []
     });
     expect(mocks.sendConversationMentionNotifications).not.toHaveBeenCalled();
   });
@@ -112,9 +133,31 @@ describe("dashboard visitor-note route", () => {
     const formData = new FormData();
     formData.set("conversationId", "conv_1");
     formData.set("note", "@Tina can you confirm this pricing edge case?");
+    mocks.resolveVisitorNoteMentionResolution.mockResolvedValueOnce({
+      mentions: [
+        {
+          rawHandle: "tina",
+          status: "resolved",
+          userId: "user_tina",
+          canonicalHandle: "tina-bauer",
+          displayName: "Tina Bauer"
+        }
+      ],
+      sent: ["tina"],
+      ambiguous: [],
+      unresolved: [],
+      disabled: [],
+      recipients: []
+    });
     mocks.updateConversationVisitorNote.mockResolvedValueOnce({
       note: "@Tina can you confirm this pricing edge case?",
       updatedAt: "2026-03-30T15:42:00.000Z"
+    });
+    mocks.sendConversationMentionNotifications.mockResolvedValueOnce({
+      sent: ["tina"],
+      ambiguous: [],
+      unresolved: [],
+      disabled: []
     });
 
     const response = await POST(
@@ -128,7 +171,21 @@ describe("dashboard visitor-note route", () => {
       updatedAt: "2026-03-30T15:42:00.000Z",
       mentionerUserId: "user_123",
       mentionerEmail: "hello@chatly.example",
-      workspaceOwnerId: "owner_123"
+      workspaceOwnerId: "owner_123",
+      mentionResolution: expect.objectContaining({
+        mentions: expect.arrayContaining([
+          expect.objectContaining({ canonicalHandle: "tina-bauer", userId: "user_tina" })
+        ])
+      })
+    });
+    expect(await response.json()).toEqual({
+      ok: true,
+      note: "@Tina can you confirm this pricing edge case?",
+      updatedAt: "2026-03-30T15:42:00.000Z",
+      sent: ["tina"],
+      ambiguous: [],
+      unresolved: [],
+      disabled: []
     });
   });
 });

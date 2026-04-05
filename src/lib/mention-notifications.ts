@@ -2,56 +2,18 @@ import { sendMentionNotificationEmail } from "@/lib/chatly-notification-email-se
 import { getConversationSummaryById } from "@/lib/data/conversations";
 import { getPublicAppUrl } from "@/lib/env";
 import {
-  listWorkspaceMentionNotificationRows,
-  type WorkspaceMentionNotificationRow
-} from "@/lib/repositories/mention-notification-repository";
-import { displayNameFromEmail, firstNameFromDisplayName } from "@/lib/user-display";
+  buildMentionDisplayName,
+  buildMentionableTeammates,
+  extractMentionHandles
+} from "@/lib/mention-identities";
+import { listWorkspaceMentionNotificationRows } from "@/lib/repositories/mention-notification-repository";
+import {
+  buildVisitorNoteMentionResolution,
+  emptyVisitorNoteMentionResolution,
+  type VisitorNoteMentionResolution
+} from "@/lib/visitor-note-mention-structure";
+import { displayNameFromEmail } from "@/lib/user-display";
 import { formatRelativeTime, optionalText } from "@/lib/utils";
-
-type MentionRecipient = WorkspaceMentionNotificationRow & {
-  aliases: Set<string>;
-  notificationAddress: string;
-};
-
-function collapseMentionValue(value: string) {
-  return value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-function buildMentionVariants(value: string | null | undefined) {
-  const trimmed = value?.trim().toLowerCase();
-  const collapsed = collapseMentionValue(value ?? "");
-  return new Set([trimmed, collapsed].filter(Boolean) as string[]);
-}
-
-function buildDisplayName(row: Pick<WorkspaceMentionNotificationRow, "email" | "first_name" | "last_name">) {
-  const explicit = [optionalText(row.first_name), optionalText(row.last_name)].filter(Boolean).join(" ").trim();
-  return explicit || displayNameFromEmail(row.email);
-}
-
-function buildMentionRecipients(
-  rows: WorkspaceMentionNotificationRow[],
-  mentionerUserId: string
-) {
-  return rows
-    .filter((row) => row.user_id !== mentionerUserId)
-    .filter((row) => (row.email_notifications ?? true) && (row.mention_notifications ?? true))
-    .map((row) => {
-      const notificationAddress = optionalText(row.notification_email) || row.email;
-      const displayName = buildDisplayName(row);
-      const firstName = optionalText(row.first_name) || firstNameFromDisplayName(displayName);
-      const lastName = optionalText(row.last_name);
-      const emailLocalPart = row.email.split("@")[0] || "";
-      const aliases = new Set<string>();
-
-      for (const value of [firstName, lastName, displayName, emailLocalPart]) {
-        for (const alias of buildMentionVariants(value)) {
-          aliases.add(alias);
-        }
-      }
-
-      return { ...row, aliases, notificationAddress } satisfies MentionRecipient;
-    });
-}
 
 function buildConversationLabel(pageUrl: string | null | undefined) {
   if (!pageUrl) {
@@ -77,40 +39,28 @@ function buildConversationLabel(pageUrl: string | null | undefined) {
   }
 }
 
-export function extractMentionHandles(value: string) {
-  const handles = new Set<string>();
-  const pattern = /(^|[^a-z0-9._-])@([a-z0-9][a-z0-9._-]{0,63})/gi;
+export { extractMentionHandles, resolveMentionRecipients } from "@/lib/mention-identities";
 
-  for (const match of value.matchAll(pattern)) {
-    const handle = match[2]?.trim().toLowerCase();
-    if (handle) {
-      handles.add(handle);
-    }
-  }
-
-  return Array.from(handles);
+export async function listMentionableTeammates(input: {
+  workspaceOwnerId: string;
+  mentionerUserId: string;
+}) {
+  const rows = await listWorkspaceMentionNotificationRows(input.workspaceOwnerId);
+  return buildMentionableTeammates(rows, input.mentionerUserId);
 }
 
-export function resolveMentionRecipients(
-  value: string,
-  rows: WorkspaceMentionNotificationRow[],
-  mentionerUserId: string
-) {
-  const recipients = buildMentionRecipients(rows, mentionerUserId);
-  const matched = new Map<string, MentionRecipient>();
-
-  for (const handle of extractMentionHandles(value)) {
-    const handleVariants = buildMentionVariants(handle);
-    const matches = recipients.filter((recipient) =>
-      Array.from(handleVariants).some((variant) => recipient.aliases.has(variant))
-    );
-
-    if (matches.length === 1) {
-      matched.set(matches[0].user_id, matches[0]);
-    }
+export async function resolveVisitorNoteMentionResolution(input: {
+  note: string;
+  workspaceOwnerId: string;
+  mentionerUserId: string;
+}) {
+  const note = input.note.trim();
+  if (!note) {
+    return emptyVisitorNoteMentionResolution();
   }
 
-  return Array.from(matched.values());
+  const rows = await listWorkspaceMentionNotificationRows(input.workspaceOwnerId);
+  return buildVisitorNoteMentionResolution(note, rows, input.mentionerUserId);
 }
 
 function buildMentionConversationUrl(conversationId: string, note: string) {
@@ -134,22 +84,25 @@ export async function sendConversationMentionNotifications(input: {
   mentionerUserId: string;
   mentionerEmail: string;
   workspaceOwnerId: string;
+  mentionResolution?: VisitorNoteMentionResolution;
 }) {
   const note = input.note.trim();
   if (!note) {
-    return 0;
+    return emptyVisitorNoteMentionResolution();
   }
 
   const rows = await listWorkspaceMentionNotificationRows(input.workspaceOwnerId);
-  const recipients = resolveMentionRecipients(note, rows, input.mentionerUserId);
-  if (!recipients.length) {
-    return 0;
+  const mentionResolution =
+    input.mentionResolution ??
+    buildVisitorNoteMentionResolution(note, rows, input.mentionerUserId);
+  if (!mentionResolution.recipients.length) {
+    return mentionResolution;
   }
 
   const summary = await getConversationSummaryById(input.conversationId, input.mentionerUserId);
   const senderRow = rows.find((row) => row.user_id === input.mentionerUserId);
   const mentionerName = senderRow
-    ? buildDisplayName(senderRow)
+    ? buildMentionDisplayName(senderRow)
     : displayNameFromEmail(input.mentionerEmail);
   const rawSummaryEmail = summary?.email;
   const summaryEmail = optionalText(rawSummaryEmail) ? rawSummaryEmail : null;
@@ -159,8 +112,8 @@ export async function sendConversationMentionNotifications(input: {
   )}`;
   const conversationUrl = buildMentionConversationUrl(input.conversationId, note);
 
-  const deliveries = await Promise.allSettled(
-    recipients.map((recipient) =>
+  await Promise.allSettled(
+    mentionResolution.recipients.map((recipient) =>
       sendMentionNotificationEmail({
         to: recipient.notificationAddress,
         mentionerName,
@@ -172,5 +125,5 @@ export async function sendConversationMentionNotifications(input: {
     )
   );
 
-  return deliveries.filter((delivery) => delivery.status === "fulfilled").length;
+  return mentionResolution;
 }

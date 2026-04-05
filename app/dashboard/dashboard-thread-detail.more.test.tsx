@@ -17,6 +17,28 @@ function collect(node: ReactNode, predicate: (element: ReactElement) => boolean)
   return [...(predicate(element) ? [element] : []), ...collect(element.props?.children, predicate)];
 }
 
+function buttonByLabel(node: ReactNode, label: string) {
+  return collect(
+    node,
+    (element) =>
+      (element.type === "button" || typeof element.type === "function") &&
+      (
+        element.props["aria-label"] === label ||
+        String(JSON.stringify(element.props.children ?? "")).includes(label)
+      )
+  )[0];
+}
+
+function getComposerTextarea(node: ReactNode) {
+  return collect(
+    node,
+    (element) =>
+      typeof element.props?.onFocus === "function" &&
+      typeof element.props?.onInput === "function" &&
+      typeof element.props?.onKeyDown === "function"
+  )[0];
+}
+
 function baseProps() {
   return {
     loadingConversationSummary: null,
@@ -61,7 +83,7 @@ describe("dashboard thread detail more", () => {
             {
               id: "msg_1",
               conversationId: "conv_1",
-              sender: "founder",
+              sender: "team",
               content: "Pending reply",
               createdAt: "2026-03-29T11:15:00.000Z",
               attachments: [],
@@ -80,7 +102,7 @@ describe("dashboard thread detail more", () => {
     expect(activeHtml).not.toContain("Sending...");
   });
 
-  it("renders inline retry affordances for failed founder replies", () => {
+  it("renders inline retry affordances for failed team replies", () => {
     const html = renderToStaticMarkup(
       <DashboardThreadDetail
         {...baseProps()}
@@ -89,7 +111,7 @@ describe("dashboard thread detail more", () => {
             {
               id: "msg_1",
               conversationId: "conv_1",
-              sender: "founder",
+              sender: "team",
               content: "Need another shot",
               createdAt: "2026-03-29T11:15:00.000Z",
               attachments: [],
@@ -112,15 +134,16 @@ describe("dashboard thread detail more", () => {
       showSidebarInline: false,
       showSidebarDrawer: true
     });
-    const buttons = collect(tree, (element) => element.type === "button");
-    const textarea = collect(tree, (element) => element.type === "textarea")[0];
+    const resolveButton = buttonByLabel(tree, "Resolve");
+    const textarea = getComposerTextarea(tree);
     const overlay = collect(tree, (element) => element.type === "div" && element.props.onClick)[0];
+    const closeButton = buttonByLabel(tree, "Close contact info");
     const requestSubmit = vi.fn();
     const preventDefault = vi.fn();
 
-    buttons[0]?.props.onClick();
+    resolveButton?.props.onClick();
     overlay?.props.onClick();
-    buttons.at(-1)?.props.onClick();
+    closeButton?.props.onClick();
     textarea?.props.onKeyDown({
       key: "Enter",
       shiftKey: true,
@@ -141,10 +164,10 @@ describe("dashboard thread detail more", () => {
       activeConversation: createConversationThread({ status: "open" }),
       showSidebarInline: false
     });
-    const textarea = collect(tree, (element) => element.type === "textarea")[0];
-    const buttons = collect(tree, (element) => element.type === "button");
+    const textarea = getComposerTextarea(tree);
+    const sendButton = buttonByLabel(tree, "Send reply");
 
     expect(textarea?.props.disabled).toBeUndefined();
-    expect(buttons.at(-1)?.props.disabled).toBe(true);
+    expect(sendButton?.props.disabled).toBe(true);
   });
 });

@@ -144,6 +144,7 @@ export function DashboardClient(props: DashboardClientProps) {
         keyboardConversationId,
         teamName,
         teamInitials,
+        teamMembers: props.initialTeamMembers ?? [],
         showMobileList,
         showSidebarDrawer,
         searchInputId: SEARCH_INPUT_ID,

@@ -12,7 +12,10 @@ import { useWidgetInstallState } from "./use-widget-install-state";
 
 export function DashboardThreadsPanel(props: DashboardThreadsPanelProps) {
   const counts = getThreadCounts(props.allConversations);
-  const isSearching = props.searchQuery.trim().length > 0 || props.threadFilter !== "all";
+  const isSearching =
+    props.searchQuery.trim().length > 0 ||
+    props.threadFilter !== "all" ||
+    props.assignmentFilter !== "all";
   const showEmptyList = props.allConversations.length === 0;
   const showEmptySearch = !showEmptyList && props.conversations.length === 0;
   const widgetInstalled = useWidgetInstallState(props.initialWidgetInstalled, props.widgetSiteIds);
@@ -22,15 +25,18 @@ export function DashboardThreadsPanel(props: DashboardThreadsPanelProps) {
       {renderThreadsHeader({
         counts,
         threadFilter: props.threadFilter,
+        assignmentFilter: props.assignmentFilter,
         searchQuery: props.searchQuery,
         searchInputId: props.searchInputId,
         onThreadFilterChange: props.onThreadFilterChange,
+        onAssignmentFilterChange: props.onAssignmentFilterChange,
         onSearchQueryChange: props.onSearchQueryChange,
         onClearSearch: props.onClearSearch
       })}
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
         {renderThreadsBody({
           conversations: props.conversations,
+          teamMembers: props.teamMembers ?? [],
           activeConversationId: props.activeConversationId,
           highlightedConversationId: props.highlightedConversationId,
           onSelectConversation: props.onSelectConversation,

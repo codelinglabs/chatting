@@ -109,7 +109,9 @@ export function settleOptimisticMessage(
 export function filterDashboardConversations(
   conversations: ConversationSummary[],
   threadFilter: "all" | "open" | "resolved",
-  searchQuery: string
+  assignmentFilter: "all" | "unassigned" | "mine" | "assignedToTeammate",
+  searchQuery: string,
+  currentUserId: string | null
 ) {
   const needle = searchQuery.trim().toLowerCase();
 
@@ -119,6 +121,24 @@ export function filterDashboardConversations(
     }
 
     if (threadFilter === "resolved" && conversation.status !== "resolved") {
+      return false;
+    }
+
+    if (assignmentFilter === "unassigned" && conversation.assignedUserId) {
+      return false;
+    }
+
+    if (
+      assignmentFilter === "mine" &&
+      (!currentUserId || conversation.assignedUserId !== currentUserId)
+    ) {
+      return false;
+    }
+
+    if (
+      assignmentFilter === "assignedToTeammate" &&
+      (!conversation.assignedUserId || (currentUserId && conversation.assignedUserId === currentUserId))
+    ) {
       return false;
     }
 

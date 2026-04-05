@@ -22,7 +22,7 @@ describe("dashboard thread detail utils more", () => {
     expect(formatDayLabel("2026-03-01T12:00:00.000Z")).toBe("1 March 2026");
   });
 
-  it("renders user attachments with non-founder styling", () => {
+  it("renders user attachments with non-team styling", () => {
     const html = renderToStaticMarkup(
       renderAttachments({
         id: "msg_1",

@@ -32,6 +32,7 @@ export type VisitorRecord = {
   email: string | null;
   location: string | null;
   browser: string;
+  timezone: string | null;
   currentPage: string;
   source: string;
   sourceCategory: VisitorsSourceFilter;
@@ -227,6 +228,7 @@ function recordFromConversationGroup(group: ConversationSummary[]) {
     email,
     location: currentLocation,
     browser: browserLabel(latest.userAgent),
+    timezone: latest.timezone,
     currentPage: pageLabelFromUrl(latest.pageUrl),
     source: sourceLabel(latest.referrer),
     sourceCategory: sourceCategory(latest.referrer),
@@ -261,6 +263,7 @@ function sessionRecord(session: VisitorPresenceSession): VisitorRecord {
     email: session.email,
     location: [session.city, session.region, session.country].filter(Boolean).join(", ") || null,
     browser: browserLabel(session.userAgent),
+    timezone: session.timezone,
     currentPage,
     source: sourceLabel(session.referrer),
     sourceCategory: sourceCategory(session.referrer),
@@ -273,7 +276,7 @@ function sessionRecord(session: VisitorPresenceSession): VisitorRecord {
       ? [{ page: currentPage, seenAt: session.lastSeenAt, durationSeconds: durationSeconds(session.startedAt, session.lastSeenAt) }]
       : [],
     visitHistory: [],
-    tags: [],
+    tags: session.tags ?? [],
     latestConversationId: session.conversationId,
     online,
     returnedVisitor: false,
@@ -328,6 +331,7 @@ function mergeSessionIntoRecord(record: VisitorRecord, session: VisitorPresenceS
     email,
     location: [session.city, session.region, session.country].filter(Boolean).join(", ") || record.location,
     browser: session.userAgent ? browserLabel(session.userAgent) : record.browser,
+    timezone: session.timezone ?? record.timezone,
     currentPage: session.currentPageUrl ? nextPage : record.currentPage,
     source: session.referrer ? sourceLabel(session.referrer) : record.source,
     sourceCategory: session.referrer ? sourceCategory(session.referrer) : record.sourceCategory,
@@ -339,6 +343,7 @@ function mergeSessionIntoRecord(record: VisitorRecord, session: VisitorPresenceS
     timeOnSiteSeconds: Math.max(record.timeOnSiteSeconds, nextDuration),
     pagesViewed: Math.max(record.pagesViewed, pagesViewed),
     pageHistory: nextHistory,
+    tags: Array.from(new Set([...record.tags, ...(session.tags ?? [])])).sort(),
     latestConversationId: record.latestConversationId ?? session.conversationId,
     online: Date.now() - new Date(lastSeenAt).getTime() <= LIVE_VISITOR_WINDOW_MS,
     hasEmail: Boolean(email),

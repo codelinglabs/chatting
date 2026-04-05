@@ -1,7 +1,7 @@
 "use client";
 
 import type { ConversationSummary } from "@/lib/types";
-export const DASHBOARD_TAGS = ["pricing", "confusion", "bug", "objection"] as const;
+export { DASHBOARD_TAGS } from "@/lib/dashboard-tags";
 
 function toTimestamp(value: string | null | undefined) {
   if (!value) {
@@ -64,6 +64,26 @@ export function errorMessageForCode(code: string) {
       return "Each attachment must be smaller than 4 MB.";
     case "reply-failed":
       return "Reply could not be posted. Try again.";
+    case "invalid-assignee":
+      return "Choose someone on your active workspace team.";
+    case "assignment-failed":
+      return "We couldn't update the assignee just now.";
+    case "draft-required":
+      return "Write a draft first so AI has something to rewrite.";
+    case "ai-provider-not-configured":
+      return "AI assist isn't configured yet.";
+    case "ai-assist-failed":
+      return "AI assist couldn't finish that request.";
+    case "forbidden":
+      return "You don't have permission to do that.";
+    case "saved-replies-failed":
+      return "We couldn't save that reply right now.";
+    case "slug-taken":
+      return "That slug is already in use.";
+    case "help-center-failed":
+      return "We couldn't update the help center right now.";
+    case "unknown-action":
+      return "That action isn't supported.";
     default:
       return "Something went wrong. Try again.";
   }

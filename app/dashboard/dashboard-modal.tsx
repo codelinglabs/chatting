@@ -8,12 +8,14 @@ import { XIcon } from "./dashboard-ui";
 export function DashboardModal({
   title,
   description,
+  actions,
   onClose,
   children,
   widthClass = "max-w-[560px]"
 }: {
   title: string;
   description?: string;
+  actions?: ReactNode;
   onClose: () => void;
   children: ReactNode;
   widthClass?: string;
@@ -30,18 +32,21 @@ export function DashboardModal({
         )}
       >
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
-          <div>
+          <div className="min-w-0">
             <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
             {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className={DASHBOARD_ICON_BUTTON_CLASS}
-            aria-label="Close modal"
-          >
-            <XIcon className="h-5 w-5" />
-          </button>
+          <div className="flex shrink-0 items-center gap-3">
+            {actions}
+            <button
+              type="button"
+              onClick={onClose}
+              className={DASHBOARD_ICON_BUTTON_CLASS}
+              aria-label="Close modal"
+            >
+              <XIcon className="h-5 w-5" />
+            </button>
+          </div>
         </div>
         {children}
       </div>

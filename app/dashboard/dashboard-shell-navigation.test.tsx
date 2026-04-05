@@ -27,8 +27,8 @@ import {
 
 describe("dashboard shell navigation", () => {
   it("keeps the primary and settings nav definitions stable", () => {
-    expect(PRIMARY_NAV.map((item) => item.label)).toEqual(["Home", "Inbox", "Visitors", "Analytics"]);
-    expect(SETTINGS_NAV.map((item) => item.label)).toEqual(["Widget", "Team", "Settings"]);
+    expect(PRIMARY_NAV.map((item) => item.label)).toEqual(["Home", "Inbox", "People", "Analytics"]);
+    expect(SETTINGS_NAV.map((item) => item.label)).toEqual(["Widget", "Help center", "Team", "Settings"]);
   });
 
   it("matches active paths correctly", () => {

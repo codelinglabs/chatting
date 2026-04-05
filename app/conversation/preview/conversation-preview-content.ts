@@ -15,7 +15,7 @@ function buildPreviewMessages() {
     id: `preview-${index + 1}`,
     content: message.content,
     createdAt: message.createdAt,
-    sender: message.sender === "founder" ? "team" : "user",
+    sender: message.sender === "user" ? "user" : "team",
     attachments: []
   })) satisfies ConversationThreadMessage[];
 }

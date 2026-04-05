@@ -1,4 +1,6 @@
 import { simpleParser } from "mailparser";
+import type { UploadedAttachmentInput } from "@/lib/data/shared";
+import { parseInboundAttachments } from "@/lib/ses-inbound-attachments";
 
 type ParsedAddressList =
   | {
@@ -32,6 +34,7 @@ type ParsedInboundReply =
       conversationId: string;
       senderEmail: string | null;
       body: string;
+      attachments: UploadedAttachmentInput[];
     };
 
 function extractConversationId(addresses: string[]) {
@@ -138,9 +141,10 @@ export async function parseSesInboundReply(rawNotification: string): Promise<Par
   const rawText =
     parsed.text?.trim() || (typeof parsed.html === "string" ? stripHtml(parsed.html) : "");
   const body = stripQuotedReply(rawText);
+  const attachments = parseInboundAttachments(parsed.attachments ?? []);
 
-  if (!body) {
-    throw new Error("Unable to extract reply body from inbound email.");
+  if (!body && !attachments.length) {
+    throw new Error("Unable to extract reply body or attachments from inbound email.");
   }
 
   return {
@@ -148,6 +152,7 @@ export async function parseSesInboundReply(rawNotification: string): Promise<Par
     conversationId,
     senderEmail:
       parsed.from?.value?.[0]?.address ?? extractSenderEmail(notification.mail?.source ?? ""),
-    body
+    body,
+    attachments
   };
 }

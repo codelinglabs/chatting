@@ -1,21 +1,26 @@
 "use client";
 
+import type { DashboardTeamMember } from "@/lib/data/settings-types";
 import type { ConversationSummary } from "@/lib/types";
 import { classNames } from "@/lib/utils";
+import { DASHBOARD_SELECT_CLASS } from "./dashboard-controls";
 import { CheckIcon, SearchIcon, XIcon } from "./dashboard-ui";
-import type { ThreadFilter } from "./use-dashboard-state";
+import type { AssignmentFilter, ThreadFilter } from "./use-dashboard-state";
 
 export type DashboardThreadsPanelProps = {
   allConversations: ConversationSummary[];
   conversations: ConversationSummary[];
   initialWidgetInstalled: boolean;
   widgetSiteIds: string[];
+  teamMembers?: DashboardTeamMember[];
   activeConversationId?: string;
   highlightedConversationId?: string | null;
   threadFilter: ThreadFilter;
+  assignmentFilter: AssignmentFilter;
   searchQuery: string;
   searchInputId?: string;
   onThreadFilterChange: (value: ThreadFilter) => void;
+  onAssignmentFilterChange: (value: AssignmentFilter) => void;
   onSearchQueryChange: (value: string) => void;
   onClearSearch?: () => void;
   onSelectConversation?: (conversationId: string) => void;
@@ -28,6 +33,13 @@ const THREAD_FILTERS: Array<{ id: ThreadFilter; label: string }> = [
   { id: "all", label: "All" },
   { id: "open", label: "Open" },
   { id: "resolved", label: "Resolved" }
+];
+
+const ASSIGNMENT_FILTERS: Array<{ id: AssignmentFilter; label: string }> = [
+  { id: "all", label: "All assignments" },
+  { id: "unassigned", label: "Unassigned" },
+  { id: "mine", label: "Assigned to me" },
+  { id: "assignedToTeammate", label: "Assigned to teammate" }
 ];
 
 export function getThreadCounts(allConversations: ConversationSummary[]): ThreadCounts {
@@ -56,17 +68,21 @@ function renderThreadFilterIcon(filterId: ThreadFilter) {
 export function renderThreadsHeader({
   counts,
   threadFilter,
+  assignmentFilter,
   searchQuery,
   searchInputId,
   onThreadFilterChange,
+  onAssignmentFilterChange,
   onSearchQueryChange,
   onClearSearch
 }: {
   counts: ThreadCounts;
   threadFilter: ThreadFilter;
+  assignmentFilter: AssignmentFilter;
   searchQuery: string;
   searchInputId?: string;
   onThreadFilterChange: (value: ThreadFilter) => void;
+  onAssignmentFilterChange: (value: AssignmentFilter) => void;
   onSearchQueryChange: (value: string) => void;
   onClearSearch?: () => void;
 }) {
@@ -108,6 +124,22 @@ export function renderThreadsHeader({
           </button>
         ) : null}
       </label>
+
+      <div className="mt-4 space-y-2">
+        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-slate-400">Assignment</p>
+        <select
+          aria-label="Filter by assignment"
+          value={assignmentFilter}
+          onChange={(event) => onAssignmentFilterChange(event.currentTarget.value as AssignmentFilter)}
+          className={DASHBOARD_SELECT_CLASS}
+        >
+          {ASSIGNMENT_FILTERS.map((filter) => (
+            <option key={filter.id} value={filter.id}>
+              {filter.label}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }

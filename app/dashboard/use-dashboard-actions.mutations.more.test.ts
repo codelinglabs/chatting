@@ -67,6 +67,7 @@ describe("dashboard actions mutations more", () => {
       setActiveConversation: vi.fn(),
       setSavingSiteId: vi.fn(),
       setSavingEmail: vi.fn(),
+      setAssigningConversation: vi.fn(),
       setUpdatingStatus: vi.fn(),
       setBanner: vi.fn(),
       pendingTagMutationsRef: { current: new Set<string>() },

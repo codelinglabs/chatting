@@ -7,6 +7,7 @@ import type {
   DashboardStats,
   Site
 } from "@/lib/types";
+import type { DashboardTeamMember } from "@/lib/data/settings-types";
 
 export type BannerState = {
   tone: "error" | "success";
@@ -19,6 +20,7 @@ export type DashboardClientProps = {
   initialSites: Site[];
   initialConversations: ConversationSummary[];
   initialActiveConversation: ConversationThread | null;
+  initialTeamMembers?: DashboardTeamMember[];
 };
 
 export type DashboardActionHandlers = {

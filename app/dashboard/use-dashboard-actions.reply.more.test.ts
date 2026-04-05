@@ -100,13 +100,13 @@ describe("dashboard reply action edge cases", () => {
     expect(clearTypingSignal).not.toHaveBeenCalled();
   });
 
-  it("does not increment answered counts when a founder has already replied and email delivery is skipped", async () => {
+  it("does not increment answered counts when a team reply already exists and email delivery is skipped", async () => {
     mocks.postDashboardForm.mockResolvedValueOnce({
       conversationId: "conv_1",
       message: {
         id: "msg_3",
         conversationId: "conv_1",
-        sender: "founder",
+        sender: "team",
         content: "Following up",
         createdAt: "2026-03-29T11:00:00.000Z",
         attachments: []
@@ -120,8 +120,8 @@ describe("dashboard reply action edge cases", () => {
           {
             id: "msg_2",
             conversationId: "conv_1",
-            sender: "founder",
-            content: "Earlier founder reply",
+            sender: "team",
+            content: "Earlier team reply",
             createdAt: "2026-03-29T10:30:00.000Z",
             attachments: []
           }
@@ -146,7 +146,7 @@ describe("dashboard reply action edge cases", () => {
       message: {
         id: "msg_2",
         conversationId: "conv_1",
-        sender: "founder",
+        sender: "team",
         content: "Attachment sent",
         createdAt: "2026-03-29T11:15:00.000Z",
         attachments: [{ url: "https://cdn.example/note.txt", name: "note.txt" }]
@@ -173,7 +173,7 @@ describe("dashboard reply action edge cases", () => {
       message: {
         id: "msg_2",
         conversationId: "conv_1",
-        sender: "founder",
+        sender: "team",
         content: "Queued retry",
         createdAt: "2026-03-29T11:20:00.000Z",
         attachments: []

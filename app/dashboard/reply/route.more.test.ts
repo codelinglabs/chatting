@@ -4,17 +4,17 @@ const liveEventMocks = vi.hoisted(() => ({
 }));
 
 const mocks = vi.hoisted(() => ({
-  addFounderReply: vi.fn(),
+  addTeamReply: vi.fn(),
   extractUploadedAttachments: vi.fn(),
-  getConversationEmail: vi.fn(),
+  getConversationReplyDeliveryState: vi.fn(),
   markConversationRead: vi.fn(),
   requireJsonRouteUser: vi.fn(),
   sendOfflineReplyTemplateEmail: vi.fn()
 }));
 
 vi.mock("@/lib/data", () => ({
-  addFounderReply: mocks.addFounderReply,
-  getConversationEmail: mocks.getConversationEmail,
+  addTeamReply: mocks.addTeamReply,
+  getConversationReplyDeliveryState: mocks.getConversationReplyDeliveryState,
   markConversationRead: mocks.markConversationRead
 }));
 vi.mock("@/lib/conversation-template-emails", () => ({ sendOfflineReplyTemplateEmail: mocks.sendOfflineReplyTemplateEmail }));
@@ -59,8 +59,10 @@ describe("dashboard reply route more", () => {
     formData.set("conversationId", "conv_1");
     formData.set("content", "Hello there");
 
-    mocks.getConversationEmail.mockResolvedValueOnce({ email: "visitor@example.com" }).mockResolvedValueOnce({ email: "visitor@example.com" });
-    mocks.addFounderReply.mockResolvedValueOnce(false).mockResolvedValueOnce({ id: "msg_1", createdAt: "2026-03-27T12:00:00.000Z" });
+    mocks.getConversationReplyDeliveryState
+      .mockResolvedValueOnce({ email: "visitor@example.com", visitor_is_live: false })
+      .mockResolvedValueOnce({ email: "visitor@example.com", visitor_is_live: false });
+    mocks.addTeamReply.mockResolvedValueOnce(false).mockResolvedValueOnce({ id: "msg_1", createdAt: "2026-03-27T12:00:00.000Z" });
     mocks.sendOfflineReplyTemplateEmail.mockResolvedValueOnce("sent");
 
     const notFound = await POST(new Request("http://localhost/dashboard/reply", { method: "POST", body: formData }));
@@ -74,8 +76,8 @@ describe("dashboard reply route more", () => {
     const formData = new FormData();
     formData.set("conversationId", "conv_1");
     formData.set("content", "Hello there");
-    mocks.getConversationEmail.mockResolvedValue({ email: null });
-    mocks.addFounderReply.mockRejectedValueOnce(new Error("ATTACHMENT_TOO_LARGE")).mockRejectedValueOnce(new Error("boom"));
+    mocks.getConversationReplyDeliveryState.mockResolvedValue({ email: null, visitor_is_live: false });
+    mocks.addTeamReply.mockRejectedValueOnce(new Error("ATTACHMENT_TOO_LARGE")).mockRejectedValueOnce(new Error("boom"));
 
     const tooLarge = await POST(new Request("http://localhost/dashboard/reply", { method: "POST", body: formData }));
     const generic = await POST(new Request("http://localhost/dashboard/reply", { method: "POST", body: formData }));

@@ -63,7 +63,7 @@ export default async function ConversationResumePage({ params }: ConversationRes
         id: message.id,
         content: message.content,
         createdAt: message.createdAt,
-        sender: message.sender === "founder" ? "team" : "user",
+        sender: message.sender === "user" ? "user" : "team",
         attachments: message.attachments
       }))}
       showBranding={site.showBranding}

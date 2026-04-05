@@ -8,9 +8,9 @@ import {
   useState,
   type ReactNode
 } from "react";
-import { CheckIcon, XIcon } from "../dashboard/dashboard-ui";
+import { CheckIcon, WarningIcon, XIcon } from "../dashboard/dashboard-ui";
 
-type ToastTone = "success" | "error";
+type ToastTone = "success" | "warning" | "error";
 
 type Toast = {
   id: string;
@@ -28,9 +28,15 @@ const ToastContext = createContext<ToastContextValue>({
 });
 
 function toneClassName(tone: ToastTone) {
-  return tone === "success"
-    ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-    : "border-rose-200 bg-rose-50 text-rose-900";
+  if (tone === "success") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-900";
+  }
+
+  if (tone === "warning") {
+    return "border-amber-200 bg-amber-50 text-amber-900";
+  }
+
+  return "border-rose-200 bg-rose-50 text-rose-900";
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -76,6 +82,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center">
                 {toast.tone === "success" ? (
                   <CheckIcon className="h-4 w-4" />
+                ) : toast.tone === "warning" ? (
+                  <WarningIcon className="h-4 w-4" />
                 ) : (
                   <XIcon className="h-4 w-4" />
                 )}

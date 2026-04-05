@@ -73,13 +73,13 @@ describe("dashboard reply action hotspots", () => {
     Object.defineProperty(globalThis, "window", { configurable: true, value: originalWindow });
   });
 
-  it("increments answered counts and shows the emailed banner when the first founder reply succeeds", async () => {
+  it("increments answered counts and shows the emailed banner when the first team reply succeeds", async () => {
     mocks.postDashboardForm.mockResolvedValueOnce({
       conversationId: "conv_1",
       message: {
         id: "msg_2",
         conversationId: "conv_1",
-        sender: "founder",
+        sender: "team",
         content: "Hello there",
         createdAt: "2026-03-29T11:00:00.000Z",
         attachments: []

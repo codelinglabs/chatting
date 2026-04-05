@@ -1,4 +1,5 @@
 import {
+  filterDashboardConversations,
   createOptimisticAttachmentUrls,
   nextTagsForToggle,
   previewForMessage,
@@ -66,5 +67,27 @@ describe("dashboard state helpers", () => {
     expect(settleOptimisticMessage([optimistic], "optimistic", real)[0]).toMatchObject({ id: "msg_2", pending: false });
     expect(settleOptimisticMessage([real], "optimistic", real)).toEqual([real]);
     expect(settleOptimisticMessage([], "optimistic", real)).toEqual([real]);
+  });
+
+  it("filters conversations by status, assignment, and search", () => {
+    const conversations = [
+      createConversationThread({ id: "conv_1", status: "open", assignedUserId: null, city: "London" }),
+      createConversationThread({ id: "conv_2", status: "open", assignedUserId: "user_me", city: "Paris" }),
+      createConversationThread({ id: "conv_3", status: "resolved", assignedUserId: "user_teammate", city: "Berlin" })
+    ].map(toSummary);
+
+    expect(
+      filterDashboardConversations(conversations, "all", "unassigned", "", "user_me").map(({ id }) => id)
+    ).toEqual(["conv_1"]);
+    expect(
+      filterDashboardConversations(conversations, "all", "mine", "", "user_me").map(({ id }) => id)
+    ).toEqual(["conv_2"]);
+    expect(filterDashboardConversations(conversations, "all", "mine", "", null)).toEqual([]);
+    expect(
+      filterDashboardConversations(conversations, "all", "assignedToTeammate", "", "user_me").map(({ id }) => id)
+    ).toEqual(["conv_3"]);
+    expect(
+      filterDashboardConversations(conversations, "resolved", "all", "berlin", "user_me").map(({ id }) => id)
+    ).toEqual(["conv_3"]);
   });
 });

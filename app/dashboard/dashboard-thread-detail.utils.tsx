@@ -114,7 +114,7 @@ export function renderAttachments(message: ThreadMessage) {
     return null;
   }
 
-  const teamMessage = message.sender === "founder";
+  const teamMessage = message.sender === "team";
 
   return (
     <div className="mt-3 space-y-2">

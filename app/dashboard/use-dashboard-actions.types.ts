@@ -13,6 +13,7 @@ export type DashboardActionsParams = {
   setActiveConversation: StateSetter<ConversationThread | null>;
   setSavingSiteId: StateSetter<string | null>;
   setSavingEmail: StateSetter<boolean>;
+  setAssigningConversation: StateSetter<boolean>;
   setSendingReply: StateSetter<boolean>;
   setUpdatingStatus: StateSetter<boolean>;
   setAnsweredConversations: StateSetter<number>;

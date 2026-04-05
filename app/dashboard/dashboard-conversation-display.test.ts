@@ -55,11 +55,11 @@ describe("dashboard conversation display", () => {
     expect(conversationHref("conv_2")).toBe("/dashboard/inbox?id=conv_2");
     expect(
       conversationPageUrl({
-        pageUrl: "https://heypond.app/outreach/add",
-        recordedPageUrl: "https://heypond.app/campaigns/80dfca69-4637-42e0-9171-b6ec33868ab8"
+        pageUrl: "https://usechatting.com/outreach/add",
+        recordedPageUrl: "https://usechatting.com/campaigns/80dfca69-4637-42e0-9171-b6ec33868ab8"
       })
-    ).toBe("https://heypond.app/campaigns/80dfca69-4637-42e0-9171-b6ec33868ab8");
-    expect(conversationPageUrl({ pageUrl: "https://heypond.app/", recordedPageUrl: null })).toBe("https://heypond.app/");
+    ).toBe("https://usechatting.com/campaigns/80dfca69-4637-42e0-9171-b6ec33868ab8");
+    expect(conversationPageUrl({ pageUrl: "https://usechatting.com/", recordedPageUrl: null })).toBe("https://usechatting.com/");
     expect(conversationPageUrl({ pageUrl: null, recordedPageUrl: null })).toBe("/");
   });
 });

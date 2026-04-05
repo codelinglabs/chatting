@@ -6,26 +6,26 @@ import type { ConversationThread } from "@/lib/types";
 import type { BannerState, DashboardClientProps } from "./dashboard-client.types";
 import { topTagsFromConversations } from "./dashboard-client.utils";
 import { filterDashboardConversations } from "./dashboard-state-helpers";
-import { createDashboardStateNetwork } from "./dashboard-state-network";
 import { useDashboardStateEffects } from "./use-dashboard-state-effects";
 import { createDashboardActions } from "./use-dashboard-actions";
+import { useDashboardStateNetwork } from "./use-dashboard-state-network";
 
 export type ThreadFilter = "all" | "open" | "resolved";
-
+export type AssignmentFilter = "all" | "unassigned" | "mine" | "assignedToTeammate";
 export function useDashboardState({
   initialStats,
   initialSites,
   initialConversations,
-  initialActiveConversation
+  initialActiveConversation,
+  initialTeamMembers
 }: Pick<
   DashboardClientProps,
-  "initialStats" | "initialSites" | "initialConversations" | "initialActiveConversation"
+  "initialStats" | "initialSites" | "initialConversations" | "initialActiveConversation" | "initialTeamMembers"
 >) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const routeConversationId = searchParams?.get("id")?.trim() || null;
-  const initialLoadingConversationId =
-    routeConversationId && routeConversationId !== initialActiveConversation?.id ? routeConversationId : null;
+  const initialLoadingConversationId = routeConversationId && routeConversationId !== initialActiveConversation?.id ? routeConversationId : null;
   const [sites, setSites] = useState(initialSites);
   const [conversations, setConversations] = useState(initialConversations);
   const [activeConversation, setActiveConversation] = useState(initialActiveConversation);
@@ -35,12 +35,15 @@ export function useDashboardState({
   const [banner, setBanner] = useState<BannerState>(null);
   const [savingSiteId, setSavingSiteId] = useState<string | null>(null);
   const [savingEmail, setSavingEmail] = useState(false);
+  const [assigningConversation, setAssigningConversation] = useState(false);
   const [sendingReply, setSendingReply] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [threadFilter, setThreadFilter] = useState<ThreadFilter>("all");
+  const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [visitorTypingConversationId, setVisitorTypingConversationId] = useState<string | null>(null);
   const [liveConnectionState, setLiveConnectionState] = useState<"connected" | "reconnecting">("connected");
+  const currentUserId = initialTeamMembers?.find((member) => member.isCurrentUser)?.id ?? null;
   const activeTypingConversationIdRef = useRef<string | null>(null);
   const activeConversationIdRef = useRef<string | null>(initialActiveConversation?.id ?? null);
   const conversationsRef = useRef(initialConversations);
@@ -62,7 +65,7 @@ export function useDashboardState({
     markConversationAsRead,
     postTypingSignal,
     clearTypingSignal
-  } = createDashboardStateNetwork({
+  } = useDashboardStateNetwork({
     setBanner,
     setConversations,
     setActiveConversation,
@@ -117,6 +120,7 @@ export function useDashboardState({
   const {
     handleSiteTitleSave,
     handleSaveConversationEmail,
+    handleConversationAssignmentChange,
     handleReplySend,
     handleReplyRetry,
     handleConversationStatusChange,
@@ -133,6 +137,7 @@ export function useDashboardState({
     setActiveConversation,
     setSavingSiteId,
     setSavingEmail,
+    setAssigningConversation,
     setSendingReply,
     setUpdatingStatus,
     setAnsweredConversations,
@@ -146,8 +151,13 @@ export function useDashboardState({
     postTypingSignal
   });
 
-  const filteredConversations = filterDashboardConversations(conversations, threadFilter, searchQuery);
-
+  const filteredConversations = filterDashboardConversations(
+    conversations,
+    threadFilter,
+    assignmentFilter,
+    searchQuery,
+    currentUserId
+  );
   return {
     sites,
     conversations,
@@ -158,9 +168,11 @@ export function useDashboardState({
     banner,
     savingSiteId,
     savingEmail,
+    assigningConversation,
     sendingReply,
     updatingStatus,
     threadFilter,
+    assignmentFilter,
     searchQuery,
     visitorTypingConversationId,
     liveConnectionState,
@@ -168,6 +180,7 @@ export function useDashboardState({
     topTags: topTagsFromConversations(conversations),
     handleSiteTitleSave,
     handleSaveConversationEmail,
+    handleConversationAssignmentChange,
     handleReplySend,
     handleReplyRetry,
     handleConversationStatusChange,
@@ -178,6 +191,7 @@ export function useDashboardState({
     openConversation,
     clearActiveConversation,
     setThreadFilter,
+    setAssignmentFilter,
     setSearchQuery
   };
 }

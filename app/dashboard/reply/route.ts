@@ -1,4 +1,4 @@
-import { addFounderReply, getConversationEmail, markConversationRead } from "@/lib/data";
+import { addTeamReply, getConversationReplyDeliveryState, markConversationRead } from "@/lib/data";
 import { sendOfflineReplyTemplateEmail } from "@/lib/conversation-template-emails";
 import { extractUploadedAttachments } from "@/lib/conversation-io";
 import { publishConversationLive, publishDashboardLive } from "@/lib/live-events";
@@ -20,13 +20,13 @@ export async function POST(request: Request) {
     return jsonError("empty-reply", 400);
   }
 
-  const conversation = await getConversationEmail(conversationId, user.id);
+  const conversation = await getConversationReplyDeliveryState(conversationId, user.id);
   if (!conversation) {
     return jsonError("not-found", 404);
   }
 
   try {
-    const message = await addFounderReply(conversationId, content, user.id, attachments);
+    const message = await addTeamReply(conversationId, content, user.id, attachments);
 
     if (!message) {
       return jsonError("not-found", 404);
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
     let emailDelivery: "sent" | "skipped" | "queued_retry" | "failed" = "skipped";
 
-    if (conversation.email) {
+    if (conversation.email && !conversation.visitor_is_live) {
       try {
         const delivery = await sendOfflineReplyTemplateEmail({
           conversationId,
@@ -63,13 +63,13 @@ export async function POST(request: Request) {
     publishConversationLive(conversationId, {
       type: "message.created",
       conversationId,
-      sender: "founder",
+      sender: "team",
       createdAt: message.createdAt
     });
     publishDashboardLive(user.workspaceOwnerId, {
       type: "message.created",
       conversationId,
-      sender: "founder",
+      sender: "team",
       createdAt: message.createdAt
     });
     publishDashboardLive(user.workspaceOwnerId, {

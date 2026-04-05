@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { addInboundReply, getConversationNotificationContext } from "@/lib/data";
 import { publishConversationLive } from "@/lib/live-events";
 import { previewIncomingMessage } from "@/lib/notification-utils";
+import { listInboundReplyAuthorizedEmails } from "@/lib/repositories/conversation-inbound-email-repository";
 import { parseSesInboundReply } from "@/lib/ses-inbound";
 import { verifySnsWebhookPayload } from "@/lib/sns-webhook-auth";
 import { notifyIncomingVisitorMessage } from "@/lib/team-notifications";
@@ -17,6 +18,11 @@ function isTrustedSubscribeUrl(rawUrl: string) {
   } catch {
     return false;
   }
+}
+
+function normalizeEmailAddress(value: string | null | undefined) {
+  const normalized = value?.trim().toLowerCase();
+  return normalized ? normalized : null;
 }
 
 export async function POST(request: Request) {
@@ -51,9 +57,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, ignored: true });
     }
 
-    const { conversationId, senderEmail, body } = inbound;
+    const { conversationId, senderEmail, body, attachments = [] } = inbound;
+    const normalizedSenderEmail = normalizeEmailAddress(senderEmail);
+    const authorizedEmails = normalizedSenderEmail
+      ? await listInboundReplyAuthorizedEmails(conversationId)
+      : [];
 
-    const message = await addInboundReply(conversationId, senderEmail, body);
+    if (!normalizedSenderEmail || !authorizedEmails.includes(normalizedSenderEmail)) {
+      console.warn("ignoring unauthorized inbound reply", {
+        conversationId,
+        senderEmail,
+        authorizedEmails
+      });
+      return NextResponse.json({ ok: true, ignored: true });
+    }
+
+    const message = await addInboundReply(conversationId, normalizedSenderEmail, body, attachments);
     const context = await getConversationNotificationContext(conversationId);
 
     publishConversationLive(conversationId, {
@@ -76,12 +95,12 @@ export async function POST(request: Request) {
         userId: context.userId,
         conversationId,
         createdAt: message.createdAt,
-        preview: previewIncomingMessage(body, 0),
+        preview: previewIncomingMessage(body, attachments.length),
         siteName: context.siteName,
-        visitorLabel: summary?.email ?? senderEmail,
+        visitorLabel: summary?.email ?? normalizedSenderEmail,
         pageUrl: summary?.pageUrl ?? null,
         location: [summary?.city, summary?.region, summary?.country].filter(Boolean).join(", ") || null,
-        attachmentsCount: 0,
+        attachmentsCount: attachments.length,
         isNewConversation: false,
         isNewVisitor: false,
         highIntent: false

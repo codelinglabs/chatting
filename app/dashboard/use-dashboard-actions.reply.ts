@@ -4,7 +4,7 @@ import {
   buildOptimisticReply,
   buildReplyFormData,
   findRetryableReply,
-  hasPostedFounderReply,
+  hasPostedTeamReply,
   messageForReplyDelivery,
   parseReplyFiles,
   restoreReplySummary,
@@ -80,7 +80,7 @@ export function createDashboardReplyActions({
     if (messageId && !retryingMessage) {
       return;
     }
-    const hadFounderReply = hasPostedFounderReply(activeConversation.messages, messageId);
+    const hadTeamReply = hasPostedTeamReply(activeConversation.messages, messageId);
     const optimisticCreatedAt = new Date().toISOString();
     const optimisticMessage: ThreadMessage = buildOptimisticReply({
       content,
@@ -123,7 +123,7 @@ export function createDashboardReplyActions({
       );
       syncConversationSummary(message.createdAt, postedPreview);
 
-      if (!hadFounderReply) {
+      if (!hadTeamReply) {
         setAnsweredConversations((count) => count + 1);
       }
       recentOptimisticReplyAtRef.current.set(activeConversation.id, Date.now());

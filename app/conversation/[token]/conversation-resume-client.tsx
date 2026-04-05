@@ -2,8 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useToast } from "../../ui/toast-provider";
+import {
+  createOptimisticConversationAttachments,
+  postPublicConversationReply,
+  revokeOptimisticConversationAttachments
+} from "../conversation-thread-compose";
 import { ConversationThreadShell, type ConversationThreadMessage } from "../conversation-thread-shell";
 import type { ConversationResumeIdentity } from "@/lib/conversation-resume-types";
+
 type ConversationResumeClientProps = {
   brandingLabel: string;
   brandingUrl: string;
@@ -27,6 +33,7 @@ export function ConversationResumeClient({
 }: ConversationResumeClientProps) {
   const { showToast } = useToast();
   const [content, setContent] = useState("");
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [messages, setMessages] = useState(initialMessages);
   const [sending, setSending] = useState(false);
   const [teamTyping, setTeamTyping] = useState(false);
@@ -92,20 +99,38 @@ export function ConversationResumeClient({
     typingTimeoutRef.current = window.setTimeout(() => sendTyping(false), 1500);
   }
 
+  function handleAttachmentAdd(nextAttachments: File[]) {
+    setAttachments((current) => [...current, ...nextAttachments]);
+  }
+
+  function handleAttachmentRemove(index: number) {
+    setAttachments((current) => current.filter((_, currentIndex) => currentIndex !== index));
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextContent = content.trim();
-    if (!nextContent || sending) {
+    const nextAttachments = attachments;
+
+    if ((!nextContent && !nextAttachments.length) || sending) {
       return;
     }
 
     const optimisticId = `pending-${Date.now()}`;
+    const optimisticAttachments = createOptimisticConversationAttachments(nextAttachments);
     setSending(true);
     setContent("");
+    setAttachments([]);
     setTeamTyping(false);
     setMessages((current) => [
       ...current,
-      { id: optimisticId, content: nextContent, createdAt: new Date().toISOString(), sender: "user", attachments: [] }
+      {
+        id: optimisticId,
+        content: nextContent,
+        createdAt: new Date().toISOString(),
+        sender: "user",
+        attachments: optimisticAttachments
+      }
     ]);
     if (typingTimeoutRef.current) {
       window.clearTimeout(typingTimeoutRef.current);
@@ -113,19 +138,24 @@ export function ConversationResumeClient({
     sendTyping(false);
 
     try {
-      const response = await fetch("/api/public/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...identity, content: nextContent, pageUrl: window.location.href })
+      await postPublicConversationReply({
+        identity,
+        content: nextContent,
+        attachments: nextAttachments,
+        pageUrl: window.location.href
       });
-      if (!response.ok) {
-        throw new Error("SEND_FAILED");
-      }
       await refreshConversation();
-    } catch {
+      revokeOptimisticConversationAttachments(optimisticAttachments);
+    } catch (error) {
       setMessages((current) => current.filter((message) => message.id !== optimisticId));
       setContent(nextContent);
-      showToast("error", "We couldn't send that message.", "Please try again in a moment.");
+      setAttachments(nextAttachments);
+      revokeOptimisticConversationAttachments(optimisticAttachments);
+      showToast(
+        "error",
+        "We couldn't send that reply.",
+        error instanceof Error ? error.message : "Please try again in a moment."
+      );
     } finally {
       setSending(false);
     }
@@ -138,7 +168,11 @@ export function ConversationResumeClient({
       brandColor={brandColor}
       content={content}
       messages={messages}
+      attachments={attachments}
+      allowAttachments
+      onAddAttachments={handleAttachmentAdd}
       onChangeContent={handleContentChange}
+      onRemoveAttachment={handleAttachmentRemove}
       onSubmit={handleSubmit}
       sending={sending}
       showBranding={showBranding}

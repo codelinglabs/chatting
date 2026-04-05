@@ -76,7 +76,7 @@ describe("dashboard actions messaging handlers", () => {
       message: {
         id: "msg_2",
         conversationId: "conv_1",
-        sender: "founder",
+        sender: "team",
         content: "Happy to help",
         createdAt: "2026-03-29T11:00:00.000Z",
         attachments: []
@@ -138,7 +138,7 @@ describe("dashboard actions messaging handlers", () => {
       message: {
         id: "msg_2",
         conversationId: "conv_1",
-        sender: "founder",
+        sender: "team",
         content: "Retry me",
         createdAt: "2026-03-29T11:30:00.000Z",
         attachments: []

@@ -125,7 +125,12 @@ describe("mention notifications", () => {
         mentionerEmail: "sarah@example.com",
         workspaceOwnerId: "owner_1"
       })
-    ).resolves.toBe(1);
+    ).resolves.toMatchObject({
+      sent: ["tina"],
+      ambiguous: [],
+      unresolved: [],
+      disabled: []
+    });
 
     expect(mocks.sendMentionNotificationEmail).toHaveBeenCalledWith({
       to: "tina@usechatting.com",
@@ -137,4 +142,5 @@ describe("mention notifications", () => {
         "https://usechatting.com/dashboard/inbox?id=conv_1&focus=note&note=%40Tina+can+you+confirm+whether+this+customer+qualifies+for+annual+billing%3F&mention=tina"
     });
   });
+
 });

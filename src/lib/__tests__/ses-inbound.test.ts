@@ -43,7 +43,8 @@ describe("ses inbound reply parsing", () => {
       ignored: false,
       conversationId: "abc123-456",
       senderEmail: "alex@example.com",
-      body: "Thanks for the help"
+      body: "Thanks for the help",
+      attachments: []
     });
   });
 
@@ -69,7 +70,56 @@ describe("ses inbound reply parsing", () => {
       ignored: false,
       conversationId: "abc123-456",
       senderEmail: "alex@example.com",
-      body: "Hello there\n\nSecond line"
+      body: "Hello there\n\nSecond line",
+      attachments: []
+    });
+  });
+
+  it("keeps real attachments, drops inline cid images, and allows attachment-only replies", async () => {
+    mocks.simpleParser.mockResolvedValueOnce({
+      text: "",
+      from: { value: [{ address: "alex@example.com" }] },
+      to: { value: [{ address: "reply+abc123-456@reply.chatting.test" }] },
+      cc: null,
+      replyTo: null,
+      attachments: [
+        {
+          filename: "logo.png",
+          contentType: "image/png",
+          contentDisposition: "inline",
+          contentId: "<sig-1>",
+          content: Buffer.from("sig")
+        },
+        {
+          filename: "brief.pdf",
+          contentType: "application/pdf",
+          contentDisposition: "attachment",
+          content: Buffer.from("brief")
+        }
+      ]
+    });
+
+    await expect(
+      parseSesInboundReply(
+        JSON.stringify({
+          notificationType: "Received",
+          content: "raw message",
+          mail: { source: "alex@example.com", destination: [] }
+        })
+      )
+    ).resolves.toEqual({
+      ignored: false,
+      conversationId: "abc123-456",
+      senderEmail: "alex@example.com",
+      body: "",
+      attachments: [
+        {
+          fileName: "brief.pdf",
+          contentType: "application/pdf",
+          sizeBytes: 5,
+          content: Buffer.from("brief")
+        }
+      ]
     });
   });
 
@@ -90,6 +140,6 @@ describe("ses inbound reply parsing", () => {
 
     await expect(
       parseSesInboundReply(JSON.stringify({ notificationType: "Received", content: "raw", mail: { destination: [] } }))
-    ).rejects.toThrow("Unable to extract reply body from inbound email.");
+    ).rejects.toThrow("Unable to extract reply body or attachments from inbound email.");
   });
 });

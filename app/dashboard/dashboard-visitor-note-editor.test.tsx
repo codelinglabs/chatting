@@ -28,7 +28,7 @@ function getTextarea(tree: ReactNode) {
     (element) =>
       typeof element.type === "function" &&
       "onChange" in (element.props ?? {}) &&
-      "rows" in (element.props ?? {})
+      "value" in (element.props ?? {})
   )[0];
 }
 
@@ -50,7 +50,24 @@ async function loadVisitorNoteEditor() {
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("../ui/form-controls", () => ({
     FormButton: ({ children, ...props }: { children: ReactNode }) => <button {...props}>{children}</button>,
-    FormTextarea: (props: Record<string, unknown>) => <textarea {...props} />
+  }));
+  vi.doMock("./dashboard-visitor-note-mention-field", () => ({
+    DashboardVisitorNoteMentionField: ({
+      value,
+      onChange,
+      mentionableUsers: _mentionableUsers,
+      ...props
+    }: {
+      value: string;
+      onChange: (nextValue: string) => void;
+    }) => (
+      <textarea
+        {...props}
+        rows={5}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    )
   }));
   vi.doMock("../ui/toast-provider", () => ({
     useToast: () => ({ showToast })
@@ -103,9 +120,7 @@ describe("dashboard visitor note editor", () => {
     expect(renderToStaticMarkup(tree)).toContain("Updated");
     expect(getTextarea(tree)?.props.value).toBe("First touchpoint");
 
-    getTextarea(tree)?.props.onChange({
-      target: { value: "Important pricing objection" }
-    });
+    getTextarea(tree)?.props.onChange("Important pricing objection");
     reactMocks.beginRender();
     tree = DashboardVisitorNoteEditor({ conversationId: "conv_1" });
     getButton(tree)?.props.onClick();
@@ -145,9 +160,7 @@ describe("dashboard visitor note editor", () => {
     reactMocks.beginRender();
     let tree = DashboardVisitorNoteEditor({ conversationId: "conv_1" });
 
-    getTextarea(tree)?.props.onChange({
-      target: { value: "Needs follow-up" }
-    });
+    getTextarea(tree)?.props.onChange("Needs follow-up");
     reactMocks.beginRender();
     tree = DashboardVisitorNoteEditor({ conversationId: "conv_1" });
     getButton(tree)?.props.onClick();

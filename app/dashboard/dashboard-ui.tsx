@@ -258,6 +258,45 @@ export function BellIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function ClockIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconWrapper {...props}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5v5l3 2" />
+    </IconWrapper>
+  );
+}
+
+export function BranchIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconWrapper {...props}>
+      <path d="M7 6.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
+      <path d="M17 3.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
+      <path d="M17 15.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z" />
+      <path d="M9.5 9h3A4.5 4.5 0 0 0 17 4.5" />
+      <path d="M9.5 9h3A4.5 4.5 0 0 1 17 18" />
+      <path d="M7 11.5v3" />
+    </IconWrapper>
+  );
+}
+
+export function BoltIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconWrapper {...props}>
+      <path d="M13.5 3.5 6 13h4l-1 7.5 7.5-9h-4l1-8Z" />
+    </IconWrapper>
+  );
+}
+
+export function SendIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconWrapper {...props}>
+      <path d="M20 4 4 11l6 2 2 6 8-15Z" />
+      <path d="M10 13 20 4" />
+    </IconWrapper>
+  );
+}
+
 export function MailIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <IconWrapper {...props}>

@@ -111,7 +111,10 @@ describe("dashboard shell", () => {
     expect(captures.notification).toEqual({ initialSettings: { browserNotifications: true } });
     expect(heartbeat).toHaveBeenCalled();
     expect(timezoneSync).toHaveBeenCalled();
-    expect(captures.mobile).toEqual({ pathname: "/dashboard/inbox", unreadCount: 3 });
+    expect(captures.mobile).toEqual({
+      pathname: "/dashboard/inbox",
+      unreadCount: 3
+    });
     expect(captures.header).toEqual(
       expect.objectContaining({ showUnreadBadge: true, unreadCount: 3, firstName: "Tina" })
     );
@@ -144,7 +147,10 @@ describe("dashboard shell", () => {
     await runMockEffects(reactMocks.effects);
 
     expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: false }));
-    expect(captures.mobile).toEqual({ pathname: "/dashboard", unreadCount: 0 });
+    expect(captures.mobile).toEqual({
+      pathname: "/dashboard",
+      unreadCount: 0
+    });
 
     const navigation = captures.navigation as { navigate: (href: string) => void; onLinkNavigate: (event: Record<string, unknown>, href: string) => void };
     navigation.navigate("/dashboard/settings");
@@ -165,11 +171,26 @@ describe("dashboard shell", () => {
     const { DashboardShell, captures, reactMocks } = await loadDashboardShell({ pathname: "/dashboard/visitors", liveUnreadCount: 5 });
 
     reactMocks.beginRender();
-    renderToStaticMarkup(<DashboardShell userEmail="tina@usechatting.com" unreadCount={1} notificationSettings={{} as never}><div>content</div></DashboardShell>);
+    renderToStaticMarkup(
+      <DashboardShell
+        userEmail="tina@usechatting.com"
+        unreadCount={1}
+        notificationSettings={{} as never}
+      >
+        <div>content</div>
+      </DashboardShell>
+    );
     await runMockEffects(reactMocks.effects);
 
-    expect(captures.mobile).toEqual({ pathname: "/dashboard/visitors", unreadCount: 5 });
-    expect(captures.sidebar).toEqual(expect.objectContaining({ unreadCount: 5 }));
+    expect(captures.mobile).toEqual({
+      pathname: "/dashboard/visitors",
+      unreadCount: 5
+    });
+    expect(captures.sidebar).toEqual(
+      expect.objectContaining({
+        unreadCount: 5
+      })
+    );
     expect(captures.header).toEqual(expect.objectContaining({ unreadCount: 5 }));
     vi.unstubAllGlobals();
   });

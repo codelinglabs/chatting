@@ -29,6 +29,7 @@ describe("visitor notes repository", () => {
             identity_type: "email",
             identity_value: "alex@example.com",
             note: "Pricing follow-up",
+            mentions_json: [],
             updated_at: "2026-03-29T10:00:00.000Z"
           }
         ]
@@ -54,6 +55,7 @@ describe("visitor notes repository", () => {
           identity_type: "session",
           identity_value: "session_1",
           note: "Asked about integrations",
+          mentions_json: [],
           updated_at: "2026-03-29T10:05:00.000Z"
         }
       ]
@@ -65,6 +67,7 @@ describe("visitor notes repository", () => {
         identityType: "session",
         identityValue: "session_1",
         note: "Asked about integrations",
+        mentions: [],
         updatedByUserId: "user_1"
       })
     ).resolves.toMatchObject({ identity_type: "session" });
@@ -76,6 +79,7 @@ describe("visitor notes repository", () => {
       "session",
       "session_1",
       "Asked about integrations",
+      "[]",
       "user_1"
     ]);
     expect(mocks.query.mock.calls[1]?.[0]).toContain("DELETE FROM visitor_notes");
