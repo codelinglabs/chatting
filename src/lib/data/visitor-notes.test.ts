@@ -50,6 +50,7 @@ describe("visitor notes data", () => {
       identity_type: "email",
       identity_value: "alex@example.com",
       note: "Decision maker.",
+      mentions_json: [],
       updated_at: "2026-03-29T10:00:00.000Z"
     });
 
@@ -58,7 +59,8 @@ describe("visitor notes data", () => {
     expect(mocks.findVisitorNoteRow).toHaveBeenCalledWith("site_1", "email", "alex@example.com");
     expect(result).toEqual({
       note: "Decision maker.",
-      updatedAt: "2026-03-29T10:00:00.000Z"
+      updatedAt: "2026-03-29T10:00:00.000Z",
+      mentions: []
     });
   });
 
@@ -67,11 +69,12 @@ describe("visitor notes data", () => {
       siteId: "site_1",
       sessionId: "session_1",
       note: "   ",
+      mentions: [],
       userId: "user_123"
     });
 
     expect(mocks.deleteVisitorNoteRow).toHaveBeenCalledWith("site_1", "session", "session_1");
-    expect(result).toEqual({ note: null, updatedAt: null });
+    expect(result).toEqual({ note: null, updatedAt: null, mentions: [] });
   });
 
   it("handles site lookups without access or identity", async () => {
@@ -92,7 +95,7 @@ describe("visitor notes data", () => {
         email: "",
         userId: "user_123"
       })
-    ).resolves.toEqual({ note: null, updatedAt: null });
+    ).resolves.toEqual({ note: null, updatedAt: null, mentions: [] });
   });
 
   it("updates conversation notes when an identity exists and returns null when it does not", async () => {
@@ -108,13 +111,15 @@ describe("visitor notes data", () => {
       identity_type: "session",
       identity_value: "session_1",
       note: "Needs pricing follow-up",
+      mentions_json: [],
       updated_at: "2026-03-29T10:30:00.000Z"
     });
 
-    await expect(updateConversationVisitorNote("conv_missing", "hello", "user_123")).resolves.toBeNull();
-    await expect(updateConversationVisitorNote("conv_1", "Needs pricing follow-up", "user_123")).resolves.toEqual({
+    await expect(updateConversationVisitorNote("conv_missing", "hello", [], "user_123")).resolves.toBeNull();
+    await expect(updateConversationVisitorNote("conv_1", "Needs pricing follow-up", [], "user_123")).resolves.toEqual({
       note: "Needs pricing follow-up",
-      updatedAt: "2026-03-29T10:30:00.000Z"
+      updatedAt: "2026-03-29T10:30:00.000Z",
+      mentions: []
     });
   });
 
@@ -125,6 +130,7 @@ describe("visitor notes data", () => {
         identity_type: "session",
         identity_value: "session_1",
         note: "Asked about SOC 2.",
+        mentions_json: [],
         updated_at: "2026-03-29T10:00:00.000Z"
       })
       .mockResolvedValueOnce(null);
@@ -141,6 +147,7 @@ describe("visitor notes data", () => {
       identityType: "email",
       identityValue: "alex@example.com",
       note: "Asked about SOC 2.",
+      mentions: [],
       updatedByUserId: "user_123"
     });
     expect(mocks.deleteVisitorNoteRow).toHaveBeenCalledWith("site_1", "session", "session_1");
@@ -153,6 +160,7 @@ describe("visitor notes data", () => {
         identity_type: "session",
         identity_value: "session_1",
         note: "Anonymous note.",
+        mentions_json: [],
         updated_at: "2026-03-29T10:00:00.000Z"
       })
       .mockResolvedValueOnce({
@@ -160,6 +168,7 @@ describe("visitor notes data", () => {
         identity_type: "email",
         identity_value: "alex@example.com",
         note: "Existing email note.",
+        mentions_json: [],
         updated_at: "2026-03-29T11:00:00.000Z"
       });
 

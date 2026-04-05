@@ -1,5 +1,6 @@
 import type { DashboardBillingSummary } from "@/lib/data/billing";
 import type { DashboardHomeGrowthData } from "@/lib/data/dashboard-growth-types";
+import { ANALYTICS_EXPANSION_CONVERSATION_THRESHOLD } from "@/lib/growth-outreach-rules";
 
 const STARTER_CONVERSATION_LIMIT = 50;
 const STARTER_UPGRADE_THRESHOLD = 40;
@@ -35,7 +36,10 @@ export function buildExpansion(billing: DashboardBillingSummary): DashboardHomeG
     });
   }
 
-  if (billing.planKey === "starter" && (billing.usedSeats > 1 || billing.conversationCount >= 10)) {
+  if (
+    billing.planKey === "starter" &&
+    (billing.usedSeats > 1 || billing.conversationCount >= ANALYTICS_EXPANSION_CONVERSATION_THRESHOLD)
+  ) {
     prompts.push({
       id: "analytics" as const,
       tone: "neutral",

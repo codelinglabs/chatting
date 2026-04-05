@@ -1,6 +1,7 @@
 const mocks = vi.hoisted(() => ({
   sendPasswordResetEmail: vi.fn(),
   findAuthUserByEmail: vi.fn(),
+  markAuthUserEmailVerified: vi.fn(),
   updateAuthUserPassword: vi.fn(),
   consumeAuthEmailToken: vi.fn(),
   findActiveAuthEmailToken: vi.fn(),
@@ -14,6 +15,7 @@ vi.mock("@/lib/chatly-transactional-email-senders", () => ({
 
 vi.mock("@/lib/repositories/auth-repository", () => ({
   findAuthUserByEmail: mocks.findAuthUserByEmail,
+  markAuthUserEmailVerified: mocks.markAuthUserEmailVerified,
   updateAuthUserPassword: mocks.updateAuthUserPassword
 }));
 
@@ -62,13 +64,17 @@ describe("auth password reset", () => {
       user_id: "user_1"
     });
 
-    await resetPasswordWithToken("token-value", "password123");
+    await expect(resetPasswordWithToken("token-value", "password123")).resolves.toEqual({
+      userId: "user_1"
+    });
 
     expect(mocks.updateAuthUserPassword).toHaveBeenCalledWith(
       "user_1",
       expect.stringMatching(/^scrypt:/)
     );
+    expect(mocks.markAuthUserEmailVerified).toHaveBeenCalledWith("user_1");
     expect(mocks.consumeAuthEmailToken).toHaveBeenCalledWith("token_1");
+    expect(mocks.invalidateAuthEmailTokens).toHaveBeenCalledWith("user_1", "email_verification");
   });
 
   it("rejects invalid reset tokens", async () => {

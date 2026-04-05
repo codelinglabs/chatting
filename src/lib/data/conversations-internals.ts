@@ -157,10 +157,11 @@ export async function loadConversationMessages(
 
 export async function insertMessage(
   conversationId: string,
-  sender: "user" | "founder",
+  sender: "user" | "team",
   content: string,
   attachments: UploadedAttachmentInput[] = [],
   options?: {
+    authorUserId?: string | null;
     reopenConversation?: boolean;
   }
 ) {
@@ -169,6 +170,7 @@ export async function insertMessage(
     messageId,
     conversationId,
     sender,
+    authorUserId: options?.authorUserId ?? null,
     content: content.trim()
   });
 

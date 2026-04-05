@@ -12,5 +12,11 @@ export async function runExpiredGrowthTrialDowngrades(now = new Date()) {
     downgradedWorkspaces += 1;
   }
 
-  return { downgradedWorkspaces };
+  return {
+    downgradedWorkspaces,
+    expiredTrials: rows.map((row) => ({
+      userId: row.user_id,
+      trialEndedAt: row.trial_ends_at
+    }))
+  };
 }

@@ -195,3 +195,19 @@ export async function listVisitorPresenceRowsForUser(ownerUserId: string, viewer
 
   return result.rows;
 }
+
+export async function updateVisitorPresenceSessionEmail(input: {
+  siteId: string;
+  sessionId: string;
+  email: string;
+}) {
+  await query(
+    `
+      UPDATE visitor_presence_sessions
+      SET email = $3
+      WHERE site_id = $1
+        AND session_id = $2
+    `,
+    [input.siteId, input.sessionId, input.email.trim().toLowerCase()]
+  );
+}

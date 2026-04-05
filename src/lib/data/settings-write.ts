@@ -1,4 +1,5 @@
 import { changeUserPassword } from "@/lib/auth";
+import { updateDashboardContactSettings } from "@/lib/data/contacts";
 import {
   getDashboardSettingsData
 } from "@/lib/data/settings-read";
@@ -133,6 +134,10 @@ export async function updateDashboardSettings(
         operatingHours: primarySite.operatingHours
       });
     }
+  }
+
+  if (input.contacts) {
+    await updateDashboardContactSettings(userId, input.contacts);
   }
 
   if (

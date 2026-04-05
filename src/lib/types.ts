@@ -1,7 +1,8 @@
-export type Sender = "user" | "founder";
+export type Sender = "user" | "team";
 export type ConversationStatus = "open" | "resolved";
 export type ConversationRating = 1 | 2 | 3 | 4 | 5;
 export type OnboardingStep = "signup" | "team" | "customize" | "install" | "done";
+export type OwnerOnboardingStage = "account_created" | "site_created" | "billing_ready" | "referral_applied" | "complete";
 export type WidgetLauncherPosition = "left" | "right";
 export type WidgetAvatarStyle = "photos" | "initials" | "icon";
 export type WidgetResponseTimeMode = "minutes" | "hours" | "day" | "hidden";
@@ -64,6 +65,7 @@ export type ConversationSummary = {
   siteId: string;
   siteName: string;
   email: string | null;
+  assignedUserId: string | null;
   sessionId: string;
   status: ConversationStatus;
   createdAt: string;
@@ -97,6 +99,8 @@ export type VisitorPresenceSession = {
   city: string | null;
   timezone: string | null;
   locale: string | null;
+  tags?: string[];
+  customFields?: Record<string, string>;
   startedAt: string;
   lastSeenAt: string;
 };

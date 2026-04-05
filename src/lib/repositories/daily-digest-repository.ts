@@ -5,28 +5,28 @@ export async function listDailyDigestRecipientRows() {
   return listEmailReportRecipientRows();
 }
 
-export async function hasDailyDigestDelivery(userId: string, digestDate: string) {
-  const result = await query<{ user_id: string }>(
+export async function claimDailyDigestDelivery(userId: string, ownerUserId: string, digestDate: string) {
+  const result = await query<{ claimed: number }>(
     `
-      SELECT user_id
-      FROM daily_digest_deliveries
-      WHERE user_id = $1
-        AND digest_date = $2::date
-      LIMIT 1
+      INSERT INTO daily_digest_deliveries (user_id, owner_user_id, digest_date)
+      VALUES ($1, $2, $3::date)
+      ON CONFLICT (user_id, owner_user_id, digest_date) DO NOTHING
+      RETURNING 1 AS claimed
     `,
-    [userId, digestDate]
+    [userId, ownerUserId, digestDate]
   );
 
   return Boolean(result.rowCount);
 }
 
-export async function insertDailyDigestDelivery(userId: string, digestDate: string) {
+export async function releaseDailyDigestDelivery(userId: string, ownerUserId: string, digestDate: string) {
   await query(
     `
-      INSERT INTO daily_digest_deliveries (user_id, digest_date)
-      VALUES ($1, $2::date)
-      ON CONFLICT (user_id, digest_date) DO NOTHING
+      DELETE FROM daily_digest_deliveries
+      WHERE user_id = $1
+        AND owner_user_id = $2
+        AND digest_date = $3::date
     `,
-    [userId, digestDate]
+    [userId, ownerUserId, digestDate]
   );
 }

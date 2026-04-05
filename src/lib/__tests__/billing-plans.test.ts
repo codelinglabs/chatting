@@ -1,10 +1,27 @@
 import {
   formatBillingPriceLabel,
   formatSeatTotalLabel,
-  getBillingDisplayPrice
+  getBillingDisplayPrice,
+  getBillingPlanDefinition
 } from "@/lib/billing-plans";
 
 describe("billing plans", () => {
+  it("defines starter as a one-seat free plan", () => {
+    const starter = getBillingPlanDefinition("starter");
+
+    expect(starter.seatLimit).toBe(1);
+    expect(starter.marketingFeatures).toContain("1 team member");
+    expect(starter.marketingFeatures).not.toContain("Basic analytics");
+    expect(starter.marketingFeatures).not.toContain("Chatting branding");
+  });
+
+  it("keeps growth features aligned with the shared pricing cards", () => {
+    const growth = getBillingPlanDefinition("growth");
+
+    expect(growth.marketingFeatures).toContain("API access");
+    expect(growth.marketingFeatures).not.toContain("Volume pricing from $6/member after that");
+  });
+
   it("describes growth pricing with tiered member pricing", () => {
     expect(formatBillingPriceLabel("growth", "monthly")).toBe(
       "$20/month for 1-3 members, then $6/member from 4-9, $5/member from 10-24, and $4/member from 25-49"

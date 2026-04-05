@@ -2,12 +2,13 @@ import { query } from "@/lib/db";
 
 export type ExpiredGrowthTrialWorkspaceRow = {
   user_id: string;
+  trial_ends_at: string;
 };
 
 export async function listExpiredGrowthTrialWorkspaceRows(referenceTime: string) {
   const result = await query<ExpiredGrowthTrialWorkspaceRow>(
     `
-      SELECT user_id
+      SELECT user_id, trial_ends_at
       FROM billing_accounts
       WHERE plan_key = 'growth'
         AND trial_ends_at IS NOT NULL

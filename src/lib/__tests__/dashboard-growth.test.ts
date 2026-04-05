@@ -8,7 +8,7 @@ function createBillingSummary(overrides: Partial<DashboardBillingSummary> = {}):
     planName: "Starter Plan",
     priceLabel: "$0/month",
     usedSeats: 1,
-    seatLimit: 5,
+    seatLimit: 1,
     siteCount: 1,
     conversationCount: 0,
     nextBillingDate: null,
@@ -56,7 +56,7 @@ describe("dashboard growth helpers", () => {
   it("surfaces team, conversation, and analytics expansion prompts for busy starter workspaces", () => {
     const expansion = buildExpansion(
       createBillingSummary({
-        usedSeats: 5,
+        usedSeats: 2,
         conversationCount: 42
       })
     );

@@ -69,6 +69,9 @@ describe("dashboard growth expansion edge cases", () => {
 
   it("adds analytics prompts when either team size or conversations grow", () => {
     expect(buildExpansion(billing({ usedSeats: 2 })).prompts.map((item) => item.id)).toContain("analytics");
-    expect(buildExpansion(billing({ conversationCount: 10 })).prompts.map((item) => item.id)).toContain("analytics");
+    expect(buildExpansion(billing({ conversationCount: 39 })).prompts.map((item) => item.id)).not.toContain(
+      "analytics"
+    );
+    expect(buildExpansion(billing({ conversationCount: 40 })).prompts.map((item) => item.id)).toContain("analytics");
   });
 });

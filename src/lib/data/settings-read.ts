@@ -1,4 +1,5 @@
 import { seatCountFromActiveMemberships } from "@/lib/billing-seats";
+import { getDashboardContactSettings } from "@/lib/data/contacts";
 import { getDashboardBillingSummary } from "@/lib/data/billing";
 import { getDashboardSettingsBillingSnapshot } from "@/lib/data/settings-billing-snapshot";
 import {
@@ -83,7 +84,8 @@ export async function getDashboardSettingsData(
     primarySite,
     savedReplyRows,
     helpCenterArticleCount,
-    billingSummary
+    billingSummary,
+    contactsSettings
   ] = await Promise.all([
     findDashboardSettingsRow(userId),
     workspace.ownerUserId === userId ? Promise.resolve(null) : findDashboardSettingsRow(workspace.ownerUserId),
@@ -94,7 +96,8 @@ export async function getDashboardSettingsData(
     countHelpCenterArticleRows(workspace.ownerUserId),
     options?.fullBilling === false
       ? findBillingSummaryRow(workspace.ownerUserId)
-      : Promise.resolve(null)
+      : Promise.resolve(null),
+    getDashboardContactSettings(userId)
   ]);
 
   if (!row) {
@@ -160,6 +163,7 @@ export async function getDashboardSettingsData(
       templates: parseDashboardEmailTemplates(row.email_templates_json),
       emailSignature: row.email_signature ?? ""
     },
+    contacts: contactsSettings.settings,
     reports: mapDashboardSettingsReports(reportRow, workspace.role !== "member"),
     automation,
     automationContext: buildDashboardAutomationContext({

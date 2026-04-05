@@ -1,4 +1,5 @@
 import type { DashboardBillingSummary } from "@/lib/data/billing-types";
+import type { ContactWorkspaceSettings } from "@/lib/contact-types";
 import type { DashboardEmailTemplate } from "@/lib/email-templates";
 import type {
   DashboardAutomationContext,
@@ -104,6 +105,7 @@ export type DashboardSettingsData = {
   teamName?: string;
   notifications: DashboardSettingsNotifications;
   email: DashboardSettingsEmail;
+  contacts: ContactWorkspaceSettings;
   reports?: DashboardSettingsReports;
   automation?: DashboardAutomationSettings;
   automationContext?: DashboardAutomationContext;
@@ -127,6 +129,7 @@ export type UpdateDashboardSettingsInput = {
   teamName?: string;
   notifications: DashboardSettingsNotifications;
   email: DashboardSettingsEmail;
+  contacts?: ContactWorkspaceSettings;
   reports?: UpdateDashboardSettingsReportsInput;
   automation?: DashboardAutomationSettings;
   password?: {

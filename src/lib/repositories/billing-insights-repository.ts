@@ -40,7 +40,7 @@ export async function findBillingInsightsRow(userId: string) {
         FROM month_conversations c
         INNER JOIN messages m
           ON m.conversation_id = c.id
-        WHERE m.sender = 'founder'
+        WHERE m.sender = 'team'
         GROUP BY c.id
       ),
       response_pairs AS (

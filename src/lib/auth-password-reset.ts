@@ -3,7 +3,11 @@ import { promisify } from "node:util";
 import { sendPasswordResetEmail } from "@/lib/chatly-transactional-email-senders";
 import { getPublicAppUrl } from "@/lib/env";
 import { getAuthSecret } from "@/lib/env.server";
-import { findAuthUserByEmail, updateAuthUserPassword } from "@/lib/repositories/auth-repository";
+import {
+  findAuthUserByEmail,
+  markAuthUserEmailVerified,
+  updateAuthUserPassword
+} from "@/lib/repositories/auth-repository";
 import {
   consumeAuthEmailToken,
   findActiveAuthEmailToken,
@@ -87,5 +91,11 @@ export async function resetPasswordWithToken(token: string, password: string) {
   }
 
   await updateAuthUserPassword(tokenRow.user_id, await hashPassword(normalizedPassword));
+  await markAuthUserEmailVerified(tokenRow.user_id);
   await consumeAuthEmailToken(tokenRow.id);
+  await invalidateAuthEmailTokens(tokenRow.user_id, "email_verification");
+
+  return {
+    userId: tokenRow.user_id
+  };
 }

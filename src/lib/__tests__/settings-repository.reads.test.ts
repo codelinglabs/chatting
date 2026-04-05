@@ -70,7 +70,8 @@ describe("settings repository reads", () => {
     await expect(findUserIdByEmailExcludingUser("nobody@example.com", "user_1")).resolves.toBeNull();
 
     expect(mocks.query.mock.calls[0]?.[0]).toContain("status = 'pending'");
-    expect(mocks.query.mock.calls[1]?.[0]).toContain("COUNT(DISTINCT s.id)::text AS site_count");
+    expect(mocks.query.mock.calls[1]?.[0]).toContain("SELECT COUNT(*)::text");
+    expect(mocks.query.mock.calls[1]?.[0]).toContain("FROM sites s");
     expect(mocks.query.mock.calls[3]?.[0]).toContain("AND id <> $2");
   });
 });

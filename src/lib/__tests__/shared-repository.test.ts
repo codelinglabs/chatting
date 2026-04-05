@@ -61,10 +61,10 @@ describe("shared repository", () => {
     mocks.query.mockResolvedValueOnce({ rowCount: 1, rows: [{ id: "conv_1" }] });
     mocks.query.mockResolvedValueOnce({ rowCount: 0, rows: [] });
 
-    await expect(hasConversationAccess("conv_1", "user_1")).resolves.toBe(true);
-    await expect(hasConversationAccess("conv_2", "user_1")).resolves.toBe(false);
+    await expect(hasConversationAccess("conv_1", "owner_1", "user_1")).resolves.toBe(true);
+    await expect(hasConversationAccess("conv_2", "owner_1", "user_1")).resolves.toBe(false);
 
     expect(mocks.query.mock.calls[0]?.[0]).toContain("team_memberships");
-    expect(mocks.query.mock.calls[0]?.[1]).toEqual(["conv_1", "user_1"]);
+    expect(mocks.query.mock.calls[0]?.[1]).toEqual(["conv_1", "owner_1", "user_1"]);
   });
 });

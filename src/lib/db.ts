@@ -1,8 +1,10 @@
 import "server-only";
 
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { Pool, QueryResultRow } from "pg";
+import { runDrizzleMigrations } from "@/lib/drizzle/migrate";
+import * as schema from "@/lib/drizzle/schema";
 import { getDatabaseConfig } from "@/lib/env.server";
-import { runSchemaInitialization } from "@/lib/db-schema";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -13,9 +15,11 @@ declare global {
   var __chatlySchemaReady: Promise<void> | undefined;
   // eslint-disable-next-line no-var
   var __chatlySchemaVersion: string | undefined;
+  // eslint-disable-next-line no-var
+  var __chatlyDb: NodePgDatabase | undefined;
 }
 
-const SCHEMA_VERSION = "2026-03-31-cloud-run-scheduler-windows";
+const SCHEMA_VERSION = "2026-04-05-contact-list-indexes";
 const SCHEMA_LOCK_KEY = [20260401, 1] as const;
 
 async function createPool() {
@@ -27,7 +31,7 @@ async function createPool() {
   });
 }
 
-async function runSchemaInitializationWithLock(pool: Pool) {
+async function runMigrationsWithLock(pool: Pool) {
   const client = await pool.connect();
   let destroyClient = false;
 
@@ -35,7 +39,7 @@ async function runSchemaInitializationWithLock(pool: Pool) {
     await client.query("select pg_advisory_lock($1, $2)", [...SCHEMA_LOCK_KEY]);
 
     try {
-      await runSchemaInitialization(pool);
+      await runDrizzleMigrations(pool);
     } finally {
       try {
         const unlockResult = await client.query<{ unlocked: boolean }>(
@@ -76,6 +80,16 @@ export async function getPool() {
   return global.__chatlyPoolReady;
 }
 
+export async function getDb() {
+  if (global.__chatlyDb) {
+    return global.__chatlyDb;
+  }
+
+  const db = drizzle(await getPool(), { schema });
+  global.__chatlyDb = db;
+  return db;
+}
+
 export async function ensureSchema() {
   if (
     !global.__chatlySchemaReady ||
@@ -83,7 +97,7 @@ export async function ensureSchema() {
   ) {
     global.__chatlySchemaVersion = SCHEMA_VERSION;
     global.__chatlySchemaReady = (async () => {
-      await runSchemaInitializationWithLock(await getPool());
+      await runMigrationsWithLock(await getPool());
     })().catch((error) => {
       if (global.__chatlySchemaVersion === SCHEMA_VERSION) {
         global.__chatlySchemaReady = undefined;

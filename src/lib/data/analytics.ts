@@ -35,9 +35,13 @@ function toNullableNumber(value: string | null) {
 
 export async function getAnalyticsDataset(userId: string): Promise<AnalyticsDataset> {
   const workspace = await getWorkspaceAccess(userId);
+  return getAnalyticsDatasetForOwnerUserId(workspace.ownerUserId);
+}
+
+export async function getAnalyticsDatasetForOwnerUserId(ownerUserId: string): Promise<AnalyticsDataset> {
   const [conversations, replyEvents] = await Promise.all([
-    listAnalyticsConversations(workspace.ownerUserId),
-    listAnalyticsReplyEvents(workspace.ownerUserId)
+    listAnalyticsConversations(ownerUserId),
+    listAnalyticsReplyEvents(ownerUserId)
   ]);
 
   return {

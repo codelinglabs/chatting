@@ -56,6 +56,8 @@ export type CreateUserMessageInput = {
     city?: string | null;
     timezone?: string | null;
     locale?: string | null;
+    visitorTags?: string[];
+    customFields?: Record<string, string>;
   };
 };
 
@@ -107,6 +109,7 @@ export function mapSummary(row: SummaryRow): ConversationSummary {
     siteId: row.site_id,
     siteName: row.site_name,
     email: row.email,
+    assignedUserId: row.assigned_user_id,
     sessionId: row.session_id,
     status: row.status,
     createdAt: row.created_at,

@@ -1,5 +1,3 @@
-import type { VisitorNote, VisitorNoteIdentityType } from "@/lib/types";
-import { optionalText } from "@/lib/utils";
 import { getWorkspaceAccess } from "@/lib/workspace-access";
 import { findConversationIdentityForActivity } from "@/lib/repositories/conversations-read-repository";
 import {
@@ -8,49 +6,12 @@ import {
   findVisitorNoteRow,
   upsertVisitorNoteRow
 } from "@/lib/repositories/visitor-notes-repository";
-
-type VisitorIdentity = {
-  siteId: string;
-  identityType: VisitorNoteIdentityType;
-  identityValue: string;
-};
-
-function buildVisitorIdentity(input: {
-  siteId: string;
-  sessionId?: string | null;
-  email?: string | null;
-}): VisitorIdentity | null {
-  const email = optionalText(input.email)?.toLowerCase();
-  if (email) {
-    return {
-      siteId: input.siteId,
-      identityType: "email",
-      identityValue: email
-    };
-  }
-  const sessionId = optionalText(input.sessionId);
-  if (!sessionId) {
-    return null;
-  }
-  return {
-    siteId: input.siteId,
-    identityType: "session",
-    identityValue: sessionId
-  };
-}
-
-function mapVisitorNote(row: Awaited<ReturnType<typeof findVisitorNoteRow>>) {
-  if (!row) {
-    return null;
-  }
-  return {
-    siteId: row.site_id,
-    identityType: row.identity_type,
-    identityValue: row.identity_value,
-    note: row.note,
-    updatedAt: row.updated_at
-  } satisfies VisitorNote;
-}
+import type { VisitorNoteMentionToken } from "@/lib/visitor-note-mention-structure";
+import {
+  buildVisitorIdentity,
+  mapVisitorNote,
+  type VisitorIdentity
+} from "./visitor-note-helpers";
 
 async function resolveConversationIdentity(conversationId: string, userId: string) {
   const workspace = await getWorkspaceAccess(userId);
@@ -70,11 +31,16 @@ async function ensureSiteAccess(siteId: string, userId: string) {
   return findSiteRowForOwner(siteId, workspace.ownerUserId);
 }
 
-async function saveVisitorNote(identity: VisitorIdentity, note: string, updatedByUserId: string) {
+async function saveVisitorNote(
+  identity: VisitorIdentity,
+  note: string,
+  mentions: VisitorNoteMentionToken[],
+  updatedByUserId: string
+) {
   const normalizedNote = note.trim();
   if (!normalizedNote) {
     await deleteVisitorNoteRow(identity.siteId, identity.identityType, identity.identityValue);
-    return { note: null, updatedAt: null };
+    return { note: null, updatedAt: null, mentions: [] };
   }
 
   const saved = mapVisitorNote(
@@ -83,13 +49,15 @@ async function saveVisitorNote(identity: VisitorIdentity, note: string, updatedB
       identityType: identity.identityType,
       identityValue: identity.identityValue,
       note: normalizedNote,
+      mentions,
       updatedByUserId
     })
   );
 
   return {
     note: saved?.note ?? null,
-    updatedAt: saved?.updatedAt ?? null
+    updatedAt: saved?.updatedAt ?? null,
+    mentions: saved?.mentions ?? []
   };
 }
 
@@ -102,7 +70,7 @@ export async function getConversationVisitorNote(conversationId: string, userId:
     await findVisitorNoteRow(identity.siteId, identity.identityType, identity.identityValue)
   );
 
-  return { note: note?.note ?? null, updatedAt: note?.updatedAt ?? null };
+  return { note: note?.note ?? null, updatedAt: note?.updatedAt ?? null, mentions: note?.mentions ?? [] };
 }
 
 export async function getSiteVisitorNote(input: {
@@ -117,22 +85,27 @@ export async function getSiteVisitorNote(input: {
 
   const identity = buildVisitorIdentity(input);
   if (!identity) {
-    return { note: null, updatedAt: null };
+    return { note: null, updatedAt: null, mentions: [] };
   }
   const note = mapVisitorNote(
     await findVisitorNoteRow(identity.siteId, identity.identityType, identity.identityValue)
   );
 
-  return { note: note?.note ?? null, updatedAt: note?.updatedAt ?? null };
+  return { note: note?.note ?? null, updatedAt: note?.updatedAt ?? null, mentions: note?.mentions ?? [] };
 }
 
-export async function updateConversationVisitorNote(conversationId: string, note: string, userId: string) {
+export async function updateConversationVisitorNote(
+  conversationId: string,
+  note: string,
+  mentions: VisitorNoteMentionToken[],
+  userId: string
+) {
   const identity = await resolveConversationIdentity(conversationId, userId);
   if (!identity) {
     return null;
   }
 
-  return saveVisitorNote(identity, note, userId);
+  return saveVisitorNote(identity, note, mentions, userId);
 }
 
 export async function updateSiteVisitorNote(input: {
@@ -140,6 +113,7 @@ export async function updateSiteVisitorNote(input: {
   sessionId?: string | null;
   email?: string | null;
   note: string;
+  mentions: VisitorNoteMentionToken[];
   userId: string;
 }) {
   if (!(await ensureSiteAccess(input.siteId, input.userId))) {
@@ -148,10 +122,10 @@ export async function updateSiteVisitorNote(input: {
 
   const identity = buildVisitorIdentity(input);
   if (!identity) {
-    return { note: null, updatedAt: null };
+    return { note: null, updatedAt: null, mentions: [] };
   }
 
-  return saveVisitorNote(identity, input.note, input.userId);
+  return saveVisitorNote(identity, input.note, input.mentions, input.userId);
 }
 
 export async function migrateVisitorNoteIdentity(input: {
@@ -187,12 +161,13 @@ export async function migrateVisitorNoteIdentity(input: {
 
   if (!toNote) {
     await upsertVisitorNoteRow({
-      siteId: to.siteId,
-      identityType: to.identityType,
-      identityValue: to.identityValue,
-      note: fromNote.note,
-      updatedByUserId: input.updatedByUserId ?? null
-    });
+        siteId: to.siteId,
+        identityType: to.identityType,
+        identityValue: to.identityValue,
+        note: fromNote.note,
+        mentions: fromNote.mentions_json,
+        updatedByUserId: input.updatedByUserId ?? null
+      });
   }
 
   await deleteVisitorNoteRow(from.siteId, from.identityType, from.identityValue);

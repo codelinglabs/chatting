@@ -46,7 +46,7 @@ export async function findConversationTemplateContext(conversationId: string) {
 export async function listConversationTranscriptRows(conversationId: string) {
   const result = await query<{
     id: string;
-    sender: "user" | "founder";
+    sender: "user" | "team";
     content: string;
     created_at: string;
   }>(

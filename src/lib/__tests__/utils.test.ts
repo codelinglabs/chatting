@@ -2,6 +2,7 @@ import {
   classNames,
   escapeHtml,
   formatFileSize,
+  optionalDateTime,
   optionalText,
   truncate
 } from "@/lib/utils";
@@ -26,6 +27,12 @@ describe("utils", () => {
     expect(optionalText(" hello ")).toBe("hello");
     expect(optionalText("   ")).toBeNull();
     expect(optionalText(undefined)).toBeNull();
+  });
+
+  it("normalizes optional date-times", () => {
+    expect(optionalDateTime(" 2026-03-01T10:05:00.000Z ")).toBe("2026-03-01T10:05:00.000Z");
+    expect(optionalDateTime(new Date("2026-03-01T10:05:00.000Z"))).toBe("2026-03-01T10:05:00.000Z");
+    expect(optionalDateTime(new Date("invalid"))).toBeNull();
   });
 
   it("escapes html", () => {

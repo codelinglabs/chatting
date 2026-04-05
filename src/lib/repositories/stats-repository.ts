@@ -10,7 +10,7 @@ export async function getConversationTotalsForUser(userId: string) {
             SELECT 1
             FROM messages m
             WHERE m.conversation_id = c.id
-              AND m.sender = 'founder'
+              AND m.sender = 'team'
           )
         )::text AS answered
       FROM conversations c

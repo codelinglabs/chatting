@@ -98,7 +98,7 @@ describe("conversation internals", () => {
     repoMocks.insertMessageRecord.mockResolvedValueOnce({ id: "uuid-123", content: "Hello", message_id: "uuid-123" });
     sharedMocks.queryMessageAttachmentRows.mockResolvedValueOnce([{ id: "att_1", message_id: "uuid-123" }]);
 
-    await expect(insertMessage("conv_1", "founder", "  Hello  ", [{ fileName: "brief.pdf", contentType: "application/pdf", sizeBytes: 5, content: Buffer.from("x") }], { reopenConversation: true })).resolves.toEqual({
+    await expect(insertMessage("conv_1", "team", "  Hello  ", [{ fileName: "brief.pdf", contentType: "application/pdf", sizeBytes: 5, content: Buffer.from("x") }], { reopenConversation: true })).resolves.toEqual({
       id: "uuid-123",
       attachments: [{ id: "att_1", messageId: "uuid-123", url: "/api/files/att_1?conversationId=conv_1" }],
       content: "Hello"

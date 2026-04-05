@@ -16,6 +16,7 @@ export type UserSettingsRow = {
   email_notifications: boolean | null;
   new_visitor_alerts: boolean | null;
   high_intent_alerts: boolean | null;
+  workspace_automation_settings_json: string | null;
   email_signature: string | null;
   last_seen_at: string | null;
 };
@@ -36,6 +37,30 @@ export type BillingSummaryRow = {
   conversation_count: string;
   site_count: string;
 };
+
+type WorkspaceAutomationSettingsRow = {
+  workspace_automation_settings_json: string | null;
+};
+
+function isMissingWorkspaceAutomationColumn(error: unknown) {
+  return Boolean(
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof (error as { message?: string }).message === "string" &&
+    ((error as { message: string }).message.includes("workspace_automation_settings_json") ||
+      ("code" in error && (error as { code?: string }).code === "42703"))
+  );
+}
+
+async function addWorkspaceAutomationColumnIfMissing() {
+  await query(
+    `
+      ALTER TABLE user_settings
+      ADD COLUMN IF NOT EXISTS workspace_automation_settings_json TEXT NOT NULL DEFAULT ''
+    `
+  );
+}
 
 export async function findNotificationSettingsRow(userId: string) {
   const result = await query<
@@ -107,38 +132,101 @@ export async function findEmailTemplateSettingsRow(userId: string) {
 }
 
 export async function findDashboardSettingsRow(userId: string) {
-  const result = await query<UserSettingsRow>(
-    `
-      SELECT
-        u.id AS user_id,
-        u.email,
-        u.created_at,
-        us.first_name,
-        us.last_name,
-        us.job_title,
-        us.avatar_data_url,
-        us.notification_email,
-        us.reply_to_email,
-        us.email_templates_json,
-        us.browser_notifications,
-        us.sound_alerts,
-        us.email_notifications,
-        us.new_visitor_alerts,
-        us.high_intent_alerts,
-        us.email_signature,
-        up.last_seen_at
-      FROM users u
-      LEFT JOIN user_settings us
-        ON us.user_id = u.id
-      LEFT JOIN user_presence up
-        ON up.user_id = u.id
-      WHERE u.id = $1
-      LIMIT 1
-    `,
-    [userId]
-  );
+  try {
+    const result = await query<UserSettingsRow>(
+      `
+        SELECT
+          u.id AS user_id,
+          u.email,
+          u.created_at,
+          us.first_name,
+          us.last_name,
+          us.job_title,
+          us.avatar_data_url,
+          us.notification_email,
+          us.reply_to_email,
+          us.email_templates_json,
+          us.browser_notifications,
+          us.sound_alerts,
+          us.email_notifications,
+          us.new_visitor_alerts,
+          us.high_intent_alerts,
+          us.workspace_automation_settings_json,
+          us.email_signature,
+          up.last_seen_at
+        FROM users u
+        LEFT JOIN user_settings us
+          ON us.user_id = u.id
+        LEFT JOIN user_presence up
+          ON up.user_id = u.id
+        WHERE u.id = $1
+        LIMIT 1
+      `,
+      [userId]
+    );
 
-  return result.rows[0] ?? null;
+    return result.rows[0] ?? null;
+  } catch (error) {
+    if (!isMissingWorkspaceAutomationColumn(error)) {
+      throw error;
+    }
+
+    const result = await query<UserSettingsRow>(
+      `
+        SELECT
+          u.id AS user_id,
+          u.email,
+          u.created_at,
+          us.first_name,
+          us.last_name,
+          us.job_title,
+          us.avatar_data_url,
+          us.notification_email,
+          us.reply_to_email,
+          us.email_templates_json,
+          us.browser_notifications,
+          us.sound_alerts,
+          us.email_notifications,
+          us.new_visitor_alerts,
+          us.high_intent_alerts,
+          '' AS workspace_automation_settings_json,
+          us.email_signature,
+          up.last_seen_at
+        FROM users u
+        LEFT JOIN user_settings us
+          ON us.user_id = u.id
+        LEFT JOIN user_presence up
+          ON up.user_id = u.id
+        WHERE u.id = $1
+        LIMIT 1
+      `,
+      [userId]
+    );
+
+    return result.rows[0] ?? null;
+  }
+}
+
+export async function findWorkspaceAutomationSettingsValue(userId: string) {
+  try {
+    const result = await query<WorkspaceAutomationSettingsRow>(
+      `
+        SELECT workspace_automation_settings_json
+        FROM user_settings
+        WHERE user_id = $1
+        LIMIT 1
+      `,
+      [userId]
+    );
+
+    return result.rows[0]?.workspace_automation_settings_json ?? "";
+  } catch (error) {
+    if (!isMissingWorkspaceAutomationColumn(error)) {
+      throw error;
+    }
+
+    return "";
+  }
 }
 
 export async function listPendingTeamInviteRows(ownerUserId: string) {
@@ -169,12 +257,18 @@ export async function findBillingSummaryRow(userId: string) {
   const result = await query<BillingSummaryRow>(
     `
       SELECT
-        COUNT(c.id)::text AS conversation_count,
-        COUNT(DISTINCT s.id)::text AS site_count
-      FROM sites s
-      LEFT JOIN conversations c
-        ON c.site_id = s.id
-      WHERE s.user_id = $1
+        (
+          SELECT COUNT(*)::text
+          FROM conversations c
+          INNER JOIN sites s
+            ON s.id = c.site_id
+          WHERE s.user_id = $1
+        ) AS conversation_count,
+        (
+          SELECT COUNT(*)::text
+          FROM sites s
+          WHERE s.user_id = $1
+        ) AS site_count
     `,
     [userId]
   );
@@ -280,6 +374,37 @@ export async function upsertUserSettingsRecord(input: {
       input.emailSignature
     ]
   );
+}
+
+export async function upsertWorkspaceAutomationSettings(ownerUserId: string, workspaceAutomationSettingsJson: string) {
+  try {
+    await query(
+      `
+        INSERT INTO user_settings (user_id, workspace_automation_settings_json, updated_at)
+        VALUES ($1, $2, NOW())
+        ON CONFLICT (user_id) DO UPDATE SET
+          workspace_automation_settings_json = EXCLUDED.workspace_automation_settings_json,
+          updated_at = NOW()
+      `,
+      [ownerUserId, workspaceAutomationSettingsJson]
+    );
+  } catch (error) {
+    if (!isMissingWorkspaceAutomationColumn(error)) {
+      throw error;
+    }
+
+    await addWorkspaceAutomationColumnIfMissing();
+    await query(
+      `
+        INSERT INTO user_settings (user_id, workspace_automation_settings_json, updated_at)
+        VALUES ($1, $2, NOW())
+        ON CONFLICT (user_id) DO UPDATE SET
+          workspace_automation_settings_json = EXCLUDED.workspace_automation_settings_json,
+          updated_at = NOW()
+      `,
+      [ownerUserId, workspaceAutomationSettingsJson]
+    );
+  }
 }
 
 export async function insertTeamInviteRecord(input: {

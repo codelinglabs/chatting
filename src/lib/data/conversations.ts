@@ -21,6 +21,7 @@ import {
 } from "@/lib/repositories/conversations-repository";
 import { findWorkspaceAutomationSettingsValue } from "@/lib/repositories/settings-repository";
 import { findSitePresenceRow } from "@/lib/repositories/sites-repository";
+import { updateVisitorPresenceSessionEmail } from "@/lib/repositories/visitor-presence-repository";
 import type { ConversationRating, ConversationStatus, ConversationThread, VisitorActivity } from "@/lib/types";
 import { optionalText } from "@/lib/utils";
 import { isHighIntentPage, previewIncomingMessage } from "@/lib/notification-utils";
@@ -344,6 +345,11 @@ export async function saveVisitorConversationEmail(input: {
       conversationId: input.conversationId,
       email
     });
+    await updateVisitorPresenceSessionEmail({
+      siteId: input.siteId,
+      sessionId: input.sessionId,
+      email
+    });
   }
 
   return {
@@ -386,6 +392,11 @@ export async function addInboundReply(
         siteId: conversation.site_id,
         sessionId: conversation.session_id,
         conversationId,
+        email
+      });
+      await updateVisitorPresenceSessionEmail({
+        siteId: conversation.site_id,
+        sessionId: conversation.session_id,
         email
       });
     }
@@ -506,6 +517,11 @@ export async function updateConversationEmail(conversationId: string, email: str
       siteId: identityBefore.site_id,
       sessionId: identityBefore.session_id,
       conversationId,
+      email
+    });
+    await updateVisitorPresenceSessionEmail({
+      siteId: identityBefore.site_id,
+      sessionId: identityBefore.session_id,
       email
     });
   }

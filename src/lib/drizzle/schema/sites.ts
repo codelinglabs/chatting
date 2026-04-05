@@ -1,0 +1,43 @@
+import { boolean, check, foreignKey, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { desc, sql } from "drizzle-orm";
+import { users } from "./core";
+
+export const sites = pgTable("sites", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    name: text("name").notNull(),
+    domain: text("domain"),
+    brandColor: text("brand_color").notNull().default("#2563EB"),
+    greetingText: text("greeting_text").notNull().default("Hi there. Have a question? We're here to help."),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    widgetTitle: text("widget_title").notNull().default("Talk to the team"),
+    timezone: text("timezone").notNull().default("UTC"),
+    currency: text("currency").notNull().default("USD"),
+    attributionModel: text("attribution_model").notNull().default("last-touch"),
+    excludedIps: text("excluded_ips").array().notNull().default(sql.raw("'{}'::text[]")),
+    botFilteringEnabled: boolean("bot_filtering_enabled").notNull().default(true),
+    launcherPosition: text("launcher_position").notNull().default("right"),
+    avatarStyle: text("avatar_style").notNull().default("initials"),
+    showOnlineStatus: boolean("show_online_status").notNull().default(true),
+    requireEmailOffline: boolean("require_email_offline").notNull().default(false),
+    soundNotifications: boolean("sound_notifications").notNull().default(false),
+    autoOpenPaths: text("auto_open_paths").array().notNull().default(sql.raw("'{}'::text[]")),
+    responseTimeMode: text("response_time_mode").notNull().default("minutes"),
+    operatingHoursEnabled: boolean("operating_hours_enabled").notNull().default(false),
+    operatingHoursTimezone: text("operating_hours_timezone").notNull().default("UTC"),
+    operatingHoursJson: text("operating_hours_json").notNull().default(""),
+    widgetLastSeenAt: timestamp("widget_last_seen_at", { withTimezone: true, mode: "date" }),
+    teamPhotoUrl: text("team_photo_url"),
+    teamPhotoKey: text("team_photo_key"),
+    widgetInstallVerifiedAt: timestamp("widget_install_verified_at", { withTimezone: true, mode: "date" }),
+    widgetLastSeenUrl: text("widget_last_seen_url"),
+    widgetInstallVerifiedUrl: text("widget_install_verified_url"),
+    offlineTitle: text("offline_title").notNull().default("We're not online right now"),
+    offlineMessage: text("offline_message").notNull().default("Leave a message and we'll get back to you via email."),
+    awayTitle: text("away_title").notNull().default("We're away right now"),
+    awayMessage: text("away_message").notNull().default("Leave a message and we'll get back to you via email."),
+  }, (table) => ({
+    sitesAttributionModelCheck: check("sites_attribution_model_check", sql.raw("(attribution_model = ANY (ARRAY['first-touch'::text, 'last-touch'::text]))")),
+    sitesUserIdFkey: foreignKey({ name: "sites_user_id_fkey", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),
+    idxSitesUserId: index("idx_sites_user_id").on(table.userId, desc(table.createdAt)),
+  }));

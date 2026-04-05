@@ -63,6 +63,14 @@ export function optionalText(value: string | null | undefined) {
   return normalized ? normalized : null;
 }
 
+export function optionalDateTime(value: Date | string | null | undefined) {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value.toISOString();
+  }
+
+  return optionalText(value);
+}
+
 export function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")

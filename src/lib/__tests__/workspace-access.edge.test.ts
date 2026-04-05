@@ -2,7 +2,7 @@ const workspaceRepoMocks = vi.hoisted(() => ({
   acceptTeamInviteRecord: vi.fn(),
   findTeamInviteAccessRow: vi.fn(),
   findWorkspaceAccessRow: vi.fn(),
-  hasOwnedWorkspaceRecord: vi.fn(),
+  listWorkspaceAccessRows: vi.fn(),
   upsertActiveTeamMembership: vi.fn()
 }));
 
@@ -46,7 +46,6 @@ describe("workspace access edge cases", () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-30T12:00:00.000Z"));
-    workspaceRepoMocks.hasOwnedWorkspaceRecord.mockResolvedValue(false);
   });
 
   afterEach(() => {

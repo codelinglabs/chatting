@@ -1,4 +1,5 @@
 import type { VisitorPresenceSession } from "@/lib/types";
+import { syncDashboardContactFromPresence } from "@/lib/data/contacts";
 import { publishDashboardLive } from "@/lib/live-events";
 import {
   findSiteOwnerRow,
@@ -6,8 +7,7 @@ import {
   listVisitorPresenceRowsForUser,
   upsertVisitorPresenceSessionRow
 } from "@/lib/repositories/visitor-presence-repository";
-import { upsertVisitorContactRow } from "@/lib/repositories/visitor-contacts-repository";
-import { optionalText } from "@/lib/utils";
+import { optionalDateTime, optionalText } from "@/lib/utils";
 import { getWorkspaceAccess } from "@/lib/workspace-access";
 
 export type RecordVisitorPresenceInput = {
@@ -28,10 +28,7 @@ export type RecordVisitorPresenceInput = {
 };
 
 function mapVisitorPresenceSession(row: Awaited<ReturnType<typeof upsertVisitorPresenceSessionRow>>) {
-  if (!row) {
-    return null;
-  }
-
+  if (!row) return null;
   return {
     siteId: row.site_id,
     sessionId: row.session_id,
@@ -57,26 +54,31 @@ export async function syncVisitorContact(input: {
   email?: string | null;
   conversationId?: string | null;
   sessionId?: string | null;
-  seenAt?: string | null;
+  seenAt?: string | Date | null;
+  pageUrl?: string | null;
+  referrer?: string | null;
+  location?: { city?: string | null; region?: string | null; country?: string | null };
   visitorTags?: string[];
   customFields?: Record<string, string>;
+  sessionDurationSeconds?: number | null;
 }) {
   const siteId = input.siteId.trim();
   const email = optionalText(input.email)?.toLowerCase();
 
-  if (!siteId || !email) {
-    return null;
-  }
-
+  if (!siteId || !email) return null;
   try {
-    return await upsertVisitorContactRow({
+    return await syncDashboardContactFromPresence({
       siteId,
       email,
       conversationId: optionalText(input.conversationId),
       sessionId: optionalText(input.sessionId),
-      seenAt: optionalText(input.seenAt) ?? new Date().toISOString(),
+      seenAt: optionalDateTime(input.seenAt) ?? new Date().toISOString(),
+      pageUrl: optionalText(input.pageUrl),
+      referrer: optionalText(input.referrer),
+      location: input.location,
       visitorTags: input.visitorTags,
-      customFields: input.customFields
+      customFields: input.customFields,
+      sessionDurationSeconds: input.sessionDurationSeconds
     });
   } catch (error) {
     console.error("visitor contact sync failed", error);
@@ -86,10 +88,7 @@ export async function syncVisitorContact(input: {
 
 export async function recordVisitorPresence(input: RecordVisitorPresenceInput) {
   const sessionId = input.sessionId.trim();
-  if (!input.siteId || !sessionId) {
-    return null;
-  }
-
+  if (!input.siteId || !sessionId) return null;
   const [owner, previous] = await Promise.all([
     findSiteOwnerRow(input.siteId),
     findVisitorPresenceSessionRow(input.siteId, sessionId)
@@ -115,21 +114,30 @@ export async function recordVisitorPresence(input: RecordVisitorPresenceInput) {
   );
 
   if (next?.email) {
+    const sessionDurationSeconds = Math.max(
+      0,
+      Math.round((new Date(next.lastSeenAt).getTime() - new Date(next.startedAt).getTime()) / 1000)
+    );
     await syncVisitorContact({
       siteId: next.siteId,
       email: next.email,
       conversationId: next.conversationId,
       sessionId: next.sessionId,
       seenAt: next.lastSeenAt,
+      pageUrl: next.currentPageUrl,
+      referrer: next.referrer,
+      location: {
+        city: next.city,
+        region: next.region,
+        country: next.country
+      },
       visitorTags: next.tags,
-      customFields: next.customFields
+      customFields: next.customFields,
+      sessionDurationSeconds
     });
   }
 
-  if (!owner?.user_id || !next) {
-    return next;
-  }
-
+  if (!owner?.user_id || !next) return next;
   const pageChanged =
     optionalText(previous?.current_page_url) !== next.currentPageUrl &&
     Boolean(next.currentPageUrl);
@@ -158,10 +166,7 @@ export async function getVisitorPresenceSession(input: {
   const siteId = input.siteId.trim();
   const sessionId = input.sessionId.trim();
 
-  if (!siteId || !sessionId) {
-    return null;
-  }
-
+  if (!siteId || !sessionId) return null;
   const workspace = await getWorkspaceAccess(input.userId);
   const [owner, row] = await Promise.all([
     findSiteOwnerRow(siteId),
@@ -175,7 +180,7 @@ export async function getVisitorPresenceSession(input: {
   return mapVisitorPresenceSession(row);
 }
 
-export async function listVisitorPresenceSessions(userId: string) {
+export async function listVisitorPresenceSessions(userId: string): Promise<VisitorPresenceSession[]> {
   const workspace = await getWorkspaceAccess(userId);
   const rows = await listVisitorPresenceRowsForUser(workspace.ownerUserId, userId);
   return rows

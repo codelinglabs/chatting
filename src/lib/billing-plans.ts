@@ -41,16 +41,15 @@ const PLAN_DEFINITIONS: Record<BillingPlanKey, BillingPlanDefinition> = {
     dashboardName: "Starter Plan",
     subtitle: "",
     featured: false,
-    seatLimit: 5,
+    seatLimit: 1,
     savingsLabel: null,
     trialDays: 0,
     features: { billedPerSeat: false, proactiveChat: false, removeBranding: false },
     marketingFeatures: [
       "50 conversations each month",
-      "Basic analytics",
+      "1 team member",
       "Widget customization",
-      "Email notifications",
-      "Chatting branding"
+      "Email notifications"
     ]
   },
   growth: {
@@ -64,13 +63,15 @@ const PLAN_DEFINITIONS: Record<BillingPlanKey, BillingPlanDefinition> = {
     features: { billedPerSeat: true, proactiveChat: true, removeBranding: true },
     marketingFeatures: [
       "Unlimited conversations",
+      "1-3 team members included",
       "Proactive chat",
       "Visitor tracking",
       "Advanced analytics",
+      "AI assist",
+      "Saved replies",
       "API access",
       "Custom branding",
-      "White-label widget",
-      "14-day free trial"
+      "White-label widget"
     ]
   }
 };

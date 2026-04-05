@@ -50,6 +50,7 @@ describe("auth and billing repositories", () => {
     expect(mocks.query.mock.calls[0]?.[0]).toContain("FROM users");
     expect(mocks.query.mock.calls[3]?.[0]).toContain("INSERT INTO users");
     expect(mocks.query.mock.calls[6]?.[0]).toContain("INSERT INTO auth_sessions");
+    expect(mocks.query.mock.calls[6]?.[0]).toContain("active_workspace_owner_id");
     expect(mocks.query.mock.calls[8]?.[0]).toContain("FROM auth_sessions s");
   });
 

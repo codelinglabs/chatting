@@ -59,7 +59,7 @@ export async function listAnalyticsConversations(userId: string) {
         SELECT MIN(m.created_at) AS first_reply_at
         FROM messages m
         WHERE m.conversation_id = c.id
-          AND m.sender = 'founder'
+          AND m.sender = 'team'
           AND (fu.first_user_at IS NULL OR m.created_at > fu.first_user_at)
       ) fr ON TRUE
       LEFT JOIN LATERAL (
@@ -102,7 +102,7 @@ export async function listAnalyticsReplyEvents(userId: string) {
         created_at,
         EXTRACT(EPOCH FROM (created_at - previous_created_at))::text AS response_seconds
       FROM ordered_messages
-      WHERE sender = 'founder'
+      WHERE sender = 'team'
         AND previous_sender = 'user'
         AND previous_created_at IS NOT NULL
         AND created_at > previous_created_at

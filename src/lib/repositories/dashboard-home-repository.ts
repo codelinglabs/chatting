@@ -80,7 +80,7 @@ export async function getDashboardHomeResponseMetrics(userId: string) {
         INNER JOIN messages m
           ON m.conversation_id = c.id
         WHERE s.user_id = $1
-          AND m.sender = 'founder'
+          AND m.sender = 'team'
         GROUP BY c.id
       ),
       paired AS (

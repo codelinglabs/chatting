@@ -1,0 +1,81 @@
+import { boolean, check, foreignKey, index, integer, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { desc, sql } from "drizzle-orm";
+import { users } from "./core";
+
+export const referralPrograms = pgTable("referral_programs", {
+    id: text("id").primaryKey(),
+    ownerUserId: text("owner_user_id").notNull(),
+    code: text("code").notNull(),
+    programType: text("program_type").notNull(),
+    label: text("label").notNull(),
+    referrerRewardMonths: integer("referrer_reward_months").notNull().default(0),
+    referrerRewardCents: integer("referrer_reward_cents").notNull().default(0),
+    referredRewardCents: integer("referred_reward_cents").notNull().default(0),
+    commissionBps: integer("commission_bps").notNull().default(0),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  }, (table) => ({
+    referralProgramsOwnerUserIdFkey: foreignKey({ name: "referral_programs_owner_user_id_fkey", columns: [table.ownerUserId], foreignColumns: [users.id] }).onDelete("cascade"),
+    referralProgramsProgramTypeCheck: check("referral_programs_program_type_check", sql.raw("(program_type = ANY (ARRAY['customer'::text, 'affiliate'::text, 'mutual'::text]))")),
+    referralProgramsCodeKey: uniqueIndex("referral_programs_code_key").on(table.code),
+    referralProgramsOwnerCreatedIdx: index("referral_programs_owner_created_idx").on(table.ownerUserId, desc(table.createdAt)),
+    referralProgramsOwnerTypeKey: uniqueIndex("referral_programs_owner_type_key").on(table.ownerUserId, table.programType),
+  }));
+
+export const referralAttributions = pgTable("referral_attributions", {
+    id: text("id").primaryKey(),
+    programId: text("program_id").notNull(),
+    ownerUserId: text("owner_user_id").notNull(),
+    referredUserId: text("referred_user_id").notNull(),
+    referredEmail: text("referred_email").notNull(),
+    code: text("code").notNull(),
+    programType: text("program_type").notNull(),
+    programLabel: text("program_label").notNull(),
+    referrerRewardMonths: integer("referrer_reward_months").notNull().default(0),
+    referrerRewardCents: integer("referrer_reward_cents").notNull().default(0),
+    referredRewardCents: integer("referred_reward_cents").notNull().default(0),
+    commissionBps: integer("commission_bps").notNull().default(0),
+    convertedToPaidAt: timestamp("converted_to_paid_at", { withTimezone: true, mode: "date" }),
+    firstPaidInvoiceId: text("first_paid_invoice_id"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  }, (table) => ({
+    referralAttributionsOwnerUserIdFkey: foreignKey({ name: "referral_attributions_owner_user_id_fkey", columns: [table.ownerUserId], foreignColumns: [users.id] }).onDelete("cascade"),
+    referralAttributionsProgramIdFkey: foreignKey({ name: "referral_attributions_program_id_fkey", columns: [table.programId], foreignColumns: [referralPrograms.id] }).onDelete("cascade"),
+    referralAttributionsProgramTypeCheck: check("referral_attributions_program_type_check", sql.raw("(program_type = ANY (ARRAY['customer'::text, 'affiliate'::text, 'mutual'::text]))")),
+    referralAttributionsReferredUserIdFkey: foreignKey({ name: "referral_attributions_referred_user_id_fkey", columns: [table.referredUserId], foreignColumns: [users.id] }).onDelete("cascade"),
+    referralAttributionsOwnerCreatedIdx: index("referral_attributions_owner_created_idx").on(table.ownerUserId, desc(table.createdAt)),
+    referralAttributionsReferredIdx: index("referral_attributions_referred_idx").on(table.referredUserId),
+    referralAttributionsReferredUserIdKey: uniqueIndex("referral_attributions_referred_user_id_key").on(table.referredUserId),
+  }));
+
+export const referralRewards = pgTable("referral_rewards", {
+    id: text("id").primaryKey(),
+    rewardKey: text("reward_key").notNull(),
+    attributionId: text("attribution_id").notNull(),
+    beneficiaryUserId: text("beneficiary_user_id").notNull(),
+    programType: text("program_type").notNull(),
+    programLabel: text("program_label").notNull(),
+    rewardRole: text("reward_role").notNull(),
+    rewardKind: text("reward_kind").notNull(),
+    status: text("status").notNull(),
+    description: text("description").notNull(),
+    rewardMonths: integer("reward_months").notNull().default(0),
+    rewardCents: integer("reward_cents").notNull().default(0),
+    commissionBps: integer("commission_bps").notNull().default(0),
+    sourceInvoiceId: text("source_invoice_id"),
+    sourceInvoiceAmountCents: integer("source_invoice_amount_cents"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    earnedAt: timestamp("earned_at", { withTimezone: true, mode: "date" }),
+  }, (table) => ({
+    referralRewardsAttributionIdFkey: foreignKey({ name: "referral_rewards_attribution_id_fkey", columns: [table.attributionId], foreignColumns: [referralAttributions.id] }).onDelete("cascade"),
+    referralRewardsBeneficiaryUserIdFkey: foreignKey({ name: "referral_rewards_beneficiary_user_id_fkey", columns: [table.beneficiaryUserId], foreignColumns: [users.id] }).onDelete("cascade"),
+    referralRewardsProgramTypeCheck: check("referral_rewards_program_type_check", sql.raw("(program_type = ANY (ARRAY['customer'::text, 'affiliate'::text, 'mutual'::text]))")),
+    referralRewardsRewardKindCheck: check("referral_rewards_reward_kind_check", sql.raw("(reward_kind = ANY (ARRAY['free_month'::text, 'discount_credit'::text, 'commission'::text]))")),
+    referralRewardsRewardRoleCheck: check("referral_rewards_reward_role_check", sql.raw("(reward_role = ANY (ARRAY['referrer'::text, 'referred'::text]))")),
+    referralRewardsStatusCheck: check("referral_rewards_status_check", sql.raw("(status = ANY (ARRAY['pending'::text, 'earned'::text]))")),
+    referralRewardsAttributionCreatedIdx: index("referral_rewards_attribution_created_idx").on(table.attributionId, desc(table.createdAt)),
+    referralRewardsBeneficiaryCreatedIdx: index("referral_rewards_beneficiary_created_idx").on(table.beneficiaryUserId, desc(table.createdAt)),
+    referralRewardsRewardKeyKey: uniqueIndex("referral_rewards_reward_key_key").on(table.rewardKey),
+  }));

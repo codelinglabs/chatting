@@ -13,7 +13,9 @@ describe("dashboard home and growth data", () => {
     vi.doMock("@/lib/data/conversations", () => ({ listConversationSummaries: vi.fn().mockResolvedValue([{ id: "conv_1", unreadCount: 2 }, { id: "conv_2", unreadCount: 1 }]) }));
     vi.doMock("@/lib/data/sites", () => ({ listSitesForUser: vi.fn().mockResolvedValue([{ id: "site_1", installed: true }, { id: "site_2", installed: false }]) }));
     vi.doMock("@/lib/user-timezone-preference", () => ({
-      resolvePreferredTimeZoneForUser: vi.fn().mockResolvedValue("Europe/London")
+      resolvePreferredTimeZoneForUserWithSource: vi
+        .fn()
+        .mockResolvedValue({ timeZone: "Europe/London", source: "saved" })
     }));
     vi.doMock("@/lib/repositories/dashboard-home-repository", () => ({
       getDashboardHomeOverview: vi.fn().mockResolvedValue({ open_conversations: "4", opened_today: "3", resolved_today: "2", resolved_yesterday: "1" }),
@@ -35,6 +37,7 @@ describe("dashboard home and growth data", () => {
       hasWidgetInstalled: true,
       widgetSiteIds: ["site_1", "site_2"],
       unreadCount: 3,
+      chartPending: false,
       chart: {
         rangeDays: 7,
         total: 8,

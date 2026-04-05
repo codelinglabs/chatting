@@ -36,6 +36,20 @@
       "when": 1775320200000,
       "tag": "0004_visitor_profile_routing_fields",
       "breakpoints": false
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775386800000,
+      "tag": "0005_contact_events",
+      "breakpoints": false
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775389757000,
+      "tag": "0006_contact_lookup_indexes",
+      "breakpoints": false
     }
   ]
 }

@@ -13,6 +13,7 @@ import {
   findWorkspaceAccessRow,
   hasOwnedWorkspaceRecord,
   listActiveTeamMemberRows,
+  listWorkspaceAccessRows,
   upsertActiveTeamMembership,
   workspaceAccessClause
 } from "@/lib/repositories/workspace-repository";
@@ -23,9 +24,9 @@ describe("workspace repository", () => {
   });
 
   it("builds the workspace access clause for owners and active team members", () => {
-    expect(workspaceAccessClause("s.user_id", "$2")).toContain("s.user_id = $2");
-    expect(workspaceAccessClause("s.user_id", "$2")).toContain("FROM team_memberships tm");
-    expect(workspaceAccessClause("s.user_id", "$2")).toContain("tm.status = 'active'");
+    expect(workspaceAccessClause("s.user_id", "$2", "$3")).toContain("s.user_id = $2");
+    expect(workspaceAccessClause("s.user_id", "$2", "$3")).toContain("FROM team_memberships tm");
+    expect(workspaceAccessClause("s.user_id", "$2", "$3")).toContain("tm.status = 'active'");
   });
 
   it("returns workspace and invite access rows with null fallbacks", async () => {
@@ -36,11 +37,25 @@ describe("workspace repository", () => {
             owner_user_id: "owner_1",
             role: "admin",
             owner_email: "owner@example.com",
-            owner_created_at: "2026-03-29T10:00:00.000Z"
+            owner_created_at: "2026-03-29T10:00:00.000Z",
+            team_name: "Chatting",
+            team_domain: "usechatting.com"
           }
         ]
       })
       .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            owner_user_id: "owner_1",
+            role: "owner",
+            owner_email: "owner@example.com",
+            owner_created_at: "2026-03-29T10:00:00.000Z",
+            team_name: "Chatting",
+            team_domain: "usechatting.com"
+          }
+        ]
+      })
       .mockResolvedValueOnce({
         rows: [
           {
@@ -69,14 +84,15 @@ describe("workspace repository", () => {
       role: "admin"
     });
     await expect(findWorkspaceAccessRow("user_2")).resolves.toBeNull();
+    await expect(listWorkspaceAccessRows("user_1")).resolves.toHaveLength(1);
     await expect(findTeamInviteAccessRow("invite_1")).resolves.toMatchObject({
       id: "invite_1",
       owner_email: "owner@example.com"
     });
     await expect(findTeamInviteAccessRow("invite_2")).resolves.toBeNull();
 
-    expect(mocks.query.mock.calls[0]?.[0]).toContain("COALESCE(tm.owner_user_id, u.id)");
-    expect(mocks.query.mock.calls[2]?.[0]).toContain("LEFT JOIN LATERAL");
+    expect(mocks.query.mock.calls[0]?.[0]).toContain("WITH workspace_access AS");
+    expect(mocks.query.mock.calls[3]?.[0]).toContain("LEFT JOIN LATERAL");
   });
 
   it("lists and counts active memberships and owned workspace presence", async () => {
@@ -119,6 +135,7 @@ describe("workspace repository", () => {
     expect(mocks.query).toHaveBeenCalledTimes(2);
     expect(mocks.query.mock.calls[0]?.[0]).toContain("INSERT INTO team_memberships");
     expect(mocks.query.mock.calls[0]?.[1]).toEqual(["owner_1", "member_1", "admin"]);
+    expect(mocks.query.mock.calls[0]?.[0]).toContain("ON CONFLICT (owner_user_id, member_user_id)");
     expect(mocks.query.mock.calls[1]?.[0]).toContain("SET status = 'accepted'");
     expect(mocks.query.mock.calls[1]?.[1]).toEqual(["invite_1", "member_1"]);
   });

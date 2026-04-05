@@ -1,11 +1,13 @@
 import { query } from "@/lib/db";
 import type { VisitorNoteIdentityType } from "@/lib/types";
+import type { VisitorNoteMentionToken } from "@/lib/visitor-note-mention-structure";
 
 export type VisitorNoteRow = {
   site_id: string;
   identity_type: VisitorNoteIdentityType;
   identity_value: string;
   note: string;
+  mentions_json: VisitorNoteMentionToken[];
   updated_at: string;
 };
 
@@ -36,6 +38,7 @@ export async function findVisitorNoteRow(
         identity_type,
         identity_value,
         note,
+        mentions_json,
         updated_at
       FROM visitor_notes
       WHERE site_id = $1
@@ -54,6 +57,7 @@ export async function upsertVisitorNoteRow(input: {
   identityType: VisitorNoteIdentityType;
   identityValue: string;
   note: string;
+  mentions: VisitorNoteMentionToken[];
   updatedByUserId: string | null;
 }) {
   const result = await query<VisitorNoteRow>(
@@ -63,14 +67,16 @@ export async function upsertVisitorNoteRow(input: {
         identity_type,
         identity_value,
         note,
+        mentions_json,
         updated_by_user_id,
         created_at,
         updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      VALUES ($1, $2, $3, $4, $5::jsonb, $6, NOW(), NOW())
       ON CONFLICT (site_id, identity_type, identity_value)
       DO UPDATE SET
         note = EXCLUDED.note,
+        mentions_json = EXCLUDED.mentions_json,
         updated_by_user_id = EXCLUDED.updated_by_user_id,
         updated_at = NOW()
       RETURNING
@@ -78,6 +84,7 @@ export async function upsertVisitorNoteRow(input: {
         identity_type,
         identity_value,
         note,
+        mentions_json,
         updated_at
     `,
     [
@@ -85,6 +92,7 @@ export async function upsertVisitorNoteRow(input: {
       input.identityType,
       input.identityValue,
       input.note,
+      JSON.stringify(input.mentions),
       input.updatedByUserId
     ]
   );

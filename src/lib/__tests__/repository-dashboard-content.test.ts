@@ -57,6 +57,8 @@ describe("dashboard growth, stats, and conversation template repositories", () =
     });
 
     expect(mocks.query.mock.calls[0]?.[0]).toContain("CROSS JOIN");
+    expect(mocks.query.mock.calls[0]?.[0]).toContain("workspace_users");
+    expect(mocks.query.mock.calls[0]?.[0]).toContain("COALESCE(tm.owner_user_id, u.id)");
   });
 
   it("reads totals, ratings, and top tags for the stats dashboard", async () => {
