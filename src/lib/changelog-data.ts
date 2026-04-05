@@ -17,7 +17,8 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     "Automation settings now cover offline behavior, routing rules, FAQ suggestions, and page-based proactive messages in one place.",
     "FAQ suggestions can match a visitor's first message and show help before handoff.",
     "Auto-routing now works for live incoming conversations across page, message, referrer, location, visitor tags, and custom fields when that profile data is available.",
-    "Proactive messages now support wildcard paths, delays, auto-open behavior, drag-and-drop ordering, and live widget triggering."
+    "Proactive messages now support wildcard paths, delays, auto-open behavior, drag-and-drop ordering, and live widget triggering.",
+    "Routing rules now handle empty tags and incomplete custom-field values more gracefully, so visitor-based automations are less likely to miss."
   ]),
   entry("April 2026", "Weekly performance reports got a major upgrade", "Monday reports now give teams a clearer, more useful view of how chat is trending without needing to open the dashboard.", [
     "Reports now arrive on each teammate's local Monday morning schedule.",
@@ -30,7 +31,8 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   ]),
   entry("Mid March 2026", "Conversation emails now bring visitors back into the same thread", "Email follow-ups now feel like a continuation of the same conversation, not a side channel.", [
     "Visitor emails can bring people back into the same hosted thread.",
-    "Teammate mention emails link more directly to the right context."
+    "Teammate mention emails link more directly to the right context.",
+    "Visitor follow-up templates now avoid repeating extra conversation-link instructions when that guidance is already in the email."
   ]),
   entry("Earlier 2026", "Invites, referrals, and billing are easier to manage as a team", "Joining a team, sharing referrals, and tracking rewards now feel more connected.", [
     "Invite flows make it easier for teammates to join the right workspace and land in the right place."

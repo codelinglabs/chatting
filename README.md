@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Updated public changelog notes so follow-up routing and email changes read like product updates instead of engineering filler.
 - Kept weekly performance heatmap snapshots build-safe by typing their computed intensity rows explicitly.
 - Split the People contact data layer into focused services so profile, note, and sync changes are easier to maintain.
 - Visitor routing now handles empty tags and incomplete custom-field values more gracefully.
@@ -238,6 +239,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - Repo agent guidance, product context, and design-system reference docs live alongside the codebase.
 - Changelog guidance now explicitly requires customer-facing product language instead of internal engineering notes or filler.
+- The public changelog now folds small follow-up routing and email fixes into the main feature entries instead of publishing weak standalone notes.
 - Digital marketing docs now include a reusable SEO blog prompt library covering master, comparison, how-to, and Reddit-thread conversion prompts.
 - The SEO prompt library now explicitly forbids neutral first drafts and requires Chatting-first copy from the first pass.
 - The root TypeScript config now includes Vitest globals so colocated route and component tests type-check cleanly during `next build`.
