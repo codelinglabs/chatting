@@ -28,6 +28,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Published a Chatting-first comparison post covering the best live chat tools for small businesses and where Chatting, Crisp, Tidio, HubSpot, and tawk.to fit.
 - Added a reusable digital-marketing prompt library for Chatting SEO posts, including master, comparison, how-to, and Reddit-to-article prompts.
 - Tightened the SEO prompt library so every article draft starts Chatting-first instead of beginning as a neutral roundup.
+- Published an after-hours e-commerce case study showing how small stores can capture better leads without a 24/7 team.
 - Built a dedicated Automation settings editor for offline behavior, routing, FAQ suggestions, and proactive messages.
 - Wired automation into the live widget so FAQ suggestions, routing, and proactive prompts now run against real visitor sessions.
 - Settings sections now navigate by URL so each settings area can load as its own server-driven view.
@@ -128,6 +129,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Editorial landing page with modular sections and brand-aligned auth entry flows.
 - Marketing SEO now ships a generated sitemap/robots setup, homepage-specific metadata and copy, crawlable blog/free-tools links, author profile pages, and keyword-targeted blog slugs and aliases.
 - The marketing blog now includes a Chatting-first small-business live-chat comparison post aimed at high-intent buyers evaluating chat tools.
+- The marketing blog now also includes an after-hours e-commerce lead-capture case study built around off-hours buyer questions and lightweight follow-up.
 - The public landing now hides the metrics/testimonials proof strip, and the three feature cards no longer render empty footer dividers when no stat copy is configured.
 - The signup verification state now includes a return path back to the signup form so people can correct a mistyped email or other account details before submitting again.
 - Auth forms now pull forgot/reset/resend server actions from the dedicated password-actions module, and shared auth redirect helpers stay typed for Next route redirects during builds.

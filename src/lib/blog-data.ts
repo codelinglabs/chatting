@@ -1,4 +1,5 @@
 import { addLiveChatToShopifyPost } from "@/lib/blog-post-add-live-chat-to-shopify";
+import { afterHoursLiveChatEcommerceLeadsPost } from "@/lib/blog-post-after-hours-live-chat-ecommerce-leads";
 import { bestLiveChatToolsSmallBusinessPost } from "@/lib/blog-post-best-live-chat-tools-small-business";
 import { bestLiveChatForStartupsPost } from "@/lib/blog-post-best-live-chat-for-startups";
 import { bestIntercomAlternativesSmallTeamsPost } from "@/lib/blog-post-best-intercom-alternatives-small-teams";
@@ -84,6 +85,7 @@ export const blogCategories: BlogCategory[] = [
 ];
 
 const posts: BlogPost[] = [
+  afterHoursLiveChatEcommerceLeadsPost,
   bestLiveChatToolsSmallBusinessPost,
   ecommerceLiveChatSupportPost,
   bestLiveChatForStartupsPost,

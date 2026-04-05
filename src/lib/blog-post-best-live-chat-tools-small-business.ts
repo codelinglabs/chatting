@@ -10,8 +10,8 @@ export const bestLiveChatToolsSmallBusinessPost: BlogPost = {
   subtitle:
     "You do not need a giant customer platform. You need a widget, an inbox, and a fast way to answer before the visitor leaves.",
   seoTitle: "5 Best Live Chat Tools for Small Business (2026)",
-  publishedAt: "2026-04-05T15:00:00.000Z",
-  updatedAt: "2026-04-05T15:00:00.000Z",
+  publishedAt: "2026-04-04T15:00:00.000Z",
+  updatedAt: "2026-04-04T15:00:00.000Z",
   readingTime: 10,
   authorSlug: "tina",
   categorySlug: "comparisons",

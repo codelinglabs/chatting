@@ -20,6 +20,6 @@ export const ecommerceLiveChatSupportPost: BlogPost = {
     alt: "Illustrated e-commerce dashboard with live chat, orders, and shopper support cards."
   },
   aliases: ["how-to-handle-live-chat-support-for-your-ecommerce-store"],
-  relatedSlugs: ["shopify-live-chat", "live-chat-software-small-teams", "reduce-response-time-under-2-minutes"],
+  relatedSlugs: ["after-hours-live-chat-ecommerce-leads", "shopify-live-chat", "live-chat-software-small-teams"],
   sections: [...ecommerceLiveChatSupportPrimarySections, ...ecommerceLiveChatSupportSecondarySections]
 };
