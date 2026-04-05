@@ -6,6 +6,7 @@ function createInitialData() {
     profile: { firstName: "Tina", lastName: "Bauer", email: "tina@usechatting.com", jobTitle: "Founder", avatarDataUrl: null },
     notifications: { browserNotifications: true, soundAlerts: true, emailNotifications: true, newVisitorAlerts: false, highIntentAlerts: true },
     email: { notificationEmail: "team@usechatting.com", replyToEmail: "reply@usechatting.com", templates: [], emailSignature: "Best,\nChatting" },
+    reports: { weeklyReportEnabled: true, weeklyReportSendTime: "09:00", weeklyReportIncludePersonalStats: true, workspaceWeeklyReportsEnabled: true, workspaceIncludeTeamLeaderboard: true, workspaceAiInsightsEnabled: true, canManageWorkspaceReports: true, recipientTimeZone: "Europe/London", teamTimeZone: "Europe/London" },
     teamMembers: [],
     teamInvites: [],
     billing: {
@@ -44,13 +45,16 @@ async function loadSettingsPage(search = "") {
   vi.resetModules();
   const reactMocks = createMockReactHooks();
   const captures: Record<string, unknown> = {};
+  const showToast = vi.fn();
 
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(search) }));
   vi.doMock("@/lib/billing-plans", () => ({ shouldShowTranscriptBranding: (planKey: string) => planKey === "starter" }));
+  vi.doMock("../ui/toast-provider", () => ({ useToast: () => ({ showToast }) }));
   vi.doMock("./dashboard-settings-scaffold", () => ({ DashboardSettingsScaffold: ({ children, ...props }: { children: unknown }) => ((captures.scaffold = props), <div>{children}</div>) }));
   vi.doMock("./dashboard-settings-profile-section", () => ({ SettingsProfileSection: (props: unknown) => ((captures.profile = props), <div>profile</div>) }));
   vi.doMock("./dashboard-settings-notifications-section", () => ({ SettingsNotificationsSection: (props: unknown) => ((captures.notifications = props), <div>notifications</div>) }));
+  vi.doMock("./dashboard-settings-reports-section", () => ({ SettingsReportsSection: (props: unknown) => ((captures.reports = props), <div>reports</div>) }));
   vi.doMock("./dashboard-settings-email-billing-sections", () => ({
     SettingsEmailSection: (props: unknown) => ((captures.email = props), <div>email</div>),
     SettingsBillingSection: (props: unknown) => ((captures.billing = props), <div>billing</div>)
@@ -58,7 +62,7 @@ async function loadSettingsPage(search = "") {
   vi.doMock("./dashboard-settings-referrals-section", () => ({ SettingsReferralsSection: (props: unknown) => ((captures.referrals = props), <div>referrals</div>) }));
 
   const module = await import("./dashboard-settings-page");
-  return { DashboardSettingsPage: module.DashboardSettingsPage, captures, reactMocks };
+  return { DashboardSettingsPage: module.DashboardSettingsPage, captures, reactMocks, showToast };
 }
 
 describe("dashboard settings page more", () => {
@@ -75,7 +79,7 @@ describe("dashboard settings page more", () => {
     await runMockEffects(cancelled.reactMocks.effects);
     cancelled.reactMocks.beginRender();
     renderToStaticMarkup(<cancelled.DashboardSettingsPage initialData={createInitialData()} />);
-    expect((cancelled.captures.scaffold as { notice: unknown }).notice).toEqual({ tone: "error", message: "Stripe checkout was cancelled" });
+    expect(cancelled.showToast).toHaveBeenCalledWith("error", "Stripe checkout was cancelled");
     expect((cancelled.captures.scaffold as { activeSection: string }).activeSection).toBe("billing");
 
     const portalReturn = await loadSettingsPage("section=billing&billing=portal-return");
@@ -84,10 +88,8 @@ describe("dashboard settings page more", () => {
     await runMockEffects(portalReturn.reactMocks.effects);
     portalReturn.reactMocks.beginRender();
     renderToStaticMarkup(<portalReturn.DashboardSettingsPage initialData={createInitialData()} />);
-    expect((portalReturn.captures.scaffold as { notice: unknown }).notice).toEqual({
-      tone: "error",
-      message: "We couldn't refresh billing from Stripe right now."
-    });
+    expect(portalReturn.showToast).toHaveBeenCalledWith("success", "Billing details refreshed from Stripe");
+    expect(portalReturn.showToast).toHaveBeenCalledWith("error", "We couldn't refresh billing from Stripe right now.");
   });
 
   it("maps save, portal, and plan failures while skipping redundant starter changes", async () => {
@@ -99,7 +101,7 @@ describe("dashboard settings page more", () => {
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("window", { setTimeout: vi.fn().mockReturnValue(1), clearTimeout: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn(), location: { assign: vi.fn() } });
 
-    const { DashboardSettingsPage, captures, reactMocks } = await loadSettingsPage("section=billing");
+    const { DashboardSettingsPage, captures, reactMocks, showToast } = await loadSettingsPage("section=billing");
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData()} />);
     await runMockEffects(reactMocks.effects);
@@ -109,12 +111,12 @@ describe("dashboard settings page more", () => {
     await (captures.scaffold as { onSave: () => Promise<void> }).onSave();
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData()} />);
-    expect((captures.scaffold as { notice: unknown }).notice).toEqual({ tone: "error", message: "Enter your current password before choosing a new one." });
+    expect(showToast).toHaveBeenCalledWith("error", "Enter your current password before choosing a new one.");
 
     await (captures.billing as { onOpenBillingPortal: () => Promise<void> }).onOpenBillingPortal();
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData()} />);
-    expect((captures.scaffold as { notice: unknown }).notice).toEqual({ tone: "error", message: "We couldn't open the Stripe billing portal right now." });
+    expect(showToast).toHaveBeenCalledWith("error", "We couldn't open the Stripe billing portal right now.");
 
     await (captures.billing as { onChangePlan: (plan: "starter" | "growth", interval: "monthly") => Promise<void> }).onChangePlan("starter", "monthly");
     expect(fetchMock).toHaveBeenCalledTimes(3);
@@ -122,6 +124,6 @@ describe("dashboard settings page more", () => {
     await (captures.billing as { onChangePlan: (plan: "starter" | "growth", interval: "monthly") => Promise<void> }).onChangePlan("growth", "monthly");
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData()} />);
-    expect((captures.scaffold as { notice: unknown }).notice).toEqual({ tone: "error", message: "Teams with 50 or more members need a custom setup right now." });
+    expect(showToast).toHaveBeenCalledWith("error", "Teams with 50 or more members need a custom setup right now.");
   });
 });

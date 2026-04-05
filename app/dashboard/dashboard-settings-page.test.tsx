@@ -1,11 +1,10 @@
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-type SettingsSection = "profile" | "notifications" | "email" | "billing" | "referrals";
+type SettingsSection = "profile" | "notifications" | "reports" | "email" | "savedReplies" | "billing" | "referrals";
 
 async function renderSettingsPage(section: SettingsSection) {
   vi.resetModules();
-
   vi.doMock("next/navigation", () => ({
     useSearchParams: () => ({
       get: () => null
@@ -26,15 +25,16 @@ async function renderSettingsPage(section: SettingsSection) {
       </a>
     )
   }));
-
   vi.doMock("./settings-email-templates", () => ({
     SettingsEmailTemplates: () => <div>Email templates editor</div>
+  }));
+  vi.doMock("./dashboard-settings-saved-replies-section", () => ({
+    SettingsSavedRepliesSection: () => <div>Saved replies section</div>
   }));
 
   vi.doMock("react", async () => {
     const actual = await vi.importActual<typeof import("react")>("react");
     let useStateCalls = 0;
-
     return {
       ...actual,
       useEffect: vi.fn(),
@@ -43,15 +43,12 @@ async function renderSettingsPage(section: SettingsSection) {
         if (useStateCalls === 1) {
           return [section, vi.fn()];
         }
-
         return actual.useState(initialValue);
       })
     };
   });
-
   const module = await import("./dashboard-settings-page");
   const DashboardSettingsPage = module.DashboardSettingsPage;
-
   const initialData = {
     profile: {
       firstName: "Tina",
@@ -72,6 +69,17 @@ async function renderSettingsPage(section: SettingsSection) {
       replyToEmail: "reply@chatly.example",
       templates: [],
       emailSignature: "Best,\nChatting"
+    },
+    reports: {
+      weeklyReportEnabled: true,
+      weeklyReportSendTime: "09:00",
+      weeklyReportIncludePersonalStats: true,
+      workspaceWeeklyReportsEnabled: true,
+      workspaceIncludeTeamLeaderboard: true,
+      workspaceAiInsightsEnabled: true,
+      canManageWorkspaceReports: true,
+      recipientTimeZone: "Europe/London",
+      teamTimeZone: "Europe/London"
     },
     teamMembers: [],
     teamInvites: [],
@@ -118,23 +126,20 @@ async function renderSettingsPage(section: SettingsSection) {
       }
     }
   };
-
   return renderToStaticMarkup(<DashboardSettingsPage initialData={initialData} />);
 }
 
 describe("dashboard settings page", () => {
   it("renders the profile section", async () => {
     const html = await renderSettingsPage("profile");
-
     expect(html).toContain("Manage your personal information and preferences");
     expect(html).toContain("Personal information");
+    expect(html).toContain("Team identity");
     expect(html).toContain("Change password");
     expect(html).toContain("Upload photo");
   });
-
   it("renders the notifications section", async () => {
     const html = await renderSettingsPage("notifications");
-
     expect(html).toContain("Choose how you want to be notified");
     expect(html).toContain("Browser notifications");
     expect(html).toContain("New visitor alerts");
@@ -143,12 +148,24 @@ describe("dashboard settings page", () => {
 
   it("renders the email section", async () => {
     const html = await renderSettingsPage("email");
-
     expect(html).toContain("Configure email notifications and templates");
     expect(html).toContain("Notification email");
     expect(html).toContain("Reply-to address");
     expect(html).toContain("Email templates editor");
     expect(html).toContain("Email signature");
+  });
+  it("renders the reports section", async () => {
+    const html = await renderSettingsPage("reports");
+    expect(html).toContain("Control weekly performance emails and delivery timing");
+    expect(html).toContain("Your weekly report");
+    expect(html).toContain("Send time");
+    expect(html).toContain("Team report defaults");
+  });
+
+  it("renders the saved replies section", async () => {
+    const html = await renderSettingsPage("savedReplies");
+    expect(html).toContain("Manage reusable replies for the shared inbox");
+    expect(html).toContain("Saved replies section");
   });
 
   it("renders the billing section", async () => {
@@ -172,7 +189,6 @@ describe("dashboard settings page", () => {
 
   it("renders the referrals section", async () => {
     const html = await renderSettingsPage("referrals");
-
     expect(html).toContain("Track referral programs, signups, and earned rewards");
     expect(html).toContain("Referral programs");
     expect(html).toContain("Referred signups");

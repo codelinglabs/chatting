@@ -36,12 +36,11 @@ describe("dashboard settings scaffold", () => {
     expect(html).not.toContain("max-w-[860px]");
   });
 
-  it("renders notices inside the same card shell as other settings content", () => {
+  it("renders desktop settings nav items with their shared descriptions", () => {
     const html = renderToStaticMarkup(
       <DashboardSettingsScaffold
         activeSection="notifications"
         onSetActiveSection={() => {}}
-        notice={{ tone: "success", message: "Settings saved" }}
         isDirty={false}
         isSaving={false}
         onDiscard={() => {}}
@@ -51,7 +50,86 @@ describe("dashboard settings scaffold", () => {
       </DashboardSettingsScaffold>
     );
 
-    expect(html).toContain("rounded-xl border border-slate-200 bg-white p-6");
-    expect(html).toContain("Settings saved");
+    expect(html).toContain("Notifications");
+    expect(html).toContain("Alert preferences");
+    expect(html).toContain("Reports");
+    expect(html).toContain("Weekly report delivery");
+  });
+
+  it("uses one consistent desktop nav row footprint for settings items", () => {
+    const html = renderToStaticMarkup(
+      <DashboardSettingsScaffold
+        activeSection="savedReplies"
+        onSetActiveSection={() => {}}
+        isDirty={false}
+        isSaving={false}
+        onDiscard={() => {}}
+        onSave={() => {}}
+      >
+        <div>content</div>
+      </DashboardSettingsScaffold>
+    );
+
+    expect(html).toContain("min-h-[76px]");
+    expect(html).toContain("w-full items-start gap-3");
+  });
+
+  it("renders automation before notifications with saved replies directly after notifications", () => {
+    const html = renderToStaticMarkup(
+      <DashboardSettingsScaffold
+        activeSection="automation"
+        onSetActiveSection={() => {}}
+        isDirty={false}
+        isSaving={false}
+        onDiscard={() => {}}
+        onSave={() => {}}
+      >
+        <div>content</div>
+      </DashboardSettingsScaffold>
+    );
+
+    expect(html.indexOf("Automation")).toBeLessThan(html.indexOf("Notifications"));
+    expect(html.indexOf("Notifications")).toBeLessThan(html.indexOf("Saved replies"));
+    expect(html).toContain("Integrations");
+  });
+
+  it("shows the unsaved marker on profile, automation, notifications, and email only", () => {
+    const profileHtml = renderToStaticMarkup(
+      <DashboardSettingsScaffold activeSection="profile" onSetActiveSection={() => {}} isDirty isSaving={false} onDiscard={() => {}} onSave={() => {}}>
+        <div>content</div>
+      </DashboardSettingsScaffold>
+    );
+    const emailHtml = renderToStaticMarkup(
+      <DashboardSettingsScaffold activeSection="email" onSetActiveSection={() => {}} isDirty isSaving={false} onDiscard={() => {}} onSave={() => {}}>
+        <div>content</div>
+      </DashboardSettingsScaffold>
+    );
+    const reportsHtml = renderToStaticMarkup(
+      <DashboardSettingsScaffold activeSection="reports" onSetActiveSection={() => {}} isDirty isSaving={false} onDiscard={() => {}} onSave={() => {}}>
+        <div>content</div>
+      </DashboardSettingsScaffold>
+    );
+
+    expect(profileHtml).toContain("Profile •");
+    expect(emailHtml).toContain("Email •");
+    expect(reportsHtml).not.toContain("Reports •");
+  });
+
+  it("does not render the legacy bottom save bar anymore", () => {
+    const html = renderToStaticMarkup(
+      <DashboardSettingsScaffold
+        activeSection="notifications"
+        onSetActiveSection={() => {}}
+        isDirty
+        isSaving
+        onDiscard={() => {}}
+        onSave={() => {}}
+      >
+        <div>content</div>
+      </DashboardSettingsScaffold>
+    );
+
+    expect(html).not.toContain("Save changes");
+    expect(html).not.toContain("Unsaved changes");
   });
 });

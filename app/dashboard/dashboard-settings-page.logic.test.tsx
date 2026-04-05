@@ -23,6 +23,17 @@ function createInitialData() {
       templates: [],
       emailSignature: "Best,\nChatting"
     },
+    reports: {
+      weeklyReportEnabled: true,
+      weeklyReportSendTime: "09:00",
+      weeklyReportIncludePersonalStats: true,
+      workspaceWeeklyReportsEnabled: true,
+      workspaceIncludeTeamLeaderboard: true,
+      workspaceAiInsightsEnabled: true,
+      canManageWorkspaceReports: true,
+      recipientTimeZone: "Europe/London",
+      teamTimeZone: "Europe/London"
+    },
     teamMembers: [],
     teamInvites: [],
     billing: {
@@ -61,15 +72,19 @@ async function loadSettingsPage(search = "") {
   vi.resetModules();
   const reactMocks = createMockReactHooks();
   const captures: Record<string, unknown> = {};
+  const showToast = vi.fn();
 
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(search) }));
   vi.doMock("@/lib/billing-plans", () => ({ shouldShowTranscriptBranding: (planKey: string) => planKey === "starter" }));
+  vi.doMock("../ui/toast-provider", () => ({ useToast: () => ({ showToast }) }));
   vi.doMock("./dashboard-settings-scaffold", () => ({
     DashboardSettingsScaffold: ({ children, ...props }: { children: unknown }) => ((captures.scaffold = props), <div>{children}</div>)
   }));
+  vi.doMock("./dashboard-settings-automation-section", () => ({ SettingsAutomationSection: (props: unknown) => ((captures.automation = props), <div>automation</div>) }));
   vi.doMock("./dashboard-settings-profile-section", () => ({ SettingsProfileSection: (props: unknown) => ((captures.profile = props), <div>profile</div>) }));
   vi.doMock("./dashboard-settings-notifications-section", () => ({ SettingsNotificationsSection: (props: unknown) => ((captures.notifications = props), <div>notifications</div>) }));
+  vi.doMock("./dashboard-settings-reports-section", () => ({ SettingsReportsSection: (props: unknown) => ((captures.reports = props), <div>reports</div>) }));
   vi.doMock("./dashboard-settings-email-billing-sections", () => ({
     SettingsEmailSection: (props: unknown) => ((captures.email = props), <div>email</div>),
     SettingsBillingSection: (props: unknown) => ((captures.billing = props), <div>billing</div>)
@@ -77,7 +92,7 @@ async function loadSettingsPage(search = "") {
   vi.doMock("./dashboard-settings-referrals-section", () => ({ SettingsReferralsSection: (props: unknown) => ((captures.referrals = props), <div>referrals</div>) }));
 
   const module = await import("./dashboard-settings-page");
-  return { DashboardSettingsPage: module.DashboardSettingsPage, captures, reactMocks };
+  return { DashboardSettingsPage: module.DashboardSettingsPage, captures, reactMocks, showToast };
 }
 
 describe("dashboard settings page logic", () => {
@@ -94,14 +109,14 @@ describe("dashboard settings page logic", () => {
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("window", { setTimeout: vi.fn().mockReturnValue(1), clearTimeout: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn(), location: { assign: vi.fn() } });
 
-    const { DashboardSettingsPage, captures, reactMocks } = await loadSettingsPage("section=billing&billing=checkout-success");
+    const { DashboardSettingsPage, captures, reactMocks, showToast } = await loadSettingsPage("section=billing&billing=checkout-success");
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData()} />);
     await runMockEffects(reactMocks.effects);
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData()} />);
 
-    expect((captures.scaffold as { notice: unknown }).notice).toEqual({ tone: "success", message: "Stripe checkout completed" });
+    expect(showToast).toHaveBeenCalledWith("success", "Stripe checkout completed");
     expect((captures.billing as { selectedInterval: string }).selectedInterval).toBe("annual");
 
     await (captures.billing as { onOpenBillingPortal: () => Promise<void> }).onOpenBillingPortal();
@@ -128,7 +143,7 @@ describe("dashboard settings page logic", () => {
     vi.stubGlobal("FileReader", class { result: string | null = "data:image/png;base64,avatar"; onload: null | (() => void) = null; readAsDataURL() { this.onload?.(); } });
     vi.stubGlobal("window", { setTimeout: vi.fn().mockReturnValue(1), clearTimeout: vi.fn(), addEventListener, removeEventListener: vi.fn(), dispatchEvent: vi.fn(), location: { assign: vi.fn() } });
 
-    const { DashboardSettingsPage, captures, reactMocks } = await loadSettingsPage();
+    const { DashboardSettingsPage, captures, reactMocks, showToast } = await loadSettingsPage();
     reactMocks.beginRender();
     renderToStaticMarkup(<DashboardSettingsPage initialData={createInitialData()} />);
 
@@ -150,7 +165,7 @@ describe("dashboard settings page logic", () => {
       "/dashboard/settings/update",
       expect.objectContaining({ method: "POST", headers: { "content-type": "application/json" } })
     );
-    expect((captures.scaffold as { notice: unknown }).notice).toEqual({ tone: "success", message: "Settings saved" });
+    expect(showToast).toHaveBeenCalledWith("success", "Settings saved");
     expect((globalThis.window as Window).dispatchEvent).toHaveBeenCalledTimes(1);
 
     (captures.profile as { onUpdateProfile: (key: "jobTitle", value: string) => void }).onUpdateProfile("jobTitle", "CEO");

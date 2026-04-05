@@ -2,12 +2,14 @@ const mocks = vi.hoisted(() => ({
   changeUserPassword: vi.fn(),
   countActiveTeamMembershipRows: vi.fn(),
   findDashboardSettingsRow: vi.fn(),
+  findDashboardReportSettingsRow: vi.fn(),
   findEmailTemplateSettingsRow: vi.fn(),
   findNotificationSettingsRow: vi.fn(),
   findUserIdByEmailExcludingUser: vi.fn(),
   getDashboardBillingSummary: vi.fn(),
   getWorkspaceAccess: vi.fn(),
   insertTeamInviteRecord: vi.fn(),
+  listSavedReplyRows: vi.fn(),
   listActiveTeamMemberRows: vi.fn(),
   listPendingTeamInviteRows: vi.fn(),
   listSitesForUser: vi.fn(),
@@ -17,9 +19,14 @@ const mocks = vi.hoisted(() => ({
   seatCountFromActiveMemberships: vi.fn(),
   serializeDashboardEmailTemplates: vi.fn(),
   touchPendingTeamInvite: vi.fn(),
+  updateSiteName: vi.fn(),
+  updateSiteWidgetSettings: vi.fn(),
   updatePendingTeamInviteRole: vi.fn(),
+  upsertDashboardReportUserSettings: vi.fn(),
   updateSettingsUserEmail: vi.fn(),
   upsertUserSettingsRecord: vi.fn(),
+  upsertWorkspaceAutomationSettings: vi.fn(),
+  upsertWorkspaceReportSettings: vi.fn(),
   revokePendingTeamInvite: vi.fn()
 }));
 
@@ -37,6 +44,11 @@ vi.mock("@/lib/email-templates", () => ({
 }));
 vi.mock("@/lib/env", () => ({ getPublicAppUrl: () => "https://app.example" }));
 vi.mock("@/lib/growth-outreach", () => ({ maybeSendTeamExpansionEmail: mocks.maybeSendTeamExpansionEmail }));
+vi.mock("@/lib/repositories/report-settings-repository", () => ({
+  findDashboardReportSettingsRow: mocks.findDashboardReportSettingsRow,
+  upsertDashboardReportUserSettings: mocks.upsertDashboardReportUserSettings,
+  upsertWorkspaceReportSettings: mocks.upsertWorkspaceReportSettings
+}));
 vi.mock("@/lib/repositories/settings-repository", () => ({
   findDashboardSettingsRow: mocks.findDashboardSettingsRow,
   findEmailTemplateSettingsRow: mocks.findEmailTemplateSettingsRow,
@@ -48,14 +60,20 @@ vi.mock("@/lib/repositories/settings-repository", () => ({
   touchPendingTeamInvite: mocks.touchPendingTeamInvite,
   updatePendingTeamInviteRole: mocks.updatePendingTeamInviteRole,
   updateSettingsUserEmail: mocks.updateSettingsUserEmail,
-  upsertUserSettingsRecord: mocks.upsertUserSettingsRecord
+  upsertUserSettingsRecord: mocks.upsertUserSettingsRecord,
+  upsertWorkspaceAutomationSettings: mocks.upsertWorkspaceAutomationSettings
 }));
+vi.mock("@/lib/repositories/saved-replies-repository", () => ({ listSavedReplyRows: mocks.listSavedReplyRows }));
 vi.mock("@/lib/repositories/workspace-repository", () => ({
   countActiveTeamMembershipRows: mocks.countActiveTeamMembershipRows,
   listActiveTeamMemberRows: mocks.listActiveTeamMemberRows
 }));
 vi.mock("@/lib/workspace-access", () => ({ getWorkspaceAccess: mocks.getWorkspaceAccess }));
-vi.mock("@/lib/data/sites", () => ({ listSitesForUser: mocks.listSitesForUser }));
+vi.mock("@/lib/data/sites", () => ({
+  listSitesForUser: mocks.listSitesForUser,
+  updateSiteName: mocks.updateSiteName,
+  updateSiteWidgetSettings: mocks.updateSiteWidgetSettings
+}));
 
 import {
   createTeamInvite,
@@ -82,6 +100,7 @@ function settingsRow(overrides: Record<string, unknown> = {}) {
     email_notifications: null,
     new_visitor_alerts: null,
     high_intent_alerts: null,
+    workspace_automation_settings_json: "",
     email_signature: null,
     last_seen_at: "2026-03-30T11:59:30.000Z",
     ...overrides
@@ -95,7 +114,9 @@ describe("settings data more", () => {
     mocks.findNotificationSettingsRow.mockResolvedValue(settingsRow());
     mocks.findEmailTemplateSettingsRow.mockResolvedValue(settingsRow());
     mocks.findDashboardSettingsRow.mockResolvedValue(settingsRow());
-    mocks.getWorkspaceAccess.mockResolvedValue({ ownerUserId: "user_1" });
+    mocks.findDashboardReportSettingsRow.mockResolvedValue(null);
+    mocks.getWorkspaceAccess.mockResolvedValue({ ownerUserId: "user_1", role: "owner" });
+    mocks.listSavedReplyRows.mockResolvedValue([]);
     mocks.listPendingTeamInviteRows.mockResolvedValue([
       { id: "invite_1", email: "pending@example.com", role: "member", status: "pending", message: "", created_at: "2026-03-29T10:00:00.000Z", updated_at: "2026-03-29T10:01:00.000Z" },
       { id: "invite_2", email: "accepted@example.com", role: "member", status: "accepted", message: "", created_at: "2026-03-29T10:00:00.000Z", updated_at: "2026-03-29T10:01:00.000Z" }
@@ -132,6 +153,7 @@ describe("settings data more", () => {
     const data = await getDashboardSettingsData("user_1");
 
     expect(mocks.getDashboardBillingSummary).toHaveBeenCalledWith("user_1", 5);
+    expect(data.teamName).toBe("Tina Team");
     expect(data.notifications).toEqual({
       browserNotifications: true,
       soundAlerts: true,
@@ -139,6 +161,7 @@ describe("settings data more", () => {
       newVisitorAlerts: false,
       highIntentAlerts: true
     });
+    expect(data.reports).toEqual(expect.objectContaining({ weeklyReportSendTime: "09:00", canManageWorkspaceReports: true }));
     expect(data.teamInvites).toHaveLength(1);
     expect(data.teamMembers.map((member) => member.lastActiveLabel)).toEqual([
       "Just now",

@@ -3,19 +3,20 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { classNames } from "@/lib/utils";
-import {
-  DashboardInlineNotice,
-  DASHBOARD_PRIMARY_BUTTON_CLASS,
-  DASHBOARD_SECONDARY_BUTTON_CLASS,
-  type DashboardNoticeState
-} from "./dashboard-controls";
-import { SETTINGS_NAV, type SettingsSection } from "./dashboard-settings-shared";
+import { buildSettingsSectionHref } from "./dashboard-settings-section";
+import { SETTINGS_NAV, SettingsDesktopNavItem, type SettingsSection } from "./dashboard-settings-shared";
+
+const UNSAVED_DOT_SECTIONS = new Set<SettingsSection>([
+  "profile",
+  "automation",
+  "notifications",
+  "email"
+]);
 
 export function DashboardSettingsScaffold({
   activeSection,
   onSetActiveSection,
   children,
-  notice,
   isDirty,
   isSaving,
   onDiscard,
@@ -24,7 +25,6 @@ export function DashboardSettingsScaffold({
   activeSection: SettingsSection;
   onSetActiveSection: (section: SettingsSection) => void;
   children: ReactNode;
-  notice?: DashboardNoticeState;
   isDirty: boolean;
   isSaving: boolean;
   onDiscard: () => void;
@@ -37,6 +37,11 @@ export function DashboardSettingsScaffold({
           <div className="flex gap-2 overflow-x-auto pb-1">
             {SETTINGS_NAV.flatMap((group) => group.items).map((item) => {
               const Icon = item.icon;
+              const showUnsavedDot =
+                item.type === "section" &&
+                activeSection === item.value &&
+                isDirty &&
+                UNSAVED_DOT_SECTIONS.has(item.value);
 
               if (item.type === "link") {
                 return (
@@ -52,10 +57,9 @@ export function DashboardSettingsScaffold({
               }
 
               return (
-                <button
+                <a
                   key={item.value}
-                  type="button"
-                  onClick={() => onSetActiveSection(item.value)}
+                  href={buildSettingsSectionHref(item.value)}
                   className={classNames(
                     "inline-flex items-center gap-2 whitespace-nowrap rounded-lg border px-3 py-2 text-sm font-medium transition",
                     activeSection === item.value
@@ -64,8 +68,9 @@ export function DashboardSettingsScaffold({
                   )}
                 >
                   <Icon className="h-4 w-4" />
-                  {item.label}
-                </button>
+                  <span>{item.label}</span>
+                  {showUnsavedDot ? <span className="h-2 w-2 rounded-full bg-amber-500" aria-hidden="true" /> : null}
+                </a>
               );
             })}
           </div>
@@ -81,38 +86,35 @@ export function DashboardSettingsScaffold({
                   </p>
                   <div className="space-y-1">
                     {group.items.map((item) => {
-                      const Icon = item.icon;
-
+                      const label =
+                        item.type === "section" &&
+                        activeSection === item.value &&
+                        isDirty &&
+                        UNSAVED_DOT_SECTIONS.has(item.value)
+                          ? `${item.label} •`
+                          : item.label;
                       if (item.type === "link") {
                         return (
-                          <Link
+                          <SettingsDesktopNavItem
                             key={item.href}
                             href={item.href}
-                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
-                          >
-                            <Icon className="h-[18px] w-[18px]" />
-                            <span>{item.label}</span>
-                          </Link>
+                            icon={item.icon}
+                            label={label}
+                            description={item.description}
+                          />
                         );
                       }
 
-                      const active = activeSection === item.value;
-
                       return (
-                        <button
+                        <SettingsDesktopNavItem
                           key={item.value}
-                          type="button"
-                          onClick={() => onSetActiveSection(item.value)}
-                          className={classNames(
-                            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition",
-                            active
-                              ? "bg-blue-50 text-blue-600"
-                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                          )}
-                        >
-                          <Icon className="h-[18px] w-[18px]" />
-                          <span>{item.label}</span>
-                        </button>
+                          href={buildSettingsSectionHref(item.value)}
+                          icon={item.icon}
+                          label={label}
+                          description={item.description}
+                          active={activeSection === item.value}
+                          documentNavigation
+                        />
                       );
                     })}
                   </div>
@@ -123,27 +125,7 @@ export function DashboardSettingsScaffold({
 
           <div className="min-w-0 bg-slate-50/70 p-4 sm:p-6 lg:p-8">
             <div className="w-full space-y-6">
-              <DashboardInlineNotice notice={notice ?? null} />
               {children}
-
-              {isDirty && activeSection !== "billing" ? (
-                <div className="sticky bottom-4 z-20">
-                  <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="h-2 w-2 rounded-full bg-amber-500" />
-                      <span className="text-sm text-slate-600">Unsaved changes</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button type="button" onClick={onDiscard} className={DASHBOARD_SECONDARY_BUTTON_CLASS} disabled={isSaving}>
-                        Discard
-                      </button>
-                      <button type="button" onClick={onSave} className={DASHBOARD_PRIMARY_BUTTON_CLASS} disabled={isSaving}>
-                        {isSaving ? "Saving..." : "Save changes"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
             </div>
           </div>
         </div>

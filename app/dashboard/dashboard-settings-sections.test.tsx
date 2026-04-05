@@ -23,12 +23,14 @@ describe("dashboard settings sections", () => {
           jobTitle: "Founder",
           avatarDataUrl: null
         } as never}
+        teamName="Chatting Team"
         currentProfileName="Tina Bauer"
         fileInputRef={{ current: null }}
         passwordDraft={{ currentPassword: "", newPassword: "Hello123!", confirmPassword: "Hello123!" }}
         passwordExpanded
         passwordMeter={{ label: "Strong", widthClass: "w-full", toneClass: "bg-green-500" }}
         onUpdateProfile={() => {}}
+        onUpdateTeamName={() => {}}
         onAvatarPick={() => {}}
         onSetPasswordExpanded={() => {}}
         onSetPasswordDraft={() => {}}
@@ -37,6 +39,7 @@ describe("dashboard settings sections", () => {
 
     expect(html).toContain("Upload photo");
     expect(html).toContain("Personal information");
+    expect(html).toContain("Team identity");
     expect(html).toContain("Current password");
     expect(html).toContain("Strong");
   });

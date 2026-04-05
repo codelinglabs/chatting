@@ -1,45 +1,58 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { DashboardSettingsData } from "@/lib/data/settings-types";
+import { useToast } from "../ui/toast-provider";
+import type { DashboardNoticeState } from "./dashboard-controls";
 import { resolveSettingsSection } from "./dashboard-settings-section";
 import { DashboardSettingsScaffold } from "./dashboard-settings-scaffold";
+import { getSettingsPageCopy } from "./dashboard-settings-page-copy";
+import type { SettingsSection } from "./dashboard-settings-shared";
 import {
-  getSettingsPageCopy,
   renderSettingsPageSection
 } from "./dashboard-settings-page-sections";
 import { useDashboardSettingsBilling } from "./use-dashboard-settings-billing";
 import { useDashboardSettingsForm } from "./use-dashboard-settings-form";
 
-export function DashboardSettingsPage({ initialData }: { initialData: DashboardSettingsData }) {
+export function DashboardSettingsPage({
+  initialData,
+  canManageSavedReplies = false,
+  activeSection
+}: {
+  initialData: DashboardSettingsData;
+  canManageSavedReplies?: boolean;
+  activeSection?: SettingsSection;
+}) {
   const searchParams = useSearchParams();
-  const requestedSection = resolveSettingsSection(searchParams.get("section"));
-  const [activeSection, setActiveSection] = useState(requestedSection);
-  const form = useDashboardSettingsForm(initialData);
+  const { showToast } = useToast();
+  const resolvedActiveSection = activeSection ?? resolveSettingsSection(searchParams.get("section"));
+  const handleNotice = (notice: DashboardNoticeState) => {
+    if (!notice) {
+      return;
+    }
+
+    showToast(notice.tone === "error" ? "error" : "success", notice.message);
+  };
+  const form = useDashboardSettingsForm(initialData, handleNotice);
   const billing = useDashboardSettingsBilling({
-    activeSection,
+    activeSection: resolvedActiveSection,
     initialBilling: initialData.billing,
     searchParams,
-    setNotice: form.setNotice
+    onNotice: handleNotice
   });
-
-  useEffect(() => {
-    setActiveSection((current) => (current === requestedSection ? current : requestedSection));
-  }, [requestedSection]);
 
   return (
     <DashboardSettingsScaffold
-      activeSection={activeSection}
-      onSetActiveSection={setActiveSection}
-      notice={form.notice}
+      activeSection={resolvedActiveSection}
+      onSetActiveSection={() => {}}
       isDirty={form.isDirty}
       isSaving={form.isSaving}
       onDiscard={form.handleDiscard}
       onSave={form.handleSave}
     >
       {renderSettingsPageSection({
-        activeSection,
+        activeSection: resolvedActiveSection,
+        automationContext: initialData.automationContext,
         billing: billing.billing,
         billingPlanPending: billing.billingPlanPending,
         billingPortalPending: billing.billingPortalPending,
@@ -47,22 +60,31 @@ export function DashboardSettingsPage({ initialData }: { initialData: DashboardS
         currentProfileName: form.currentProfileName,
         draftSettings: form.draftSettings,
         fileInputRef: form.fileInputRef,
+        isDirty: form.isDirty,
+        isSaving: form.isSaving,
         onAvatarPick: form.handleAvatarPick,
         onChangePlan: billing.handleBillingPlanChange,
-        onNotice: form.setNotice,
+        onDiscard: form.handleDiscard,
+        onNotice: handleNotice,
         onOpenBillingPortal: billing.openBillingPortal,
+        onSave: form.handleSave,
         onSetPasswordDraft: form.setPasswordDraft,
         onSetPasswordExpanded: form.setPasswordExpanded,
         onSetSelectedInterval: billing.setSelectedBillingInterval,
         onSyncBilling: () => void billing.syncBillingFromStripe(),
         onUpdateEmail: form.updateEmail,
+        onUpdateAutomation: form.updateAutomation,
         onUpdateNotifications: form.updateNotifications,
         onUpdateProfile: form.updateProfile,
-        pageCopy: getSettingsPageCopy(activeSection),
+        onUpdateReports: form.updateReports,
+        onUpdateTeamName: form.updateTeamName,
+        pageCopy: getSettingsPageCopy(resolvedActiveSection),
         passwordDraft: form.passwordDraft,
         passwordExpanded: form.passwordExpanded,
         passwordMeter: form.passwordMeter,
-        selectedBillingInterval: billing.selectedBillingInterval
+        selectedBillingInterval: billing.selectedBillingInterval,
+        canManageSavedReplies,
+        teamMembers: initialData.teamMembers
       })}
     </DashboardSettingsScaffold>
   );

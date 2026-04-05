@@ -22,60 +22,72 @@ describe("dashboard settings section actions", () => {
       SettingsCard: ({ actions, children }: { actions?: ReactNode; children: ReactNode }) => <section>{actions}{children}</section>,
       SettingsSectionHeader: ({ title }: { title: string }) => <div>{title}</div>
     }));
-    const module = await import("./dashboard-settings-profile-section");
+    vi.doMock("../components/ui/Input", () => ({
+      Input: (props: Record<string, unknown>) => <input {...props} />
+    }));
+    const avatarModule = await import("./dashboard-settings-profile-avatar-card");
+    const formModule = await import("./dashboard-settings-profile-form-card");
+    const workspaceModule = await import("./dashboard-settings-workspace-form-card");
+    const passwordModule = await import("./dashboard-settings-profile-password-card");
     const onUpdateProfile = vi.fn();
+    const onUpdateTeamName = vi.fn();
     const onAvatarPick = vi.fn();
     const onSetPasswordExpanded = vi.fn();
     const onSetPasswordDraft = vi.fn();
     const click = vi.fn();
 
-    let tree = module.SettingsProfileSection({
-      title: "Profile",
-      subtitle: "Manage your details.",
+    const avatarTree = avatarModule.SettingsProfileAvatarCard({
       profile: { firstName: "Tina", lastName: "Bauer", email: "tina@example.com", jobTitle: "Founder", avatarDataUrl: null } as never,
       currentProfileName: "Tina Bauer",
       fileInputRef: { current: { click } } as never,
+      onUpdateProfile,
+      onAvatarPick
+    });
+    const formTree = formModule.SettingsProfileFormCard({
+      profile: { firstName: "Tina", lastName: "Bauer", email: "tina@example.com", jobTitle: "Founder", avatarDataUrl: null } as never,
+      onUpdateProfile
+    });
+    const workspaceTree = workspaceModule.SettingsWorkspaceFormCard({
+      teamName: "Chatting Team",
+      onUpdateTeamName
+    });
+    let passwordTree = passwordModule.SettingsProfilePasswordCard({
       passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" },
       passwordExpanded: false,
       passwordMeter: { label: "Weak", widthClass: "w-1/4", toneClass: "bg-red-500" },
-      onUpdateProfile,
-      onAvatarPick,
       onSetPasswordExpanded,
       onSetPasswordDraft
     });
 
-    const buttons = collectElements(tree, (element) => element.type === "button");
-    const actionButton = collectElements(
-      tree,
-      (element) => typeof element.type === "function" && element.props.actions
-    )[0]?.props.actions as ReactElement | undefined;
+    const buttons = collectElements(avatarTree, (element) => element.type === "button");
     buttons.find((element) => element.props["aria-label"] === "Change profile photo")?.props.onClick();
     buttons.find((element) => textContent(element.props.children).includes("Upload photo"))?.props.onClick();
     buttons.find((element) => textContent(element.props.children).includes("Remove"))?.props.onClick();
-    actionButton?.props.onClick();
-    const inputs = collectElements(tree, (element) => element.type === "input");
-    inputs[1]?.props.onChange({ target: { value: "Tine" } });
-    inputs[2]?.props.onChange({ target: { value: "Builder" } });
-    inputs[3]?.props.onChange({ target: { value: "hello@example.com" } });
-    inputs[4]?.props.onChange({ target: { value: "Support lead" } });
-    inputs[0]?.props.onChange({ target: { files: ["avatar.png"] } });
+    (
+      collectElements(
+        passwordTree,
+        (element) => typeof element.type === "function" && element.props.actions
+      )[0]?.props.actions as ReactElement | undefined
+    )?.props.onClick();
+    collectElements(formTree, (element) => element.type === "input")[0]?.props.onChange({ target: { value: "Tine" } });
+    collectElements(formTree, (element) => element.type === "input")[1]?.props.onChange({ target: { value: "Builder" } });
+    collectElements(formTree, (element) => element.type === "input")[2]?.props.onChange({ target: { value: "hello@example.com" } });
+    collectElements(formTree, (element) => element.type === "input")[3]?.props.onChange({ target: { value: "Support lead" } });
+    collectElements(
+      workspaceTree,
+      (element) => typeof element.type === "function" && element.props.placeholder === "Acme Support"
+    )[0]?.props.onChange({ target: { value: "Chatting Support" } });
+    collectElements(avatarTree, (element) => element.type === "input")[0]?.props.onChange({ target: { files: ["avatar.png"] } });
 
-    tree = module.SettingsProfileSection({
-      title: "Profile",
-      subtitle: "Manage your details.",
-      profile: { firstName: "Tina", lastName: "Bauer", email: "tina@example.com", jobTitle: "Founder", avatarDataUrl: "data:image/png;base64,abc" } as never,
-      currentProfileName: "Tina Bauer",
-      fileInputRef: { current: { click } } as never,
+    passwordTree = passwordModule.SettingsProfilePasswordCard({
       passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" },
       passwordExpanded: true,
       passwordMeter: { label: "Strong", widthClass: "w-full", toneClass: "bg-green-500" },
-      onUpdateProfile,
-      onAvatarPick,
       onSetPasswordExpanded,
       onSetPasswordDraft
     });
 
-    const passwordInputs = collectElements(tree, (element) => element.type === "input");
+    const passwordInputs = collectElements(passwordTree, (element) => element.type === "input");
     passwordInputs.at(-3)?.props.onChange({ target: { value: "current-pass" } });
     passwordInputs.at(-2)?.props.onChange({ target: { value: "NextPass123!" } });
     passwordInputs.at(-1)?.props.onChange({ target: { value: "NextPass123!" } });
@@ -83,6 +95,7 @@ describe("dashboard settings section actions", () => {
     expect(click).toHaveBeenCalledTimes(2);
     expect(onUpdateProfile).toHaveBeenCalledWith("avatarDataUrl", null);
     expect(onUpdateProfile).toHaveBeenCalledWith("firstName", "Tine");
+    expect(onUpdateTeamName).toHaveBeenCalledWith("Chatting Support");
     expect(onAvatarPick).toHaveBeenCalled();
     expect(onSetPasswordExpanded.mock.calls[0]?.[0](false)).toBe(true);
     expect(onSetPasswordDraft.mock.calls[0]?.[0]({ currentPassword: "", newPassword: "", confirmPassword: "" })).toMatchObject({ currentPassword: "current-pass" });
@@ -152,5 +165,48 @@ describe("dashboard settings section actions", () => {
     expect(onUpdateEmail).toHaveBeenCalledWith("replyToEmail", "reply+new@example.com");
     expect(onUpdateEmail).toHaveBeenCalledWith("emailSignature", "Cheers,\nChatting");
     expect(onUpdateEmail).toHaveBeenCalledWith("templates", [{ key: "offline_reply" }]);
+  });
+
+  it("updates weekly report toggles and send time selections", async () => {
+    vi.resetModules();
+    const captures: { rows: Array<Record<string, unknown>> } = { rows: [] };
+    vi.doMock("./dashboard-settings-shared", () => ({
+      SettingsCard: ({ children }: { children: ReactNode }) => <section>{children}</section>,
+      SettingsSectionHeader: ({ title }: { title: string }) => <div>{title}</div>,
+      ToggleRow: (props: Record<string, unknown>) => ((captures.rows.push(props), <div>row</div>))
+    }));
+    vi.doMock("../components/ui/Input", () => ({
+      Input: (props: Record<string, unknown>) => <input {...props} />
+    }));
+    const module = await import("./dashboard-settings-reports-section");
+    const onUpdateReports = vi.fn();
+
+    const tree = module.SettingsReportsSection({
+      title: "Reports",
+      subtitle: "Control weekly reports.",
+      reports: {
+        weeklyReportEnabled: true,
+        weeklyReportSendTime: "09:00",
+        weeklyReportIncludePersonalStats: true,
+        workspaceWeeklyReportsEnabled: true,
+        workspaceIncludeTeamLeaderboard: true,
+        workspaceAiInsightsEnabled: true,
+        canManageWorkspaceReports: true,
+        recipientTimeZone: "Europe/London",
+        teamTimeZone: "Europe/London"
+      } as never,
+      onUpdateReports
+    });
+    renderToStaticMarkup(tree);
+
+    captures.rows.forEach((row, index) => (row.onChange as (value: boolean) => void)(index % 2 === 0));
+    collectElements(
+      tree,
+      (element) => typeof element.type === "function" && element.props.type === "time"
+    )[0]?.props.onChange({ target: { value: "11:30" } });
+
+    expect(onUpdateReports).toHaveBeenCalledWith("weeklyReportEnabled", true);
+    expect(onUpdateReports).toHaveBeenCalledWith("workspaceIncludeTeamLeaderboard", false);
+    expect(onUpdateReports).toHaveBeenCalledWith("weeklyReportSendTime", "11:30");
   });
 });

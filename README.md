@@ -21,6 +21,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - Built a dedicated Automation settings editor for offline behavior, routing, FAQ suggestions, and proactive messages.
 - Wired automation into the live widget so FAQ suggestions, routing, and proactive prompts now run against real visitor sessions.
+- Settings sections now navigate by URL so each settings area can load as its own server-driven view.
 - Added sitemap/robots, homepage SEO metadata and copy, author profile pages, and keyword-targeted blog routes to improve public search discovery.
 - Saved replies now live in a dedicated settings area with cleaner modal-based management.
 - Owner signup now stays on the signup page with inline verification messaging, password login blocks unverified accounts, and the sign-in form drops the dead remember-me/resend-verification clutter.
@@ -154,6 +155,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Dashboard thread detail now routes inline retry actions through the exported inbox state handler again so failed optimistic replies can resend reliably.
 - Dashboard shell now syncs each teammate's browser timezone so timezone-aware scheduled emails can use local delivery windows.
 - Dashboard live updates now share one `/dashboard/live` connection per tab, route unread and conversation refreshes through targeted endpoints, and keep visitors current with incremental session/message patches plus manual full-refresh fallback.
+- Settings sections now navigate by real section URLs so each area can load as a cleaner server-driven view.
 - Dashboard widget settings now preview online, away, and offline states directly in settings, and inbox thread ordering stays pinned to real recency instead of moving touched threads to the top.
 - Dashboard navigation now relies on the route-level skeleton only, and inbox thread selection clears stale loading state without the extra shell overlay layer.
 - Saved replies now live in their own dedicated settings area with standalone management.

@@ -2,59 +2,46 @@
 
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import type {
+  DashboardAutomationSettings,
   DashboardSettingsData,
   DashboardSettingsEmail,
   DashboardSettingsNotifications,
-  DashboardSettingsProfile
+  DashboardSettingsProfile,
+  DashboardSettingsReports
 } from "@/lib/data/settings-types";
 import type { DashboardNoticeState } from "./dashboard-controls";
 import { buildOwnerName, editableSignature, passwordStrength, settingsErrorMessage, type EditableSettings } from "./dashboard-settings-shared";
+import { buildEditableSettings, emptyPasswordDraft, type PasswordDraft } from "./dashboard-settings-form-state";
+const EMPTY_PASSWORD_SIGNATURE = JSON.stringify(emptyPasswordDraft());
 
-type PasswordDraft = {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-};
-
-const emptyPasswordDraft = (): PasswordDraft => ({ currentPassword: "", newPassword: "", confirmPassword: "" });
-
-export function useDashboardSettingsForm(initialData: DashboardSettingsData) {
-  const initialSettings = {
-    profile: initialData.profile,
-    notifications: initialData.notifications,
-    email: initialData.email
-  };
+export function useDashboardSettingsForm(
+  initialData: DashboardSettingsData,
+  onNotice: (notice: Exclude<DashboardNoticeState, null>) => void
+) {
+  const initialSettings = buildEditableSettings(initialData);
   const [savedSettings, setSavedSettings] = useState<EditableSettings>(initialSettings);
   const [draftSettings, setDraftSettings] = useState<EditableSettings>(initialSettings);
   const [passwordDraft, setPasswordDraft] = useState<PasswordDraft>(emptyPasswordDraft);
   const [passwordExpanded, setPasswordExpanded] = useState(false);
+  const [pendingSaveSignature, setPendingSaveSignature] = useState<{ settings: string; password: string } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [notice, setNotice] = useState<DashboardNoticeState>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const currentProfileName = buildOwnerName(draftSettings.profile);
   const passwordMeter = passwordStrength(passwordDraft.newPassword);
+  const draftSignature = editableSignature(draftSettings);
+  const savedSignature = pendingSaveSignature?.settings ?? editableSignature(savedSettings);
+  const passwordSignature = JSON.stringify(passwordDraft);
   const isDirty = useMemo(
     () =>
-      editableSignature(savedSettings) !== editableSignature(draftSettings) ||
-      Boolean(passwordDraft.currentPassword || passwordDraft.newPassword || passwordDraft.confirmPassword),
-    [draftSettings, passwordDraft, savedSettings]
+      savedSignature !== draftSignature ||
+      passwordSignature !== (pendingSaveSignature?.password ?? EMPTY_PASSWORD_SIGNATURE),
+    [draftSignature, passwordSignature, pendingSaveSignature, savedSignature]
   );
-
-  useEffect(() => {
-    if (!notice) {
-      return;
-    }
-    const timeout = window.setTimeout(() => {
-      setNotice(null);
-    }, 3200);
-    return () => window.clearTimeout(timeout);
-  }, [notice]);
 
   useEffect(() => {
     if (!isDirty) {
       return;
     }
-
     const handler = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = "";
@@ -70,42 +57,58 @@ export function useDashboardSettingsForm(initialData: DashboardSettingsData) {
     }));
   }
 
-  function updateNotifications<K extends keyof DashboardSettingsNotifications>(
-    key: K,
-    value: DashboardSettingsNotifications[K]
-  ) {
+  function updateTeamName(value: string) {
+    setDraftSettings((current) => ({ ...current, teamName: value }));
+  }
+  function updateNotifications<K extends keyof DashboardSettingsNotifications>(key: K, value: DashboardSettingsNotifications[K]) {
     setDraftSettings((current) => ({
       ...current,
       notifications: { ...current.notifications, [key]: value }
     }));
   }
-
   function updateEmail<K extends keyof DashboardSettingsEmail>(key: K, value: DashboardSettingsEmail[K]) {
     setDraftSettings((current) => ({
       ...current,
       email: { ...current.email, [key]: value }
     }));
   }
-
+  function updateReports<K extends keyof DashboardSettingsReports>(key: K, value: DashboardSettingsReports[K]) {
+    setDraftSettings((current) => ({
+      ...current,
+      reports: { ...current.reports, [key]: value }
+    }));
+  }
+  function updateAutomation(updater: (current: DashboardAutomationSettings) => DashboardAutomationSettings) {
+    setDraftSettings((current) => ({
+      ...current,
+      automation: updater(current.automation)
+    }));
+  }
   async function handleSave() {
     if (isSaving) {
       return;
     }
-
+    const submittedSettings = draftSettings;
+    const submittedPassword =
+      passwordDraft.currentPassword || passwordDraft.newPassword || passwordDraft.confirmPassword
+        ? passwordDraft
+        : null;
+    const submittedSettingsSignature = editableSignature(submittedSettings);
+    const submittedPasswordSignature = JSON.stringify(passwordDraft);
+    setPendingSaveSignature({ settings: submittedSettingsSignature, password: submittedPasswordSignature });
     setIsSaving(true);
-
     try {
       const response = await fetch("/dashboard/settings/update", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          profile: draftSettings.profile,
-          notifications: draftSettings.notifications,
-          email: draftSettings.email,
-          password:
-            passwordDraft.currentPassword || passwordDraft.newPassword || passwordDraft.confirmPassword
-              ? passwordDraft
-              : null
+          profile: submittedSettings.profile,
+          teamName: submittedSettings.teamName,
+          notifications: submittedSettings.notifications,
+          email: submittedSettings.email,
+          reports: submittedSettings.reports,
+          automation: submittedSettings.automation,
+          password: submittedPassword
         })
       });
       const payload = (await response.json()) as
@@ -115,23 +118,25 @@ export function useDashboardSettingsForm(initialData: DashboardSettingsData) {
       if (!response.ok || !payload.ok) {
         throw new Error(payload.ok ? "settings-save-failed" : payload.error);
       }
-
-      setSavedSettings({
-        profile: payload.settings.profile,
-        notifications: payload.settings.notifications,
-        email: payload.settings.email
-      });
-      setDraftSettings({ profile: payload.settings.profile, notifications: payload.settings.notifications, email: payload.settings.email });
+      const nextSettings = buildEditableSettings(payload.settings);
+      setSavedSettings(nextSettings);
+      setDraftSettings((current) => (editableSignature(current) === submittedSettingsSignature ? nextSettings : current));
+      if (submittedPassword) {
+        setPasswordDraft((current) =>
+          JSON.stringify(current) === submittedPasswordSignature ? emptyPasswordDraft() : current
+        );
+        setPasswordExpanded(false);
+      }
       window.dispatchEvent(
         new CustomEvent("chatly:notification-settings-updated", {
           detail: payload.settings.notifications
         })
       );
-      setPasswordDraft(emptyPasswordDraft());
-      setPasswordExpanded(false);
-      setNotice({ tone: "success", message: "Settings saved" });
+      setPendingSaveSignature(null);
+      onNotice({ tone: "success", message: "Settings saved" });
     } catch (error) {
-      setNotice({
+      setPendingSaveSignature(null);
+      onNotice({
         tone: "error",
         message: settingsErrorMessage(error instanceof Error ? error.message : "settings-save-failed")
       });
@@ -139,19 +144,17 @@ export function useDashboardSettingsForm(initialData: DashboardSettingsData) {
       setIsSaving(false);
     }
   }
-
   function handleDiscard() {
     setDraftSettings(savedSettings);
     setPasswordDraft(emptyPasswordDraft());
     setPasswordExpanded(false);
+    setPendingSaveSignature(null);
   }
-
   function handleAvatarPick(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) {
       return;
     }
-
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") {
@@ -161,7 +164,6 @@ export function useDashboardSettingsForm(initialData: DashboardSettingsData) {
     reader.readAsDataURL(file);
     event.target.value = "";
   }
-
   return {
     currentProfileName,
     draftSettings,
@@ -171,15 +173,16 @@ export function useDashboardSettingsForm(initialData: DashboardSettingsData) {
     handleSave,
     isDirty,
     isSaving,
-    notice,
     passwordDraft,
     passwordExpanded,
     passwordMeter,
-    setNotice,
     setPasswordDraft,
     setPasswordExpanded,
     updateEmail,
+    updateAutomation,
     updateNotifications,
-    updateProfile
+    updateProfile,
+    updateReports,
+    updateTeamName
   };
 }
