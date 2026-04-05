@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Split the People contact data layer into focused services so profile, note, and sync changes are easier to maintain.
 - Visitor routing now handles empty tags and incomplete custom-field values more gracefully.
 - Visitor follow-up templates now avoid repeating extra conversation-link instructions when they already include them.
 - Aligned Drizzle config and cached DB typing so schema-backed Postgres builds stay clean.
@@ -175,6 +176,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Dashboard
 
 - People now stores contact memory with saved profiles, statuses, custom fields, and in-place profile editing.
+- People contact data services now live in focused modules for access, sync, mutations, notes, and settings instead of one oversized data file.
 - Inbox contact editing and visitor-note flows now stay aligned with the new People experience across the dashboard.
 - Shared dashboard shell with focused pages for inbox, visitors, analytics, team, settings, and widget setup.
 - Dashboard settings now include a dedicated Automation editor for offline behavior, routing, FAQ suggestions, and proactive messages.
