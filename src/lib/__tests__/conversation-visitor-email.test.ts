@@ -30,11 +30,19 @@ describe("visitor conversation email renderer", () => {
     expect(rendered.bodyText).toContain("Reply to This Email: mailto:reply@acme.example");
     expect(rendered.bodyText).toContain("Continue on the web: https://chatly.example/conversation/token");
     expect(rendered.bodyText).toContain("utm_source=visitor_email");
-    expect(rendered.bodyHtml).toContain("Need more help? Continue this conversation anytime.");
+    expect(rendered.bodyText).not.toContain("We replied to your message.\n\nWe replied to your message.");
+    expect(rendered.bodyText).not.toContain("Or just reply to this email and it goes straight to us.");
+    expect(rendered.bodyText).not.toContain("Need more help? Continue this conversation anytime.");
     expect(rendered.bodyHtml).toContain(">Alex: Hi there<");
     expect(rendered.bodyHtml).not.toContain("white-space:pre-line");
     expect(rendered.bodyHtml).toContain(">Chatting</td>");
+    expect(rendered.bodyHtml).not.toContain(">Continue the conversation<");
+    expect(rendered.bodyHtml).not.toContain("Or just reply to this email and it goes straight to us.");
     expect(rendered.bodyHtml).toContain("Powered by <strong style=\"color:#475569;\">Chatting</strong>");
+    expect(rendered.bodyHtml).not.toContain("Need more help? Continue this conversation anytime.");
+    expect(rendered.bodyHtml.indexOf(">Try Chatting Free →<")).toBeGreaterThan(
+      rendered.bodyHtml.indexOf(">Continue on the web<")
+    );
   });
 
   it("keeps satisfaction surveys unbranded and points to star rating links", () => {

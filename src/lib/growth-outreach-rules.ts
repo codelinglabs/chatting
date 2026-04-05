@@ -1,6 +1,7 @@
 import type { DashboardHomeGrowthData } from "@/lib/data/dashboard-growth-types";
 
 const EARLY_ACTIVATION_REMINDER_HOURS = 6;
+export const ANALYTICS_EXPANSION_CONVERSATION_THRESHOLD = 40;
 export type GrowthOutreachPlanKey = "starter" | "growth";
 
 function hoursSince(value: string | Date, now: Date) {
@@ -49,5 +50,8 @@ export function shouldSendAnalyticsExpansionReminder(
   conversationCount: number,
   usedSeats: number
 ) {
-  return planKey === "starter" && (usedSeats > 1 || conversationCount >= 10);
+  return (
+    planKey === "starter" &&
+    (usedSeats > 1 || conversationCount >= ANALYTICS_EXPANSION_CONVERSATION_THRESHOLD)
+  );
 }

@@ -19,6 +19,8 @@ export async function sendAccountWelcomeEmail(input: {
   return sendRenderedEmail({
     from: resolvePrimaryBrandHelloMailFrom(),
     to: input.to,
+    emailCategory: "optional",
+    footerTeamName: "Chatting",
     rendered: renderAccountWelcomeEmail(input)
   });
 }
@@ -30,6 +32,8 @@ export async function sendEmailVerificationEmail(input: {
   return sendRenderedEmail({
     from: resolvePrimaryBrandNoReplyMailFrom(),
     to: input.to,
+    emailCategory: "critical",
+    footerTeamName: "Chatting",
     rendered: renderEmailVerificationEmail(input)
   });
 }
@@ -41,6 +45,8 @@ export async function sendPasswordResetEmail(input: {
   return sendRenderedEmail({
     from: resolvePrimaryBrandNoReplyMailFrom(),
     to: input.to,
+    emailCategory: "critical",
+    footerTeamName: "Chatting",
     rendered: renderPasswordResetEmail(input)
   });
 }
@@ -56,6 +62,8 @@ export async function sendTeamInvitationEmail(input: {
   return sendRenderedEmail({
     from: resolveTeamInvitationMailFrom(input.inviterName),
     to: input.to,
+    emailCategory: "critical",
+    footerTeamName: input.teamName,
     rendered: renderTeamInvitationEmail(input)
   });
 }

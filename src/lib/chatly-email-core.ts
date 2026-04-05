@@ -1,4 +1,4 @@
-import { FONT_STACK, COMPANY_LEGAL_LINES } from "@/lib/chatly-email-tokens";
+import { FONT_STACK } from "@/lib/chatly-email-tokens";
 import { escapeHtml } from "@/lib/utils";
 
 export type Align = "left" | "center" | "right";
@@ -7,10 +7,6 @@ export type ChattingEmailMetric = { value: string; label: string };
 
 function joinStyle(values: Array<string | null | undefined>) {
   return values.filter(Boolean).join(";");
-}
-
-function renderCompanyLegalFooterHtml() {
-  return `<tr><td align="center" style="padding:20px 32px 24px;border-top:1px solid #E2E8F0;background:#F8FAFC;"><div style="font:400 12px/1.7 ${FONT_STACK};color:#94A3B8;">${COMPANY_LEGAL_LINES.map((line) => escapeHtml(line)).join("<br />")}</div></td></tr>`;
 }
 
 export function renderChattingEmailShell(input: { preheader: string; rows: string[] }) {
@@ -22,7 +18,6 @@ export function renderChattingEmailShell(input: { preheader: string; rows: strin
     `<tr><td align="center" style="padding:40px 20px;">`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;">`,
     ...input.rows,
-    renderCompanyLegalFooterHtml(),
     `</table>`,
     `</td></tr>`,
     `</table>`
@@ -31,13 +26,7 @@ export function renderChattingEmailShell(input: { preheader: string; rows: strin
 
 export function renderEmailSection(
   content: string,
-  options?: {
-    align?: Align;
-    padding?: string;
-    background?: string;
-    borderTopColor?: string;
-    borderBottomColor?: string;
-  }
+  options?: { align?: Align; padding?: string; background?: string; borderTopColor?: string; borderBottomColor?: string }
 ) {
   return `<tr><td align="${options?.align ?? "left"}" style="${joinStyle([
     `padding:${options?.padding ?? "32px"}`,
@@ -52,7 +41,7 @@ export function renderBrandLockup(label = "Chatting") {
 }
 
 export const renderDivider = (spacing = "0 32px") =>
-  `<tr><td style="padding:${spacing};"><div style="height:1px;background:#E2E8F0;font-size:0;line-height:0;">&nbsp;</div></td></tr>`;
+  `<tr><td style="padding:${spacing};font-size:0;line-height:0;border-top:1px solid #E2E8F0;">&nbsp;</td></tr>`;
 
 export function renderEmailButton(button: ChattingEmailButton) {
   const safeLabel = escapeHtml(button.label);
@@ -64,31 +53,31 @@ export function renderEmailButton(button: ChattingEmailButton) {
   return `<a href="${button.href}" style="${style}">${safeLabel}</a>`;
 }
 
-export function renderButtonRow(input: {
-  primary?: ChattingEmailButton | null;
-  secondary?: ChattingEmailButton | null;
-  secondaryPrefix?: string;
-}) {
-  const primary = input.primary ? renderEmailButton(input.primary) : "";
-  const secondary = input.secondary
-    ? `<span style="display:inline-block;padding:12px 10px 0;font:400 14px ${FONT_STACK};color:#475569;">${escapeHtml(input.secondaryPrefix ?? "or")}</span>${renderEmailButton({ ...input.secondary, variant: "secondary" })}`
-    : "";
+export function renderButtonRow(input: { primary?: ChattingEmailButton | null; secondary?: ChattingEmailButton | null; secondaryPrefix?: string }) {
+  const cells = [
+    input.primary ? `<td align="center" valign="middle">${renderEmailButton(input.primary)}</td>` : "",
+    input.primary && input.secondary
+      ? `<td align="center" valign="middle" style="padding:0 10px;font:400 14px ${FONT_STACK};color:#475569;">${escapeHtml(input.secondaryPrefix ?? "or")}</td>`
+      : "",
+    input.secondary ? `<td align="center" valign="middle">${renderEmailButton({ ...input.secondary, variant: "secondary" })}</td>` : ""
+  ]
+    .filter(Boolean)
+    .join("");
 
-  return `<div style="text-align:center;">${primary}${secondary}</div>`;
+  return `<table role="presentation" align="center" cellpadding="0" cellspacing="0"><tr>${cells}</tr></table>`;
 }
 
 export function renderFooterBlock(input: { text: string; links?: Array<{ label: string; href: string }> }) {
+  const textRows = escapeHtml(input.text)
+    .split("\n")
+    .map((line) => `<tr><td align="center" style="font:400 12px/1.6 ${FONT_STACK};color:#94A3B8;">${line || "&nbsp;"}</td></tr>`)
+    .join("");
   const links = (input.links ?? [])
     .map((link) => `<a href="${link.href}" style="font:400 12px/1.6 ${FONT_STACK};color:#64748B;text-decoration:underline;">${escapeHtml(link.label)}</a>`)
     .join(`<span style="font:400 12px/1.6 ${FONT_STACK};color:#94A3B8;"> &bull; </span>`);
 
-  return `<div style="text-align:center;"><div style="font:400 12px/1.6 ${FONT_STACK};color:#94A3B8;">${escapeHtml(input.text).replace(/\n/g, "<br />")}</div>${links ? `<div style="margin-top:8px;">${links}</div>` : ""}</div>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;"><tr><td align="center"><table role="presentation" cellpadding="0" cellspacing="0">${textRows}${links ? `<tr><td align="center" style="padding-top:8px;">${links}</td></tr>` : ""}</table></td></tr></table>`;
 }
 
 export const joinEmailText = (blocks: Array<string | null | undefined>) =>
   blocks.map((block) => block?.trim()).filter(Boolean).join("\n\n");
-
-export function appendChattingCompanyLegalText(bodyText: string) {
-  const trimmed = bodyText.trim();
-  return trimmed.includes("Company No. 16998528") ? trimmed : [trimmed, ...COMPANY_LEGAL_LINES].filter(Boolean).join("\n\n");
-}

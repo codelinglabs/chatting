@@ -18,7 +18,7 @@ describe("growth outreach email", () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://chatly.example";
   });
 
-  it("sends the activation reminder with widget and analytics links", async () => {
+  it("sends the activation reminder with only the widget settings link", async () => {
     await sendActivationReminderEmail({
       to: "owner@chatly.example",
       siteName: "Acme",
@@ -34,8 +34,11 @@ describe("growth outreach email", () => {
       })
     );
     expect(mocks.sendRichEmail.mock.calls[0][0].bodyText).toContain("Open widget settings: https://chatly.example/dashboard/widget");
+    expect(mocks.sendRichEmail.mock.calls[0][0].bodyText).not.toContain("Open analytics");
     expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).toContain("max-width:600px");
     expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).toContain("Open widget settings");
+    expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).not.toContain("Open analytics");
+    expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).not.toContain("Activation reminder");
   });
 
   it("sends the health reminder with the recommended action link", async () => {
@@ -69,10 +72,13 @@ describe("growth outreach email", () => {
       conversationCount: 18
     });
 
-    expect(mocks.sendRichEmail.mock.calls[0][0].subject).toBe("You may be ready for deeper analytics and API access");
+    expect(mocks.sendRichEmail.mock.calls[0][0].subject).toBe("You may be ready for deeper analytics");
     expect(mocks.sendRichEmail.mock.calls[0][0].bodyText).toContain("https://chatly.example/dashboard/settings?section=billing");
+    expect(mocks.sendRichEmail.mock.calls[0][0].bodyText).not.toContain("Conversations this month: 18");
     expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).toContain("max-width:600px");
-    expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).toContain("Analytics growth");
+    expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).not.toContain("Analytics growth");
+    expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).not.toContain("API access");
+    expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).not.toContain("Conversations this month");
     expect(mocks.sendRichEmail.mock.calls[0][0].bodyHtml).toContain("hyphens:none");
   });
 });

@@ -14,12 +14,12 @@ function appUrl(path: string) {
 }
 
 function renderLifecycleReminderEmail(input: {
-  eyebrow: string;
+  eyebrow?: string;
   subject: string;
   preheader: string;
   description: string;
-  detailLabel: string;
-  detailValue: string;
+  detailLabel?: string;
+  detailValue?: string;
   primaryAction: {
     href: string;
     label: string;
@@ -33,7 +33,7 @@ function renderLifecycleReminderEmail(input: {
     bodyText: joinEmailText([
       input.subject,
       input.description,
-      `${input.detailLabel}: ${input.detailValue}`,
+      input.detailLabel && input.detailValue ? `${input.detailLabel}: ${input.detailValue}` : undefined,
       `${input.primaryAction.label}: ${input.primaryAction.href}`,
       input.secondaryAction ? `${input.secondaryAction.label}: ${input.secondaryAction.href}` : undefined
     ]),
@@ -42,17 +42,19 @@ function renderLifecycleReminderEmail(input: {
       eyebrow: input.eyebrow,
       title: input.subject,
       description: input.description,
-      sections: [
-        {
-          kind: "panel",
-          html: `<div style="font:600 13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#64748B;">${escapeHtml(
-            input.detailLabel
-          )}</div><div style="margin-top:10px;font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;">${escapeHtml(
-            input.detailValue
-          )}</div>`,
-          padding: "0 32px 24px"
-        }
-      ],
+      sections: input.detailLabel && input.detailValue
+        ? [
+            {
+              kind: "panel",
+              html: `<div style="font:600 13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#64748B;">${escapeHtml(
+                input.detailLabel
+              )}</div><div style="margin-top:10px;font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;">${escapeHtml(
+                input.detailValue
+              )}</div>`,
+              padding: "0 32px 24px"
+            }
+          ]
+        : [],
       actions: {
         primary: input.primaryAction,
         secondary: input.secondaryAction ?? null,
@@ -74,14 +76,12 @@ export async function sendActivationReminderEmail(input: {
       ? "Your widget is live. Let's land the first chat today."
       : "Your widget is installed, but the first chat still hasn't happened";
   const widgetUrl = appUrl("/dashboard/widget");
-  const analyticsUrl = appUrl("/dashboard/analytics");
   const detailValue = input.pageUrl ? input.pageUrl : "Put the widget on pricing, demo, or contact pages.";
   const description =
     input.mode === "live"
       ? "Tighten the welcome message, place the widget on a high-intent page, and send yourself a test message."
       : "Move the widget to a higher-intent page and sharpen the opener so the first reply loop starts faster.";
   const rendered = renderLifecycleReminderEmail({
-    eyebrow: "Activation reminder",
     subject,
     preheader: subject,
     description,
@@ -90,16 +90,14 @@ export async function sendActivationReminderEmail(input: {
     primaryAction: {
       href: widgetUrl,
       label: "Open widget settings"
-    },
-    secondaryAction: {
-      href: analyticsUrl,
-      label: "Open analytics"
     }
   });
 
   await sendRenderedEmail({
     from: resolvePrimaryBrandHelloMailFrom(),
     to: input.to,
+    emailCategory: "optional",
+    footerTeamName: "Chatting",
     rendered: { subject, ...rendered }
   });
 }
@@ -127,6 +125,8 @@ export async function sendHealthReminderEmail(input: {
   await sendRenderedEmail({
     from: resolvePrimaryBrandHelloMailFrom(),
     to: input.to,
+    emailCategory: "optional",
+    footerTeamName: "Chatting",
     rendered: { subject, ...rendered }
   });
 }
@@ -142,18 +142,18 @@ export async function sendExpansionReminderEmail(input: {
   const subject =
     input.mode === "team"
       ? "Your workspace is growing beyond Starter"
-      : "You may be ready for deeper analytics and API access";
+      : "You may be ready for deeper analytics";
   const intro =
     input.mode === "team"
       ? `You now have ${input.usedSeats} reserved seats in play. As the inbox becomes a team workflow, moving beyond Starter keeps coverage and reporting from getting cramped.`
-      : `Your workspace is showing signs that a paid plan could help: ${input.conversationCount} conversations this month and enough activity to benefit from fuller analytics and API access.`;
+      : `Your workspace is showing signs that a paid plan could help: ${input.conversationCount} conversations this month and enough activity to benefit from fuller analytics.`;
   const rendered = renderLifecycleReminderEmail({
-    eyebrow: input.mode === "team" ? "Team growth" : "Analytics growth",
+    eyebrow: input.mode === "team" ? "Team growth" : undefined,
     subject,
     preheader: subject,
     description: intro,
-    detailLabel: input.mode === "team" ? "Reserved seats" : "Conversations this month",
-    detailValue: input.mode === "team" ? String(input.usedSeats) : String(input.conversationCount),
+    detailLabel: input.mode === "team" ? "Reserved seats" : undefined,
+    detailValue: input.mode === "team" ? String(input.usedSeats) : undefined,
     primaryAction: {
       href: billingUrl,
       label: "Review plans"
@@ -163,6 +163,8 @@ export async function sendExpansionReminderEmail(input: {
   await sendRenderedEmail({
     from: resolvePrimaryBrandHelloMailFrom(),
     to: input.to,
+    emailCategory: "optional",
+    footerTeamName: "Chatting",
     rendered: { subject, ...rendered }
   });
 }

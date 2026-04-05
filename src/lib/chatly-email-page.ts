@@ -6,21 +6,21 @@ import {
   renderButtonRow,
   renderChattingEmailShell,
   renderDivider,
-  renderEmailSection,
-  renderFooterBlock
+  renderEmailSection
 } from "@/lib/chatly-email-core";
-import { renderHeadingBlock, renderMetricGrid, renderPanel } from "@/lib/chatly-email-content";
+import {
+  renderAlignedBlock,
+  renderHeadingBlock,
+  renderMetricGrid,
+  renderPanel,
+  renderParagraph,
+  renderStack
+} from "@/lib/chatly-email-content";
 import { FONT_STACK } from "@/lib/chatly-email-tokens";
 import { initialsFromLabel } from "@/lib/user-display";
 import { escapeHtml } from "@/lib/utils";
 
-type ChattingEmailHero = {
-  label: string;
-  avatarUrl?: string | null;
-  badgeLabel?: string;
-  size?: 48 | 64;
-  shape?: "circle" | "tile";
-};
+type ChattingEmailHero = { label: string; avatarUrl?: string | null; badgeLabel?: string; size?: 48 | 64; shape?: "circle" | "tile" };
 type ChattingEmailPageSection =
   | { kind: "copy" | "html"; html: string; align?: Align; padding?: string; background?: string; borderTopColor?: string; borderBottomColor?: string }
   | { kind: "panel"; html: string; padding?: string; align?: Align; background?: string; borderTopColor?: string; borderBottomColor?: string; panelPadding?: string; panelBackground?: string; panelBorderColor?: string }
@@ -36,10 +36,8 @@ export function renderEmailAvatar(input: ChattingEmailHero) {
   }
 
   const fontSize = size === 64 ? 32 : 18;
-  const lineHeight = `${size}px`;
   const fallback = input.badgeLabel ?? initialsFromLabel(input.label);
-
-  return `<div style="width:${size}px;height:${size}px;border-radius:${radius};background:#DBEAFE;color:#1D4ED8;font:${shape === "tile" ? 600 : 600} ${fontSize}px/${lineHeight} ${FONT_STACK};text-align:center;">${escapeHtml(fallback)}</div>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" width="${size}" height="${size}" style="width:${size}px;height:${size}px;border-radius:${radius};background:#DBEAFE;"><tr><td align="center" valign="middle" style="font:600 ${fontSize}px ${FONT_STACK};line-height:1;color:#1D4ED8;">${escapeHtml(fallback)}</td></tr></table>`;
 }
 
 function renderPageSection(section: ChattingEmailPageSection) {
@@ -54,7 +52,9 @@ function renderPageSection(section: ChattingEmailPageSection) {
           background: section.panelBackground,
           borderColor: section.panelBorderColor
         })
-      : section.html;
+      : section.kind === "copy"
+        ? renderParagraph(section.html, section.align)
+        : section.html;
 
   return renderEmailSection(content, {
     align: section.align,
@@ -76,18 +76,28 @@ export function renderChattingEmailPage(input: {
   hero?: ChattingEmailHero | null;
   sections?: ChattingEmailPageSection[];
   actions?: { message?: string; primary?: ChattingEmailButton | null; secondary?: ChattingEmailButton | null; customHtml?: string; padding?: string; borderTopColor?: string } | null;
-  footer?: { text: string; links?: Array<{ label: string; href: string }>; padding?: string; align?: Align; background?: string; borderTopColor?: string } | null;
+  postActionsRowHtml?: string | null;
 }) {
   const align = input.align ?? "left";
-  const hero = input.hero
-    ? `${align === "center" ? `<div style="text-align:center;">${renderEmailAvatar(input.hero)}</div>` : renderEmailAvatar(input.hero)}<div style="margin-top:16px;">`
-    : "";
-  const heroClose = input.hero ? "</div>" : "";
+  const headingHtml = renderHeadingBlock({
+    title: input.title,
+    eyebrow: input.eyebrow,
+    meta: input.meta,
+    description: input.description,
+    align
+  });
+  const heroHtml = renderStack(
+    [input.hero ? renderAlignedBlock(renderEmailAvatar(input.hero), align) : null, headingHtml],
+    { gap: "16px", align }
+  );
   const actionBody = input.actions?.customHtml ?? renderButtonRow({ primary: input.actions?.primary, secondary: input.actions?.secondary });
   const actionHtml =
     input.actions && (input.actions.message || actionBody.trim())
       ? renderEmailSection(
-          `${input.actions.message ? `<div style="text-align:center;font:400 15px/1.7 ${FONT_STACK};color:#475569;">${escapeHtml(input.actions.message)}</div>` : ""}${actionBody ? `<div style="margin-top:${input.actions.message ? "20px" : "0"};">${actionBody}</div>` : ""}`,
+          renderStack(
+            [input.actions.message ? renderParagraph(escapeHtml(input.actions.message), "center") : null, actionBody],
+            { gap: input.actions.message ? "20px" : "0", align: "center" }
+          ),
           { align: "center", padding: input.actions.padding ?? "32px", borderTopColor: input.actions.borderTopColor }
         )
       : "";
@@ -97,17 +107,10 @@ export function renderChattingEmailPage(input: {
     rows: [
       renderEmailSection(renderBrandLockup(input.brandLabel)),
       renderDivider(),
-      renderEmailSection(`${hero}${renderHeadingBlock({ title: input.title, eyebrow: input.eyebrow, meta: input.meta, description: input.description, align })}${heroClose}`, { align, padding: "32px 32px 24px" }),
+      renderEmailSection(heroHtml, { align, padding: "32px 32px 24px" }),
       ...(input.sections ?? []).map(renderPageSection),
       actionHtml,
-      input.footer
-        ? renderEmailSection(renderFooterBlock({ text: input.footer.text, links: input.footer.links }), {
-            align: input.footer.align ?? "center",
-            padding: input.footer.padding ?? "24px 32px",
-            background: input.footer.background,
-            borderTopColor: input.footer.borderTopColor
-          })
-        : ""
+      input.postActionsRowHtml ?? ""
     ].filter(Boolean)
   });
 }

@@ -3,6 +3,7 @@ import {
   renderMentionNotificationEmail,
   renderWeeklyPerformanceEmail
 } from "@/lib/chatly-notification-emails";
+import { renderWeeklyWidgetInstallEmail } from "@/lib/chatly-weekly-widget-install-email";
 import {
   resolveDailyDigestMailFrom,
   resolveImmediateTeamNotificationMailFrom,
@@ -20,6 +21,8 @@ export async function sendDailyDigestEmail(input: {
   return sendRenderedEmail({
     from: resolveDailyDigestMailFrom(),
     to: input.to,
+    emailCategory: "optional",
+    footerTeamName: "Chatting",
     rendered: renderDailyDigestEmail(input)
   });
 }
@@ -35,21 +38,37 @@ export async function sendMentionNotificationEmail(input: {
   return sendRenderedEmail({
     from: resolveImmediateTeamNotificationMailFrom(),
     to: input.to,
+    emailCategory: "optional",
+    footerTeamName: "Chatting",
     rendered: renderMentionNotificationEmail(input)
   });
 }
 
 export async function sendWeeklyPerformanceEmail(input: {
   to: string;
-  dateRange: string;
-  highlights: string[];
-  busiestHours: string;
-  topPages: string[];
-  reportUrl: string;
+  footerTeamName: string;
+  report: Parameters<typeof renderWeeklyPerformanceEmail>[0];
 }) {
   return sendRenderedEmail({
     from: resolveWeeklyPerformanceReportMailFrom(),
     to: input.to,
-    rendered: renderWeeklyPerformanceEmail(input)
+    emailCategory: "optional",
+    footerTeamName: input.footerTeamName,
+    rendered: renderWeeklyPerformanceEmail(input.report)
+  });
+}
+
+export async function sendWeeklyWidgetInstallEmail(input: {
+  to: string;
+  teamName: string;
+  widgetUrl: string;
+  settingsUrl: string;
+}) {
+  return sendRenderedEmail({
+    from: resolveWeeklyPerformanceReportMailFrom(),
+    to: input.to,
+    emailCategory: "optional",
+    footerTeamName: input.teamName,
+    rendered: renderWeeklyWidgetInstallEmail(input)
   });
 }

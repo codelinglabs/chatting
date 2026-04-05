@@ -65,7 +65,7 @@ describe("conversation template emails", () => {
       },
       {
         id: "msg_2",
-        sender: "founder",
+        sender: "team",
         content: "Happy to help",
         created_at: "2026-03-28T10:01:00.000Z"
       }
@@ -119,11 +119,11 @@ describe("conversation template emails", () => {
     expect(transcriptEmail.bodyText).toContain("Continue on the web: https://chatly.example/conversation/");
     expect(transcriptEmail.bodyText).toContain("Try Chatting Free →");
     expect(transcriptEmail.bodyText).toContain("utm_content=variant_a&ref=acme-support");
-    expect(transcriptEmail.bodyText).toContain("This email was sent by Acme Support using Chatting.");
+    expect(transcriptEmail.emailCategory).toBe("optional");
+    expect(transcriptEmail.footerTeamName).toBe("Acme Support");
     expect(transcriptEmail.bodyHtml).toContain("Your conversation with Acme Support");
     expect(transcriptEmail.bodyHtml).toContain("background:#F8FAFC");
     expect(transcriptEmail.bodyHtml).toContain(">Try Chatting Free →<");
-    expect(transcriptEmail.bodyHtml).toContain("https://chatly.example/privacy");
   });
 
   it("keeps growth transcript emails free of Chatting branding", async () => {
@@ -148,8 +148,7 @@ describe("conversation template emails", () => {
 
     expect(transcriptEmail.bodyText).toContain("Reply to This Email: mailto:reply+conv_1@reply.chatly.example");
     expect(transcriptEmail.bodyText).not.toContain("Chat with us on Chatting");
-    expect(transcriptEmail.bodyText).not.toContain("This email was sent by Acme Support using Chatting.");
     expect(transcriptEmail.bodyHtml).not.toContain("utm_campaign=viral_footer");
-    expect(transcriptEmail.bodyHtml).not.toContain("Privacy Policy");
+    expect(transcriptEmail.footerTeamName).toBe("Acme Support");
   });
 });

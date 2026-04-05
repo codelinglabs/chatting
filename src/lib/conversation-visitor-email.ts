@@ -1,11 +1,16 @@
 import { buildConversationTranscriptFooterContent, type TranscriptViralVariant } from "@/lib/conversation-transcript-footer";
+import { trimVisitorEmailIntro, trimVisitorEmailOutro } from "@/lib/conversation-visitor-email-copy";
 import type { ConversationFeedbackLink } from "@/lib/conversation-feedback";
 import { renderTranscriptRecapPanel } from "@/lib/conversation-recap-email";
 import { renderConversationFeedbackScale, renderConversationFeedbackText } from "@/lib/conversation-feedback-email";
 import {
+  renderEmailSection,
   joinEmailText,
   renderButtonRow,
   renderChattingEmailPage,
+  renderParagraph,
+  renderSmallText,
+  renderStack
 } from "@/lib/chatly-email-foundation";
 import {
   renderDashboardEmailTemplateFragment,
@@ -54,12 +59,13 @@ export function renderVisitorConversationEmailTemplate(
     highlightVariables?: boolean;
   }
 ) {
+  const title = resolveTitle(options.templateKey, context);
   const subject = resolveDashboardEmailTemplateValue(template.subject, context);
   const body = splitBody(template.body);
-  const intro = renderDashboardEmailTemplateFragment(body.intro, context, {
+  const intro = renderDashboardEmailTemplateFragment(trimVisitorEmailIntro(body.intro, title), context, {
     highlightVariables: options.highlightVariables
   });
-  const outro = renderDashboardEmailTemplateFragment(body.outro, context, {
+  const outro = renderDashboardEmailTemplateFragment(trimVisitorEmailOutro(body.outro), context, {
     highlightVariables: options.highlightVariables
   });
   const viralFooter = buildConversationTranscriptFooterContent({
@@ -107,20 +113,46 @@ export function renderVisitorConversationEmailTemplate(
       primary: footerLinks?.primary,
       secondary: footerLinks?.secondary
     });
-  const legalText = viralFooter.legal?.text ?? "";
+  const actionMessage =
+    options.templateKey === "satisfaction_survey"
+      ? "Click a rating above — it only takes a second."
+      : /{{conversation_link}}|reply to this email/i.test(template.body)
+        ? null
+        : "Need more help? Continue this conversation anytime.";
+  const viralFooterRowHtml = viralFooter.viral
+    ? renderEmailSection(
+        renderStack(
+          [
+            renderParagraph(escapeHtml(viralFooter.viral.hookText), "center"),
+            renderSmallText(
+              escapeHtml(viralFooter.viral.brandText).replace(
+                "Chatting",
+                "<strong style=\"color:#475569;\">Chatting</strong>"
+              ),
+              "center"
+            ),
+            renderButtonRow({ primary: { href: viralFooter.viral.href, label: viralFooter.viral.ctaLabel } })
+          ],
+          { gap: "16px", align: "center" }
+        ),
+        {
+          align: "center",
+          padding: "28px 32px",
+          background: "#F8FAFC",
+          borderTopColor: "#E2E8F0"
+        }
+      )
+    : null;
   const bodyText = joinEmailText([
-    resolveTitle(options.templateKey, context),
+    title,
     intro.text,
     options.templateKey === "offline_reply" || options.templateKey === "follow_up_email"
       ? context.transcript || undefined
       : undefined,
     outro.text,
-    options.templateKey === "satisfaction_survey"
-      ? "Click a rating above — it only takes a second."
-      : "Need more help? Continue this conversation anytime.",
+    actionMessage,
     textCta,
-    viralFooter.viral?.text ?? "",
-    legalText
+    viralFooter.viral?.text ?? ""
   ]);
 
   return {
@@ -131,13 +163,13 @@ export function renderVisitorConversationEmailTemplate(
         options.templateKey === "satisfaction_survey"
           ? `We'd love your feedback on your recent chat with ${context.teamName}.`
           : `${context.teamName} sent you an update about your conversation.`,
-      title: resolveTitle(options.templateKey, context),
+      title,
       hero: { label: context.teamName, avatarUrl: options.teamAvatarUrl },
       sections: [
         intro.html
           ? {
               kind: "html" as const,
-              html: `<div style="font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;">${intro.html}</div>`,
+              html: renderParagraph(intro.html),
               padding: "0 32px 24px"
             }
           : null,
@@ -145,41 +177,17 @@ export function renderVisitorConversationEmailTemplate(
         outro.html
           ? {
               kind: "html" as const,
-              html: `<div style="font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;">${outro.html}</div>`,
+              html: renderParagraph(outro.html),
               padding: "0 32px 24px"
-            }
-          : null,
-        viralFooter.viral
-          ? {
-              kind: "html" as const,
-              html: `<div style="text-align:center;font:400 14px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;">${escapeHtml(
-                viralFooter.viral.hookText
-              )}</div><div style="margin-top:6px;text-align:center;font:400 13px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#64748B;">${escapeHtml(
-                viralFooter.viral.brandText
-              ).replace("Chatting", "<strong style=\"color:#475569;\">Chatting</strong>")}</div><div style="margin-top:16px;text-align:center;">${renderButtonRow({
-                primary: { href: viralFooter.viral.href, label: viralFooter.viral.ctaLabel }
-              })}</div>`,
-              align: "center" as const,
-              padding: "28px 32px",
-              background: "#F8FAFC",
-              borderTopColor: "#E2E8F0"
             }
           : null
       ].filter((section): section is NonNullable<typeof section> => Boolean(section)),
       actions: {
-        message:
-          options.templateKey === "satisfaction_survey"
-            ? "Click a rating below — it only takes a second."
-            : "Need more help? Continue this conversation anytime.",
+        message: actionMessage,
         customHtml: callToAction,
         borderTopColor: "#F1F5F9"
       },
-      footer: viralFooter.legal
-        ? {
-            text: viralFooter.legal.attributionText,
-            links: [{ label: viralFooter.legal.privacyLabel, href: viralFooter.legal.privacyHref }]
-          }
-        : null
+      postActionsRowHtml: viralFooterRowHtml
     })
   };
 }

@@ -3,6 +3,7 @@ import {
   renderTrialEndingReminderEmail,
   renderTrialExpiredEmail
 } from "@/lib/chatly-marketing-emails";
+import { getPublicAppUrl } from "@/lib/env";
 import {
   resolvePrimaryBrandHelloMailFrom,
   resolveProductUpdatesMailFrom
@@ -20,6 +21,8 @@ export async function sendTrialEndingReminderEmail(input: {
   return sendRenderedEmail({
     from: resolvePrimaryBrandHelloMailFrom(),
     to: input.to,
+    emailCategory: "optional",
+    footerTeamName: "Chatting",
     rendered: renderTrialEndingReminderEmail(input)
   });
 }
@@ -32,6 +35,8 @@ export async function sendTrialExpiredEmail(input: {
   return sendRenderedEmail({
     from: resolvePrimaryBrandHelloMailFrom(),
     to: input.to,
+    emailCategory: "optional",
+    footerTeamName: "Chatting",
     rendered: renderTrialExpiredEmail(input)
   });
 }
@@ -42,12 +47,17 @@ export async function sendProductUpdateEmail(input: {
   featureDescription: string;
   monthLabel: string;
   tryItUrl: string;
-  changelogUrl: string;
+  changelogUrl?: string;
   additionalUpdates: string[];
 }) {
   return sendRenderedEmail({
     from: resolveProductUpdatesMailFrom(),
     to: input.to,
-    rendered: renderProductUpdateEmail(input)
+    emailCategory: "optional",
+    footerTeamName: "Chatting",
+    rendered: renderProductUpdateEmail({
+      ...input,
+      changelogUrl: input.changelogUrl ?? `${getPublicAppUrl()}/changelog`
+    })
   });
 }

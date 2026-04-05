@@ -12,6 +12,8 @@ type SendRenderedEmailInput = {
   from?: string;
   replyTo?: string | null;
   attachments?: EmailAttachment[];
+  emailCategory?: "critical" | "optional";
+  footerTeamName?: string | null;
   rendered: RenderedEmail;
 };
 

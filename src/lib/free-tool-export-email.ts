@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
 import { buildAbsoluteUrl } from "@/lib/blog-utils";
-import { renderChattingEmailPage } from "@/lib/chatly-email-foundation";
+import { renderChattingEmailPage, renderParagraph, renderSmallText, renderStack } from "@/lib/chatly-email-foundation";
 import type { EmailAttachment } from "@/lib/email-mime";
 import { getFreeToolBySlug } from "@/lib/free-tools-data";
 import { formatPercentage, formatWholeCurrency, formatWholeNumber } from "@/lib/live-chat-roi";
@@ -110,19 +110,12 @@ function buildReport(toolSlug: string, payload: unknown) {
       sections: [
         {
           kind: "panel",
-          html: lines
-            .map(
-              (line) =>
-                `<div style="margin-top:10px;font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;word-break:normal;word-wrap:normal;overflow-wrap:normal;hyphens:none;">${escapeHtml(
-                  line
-                )}</div>`
-            )
-            .join(""),
+          html: renderStack(lines.map((line) => renderParagraph(escapeHtml(line))), { gap: "10px" }),
           padding: "0 32px 24px"
         },
         {
           kind: "html",
-          html: `<div style="text-align:center;font:400 13px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#64748B;">A text export is attached to this email.</div>`,
+          html: renderSmallText("A text export is attached to this email.", "center"),
           align: "center",
           padding: "0 32px 32px"
         }
@@ -143,6 +136,8 @@ export async function sendFreeToolExportEmail(input: {
   await sendRenderedEmail({
     from: resolvePrimaryBrandHelloMailFrom(),
     to: input.email,
+    emailCategory: "critical",
+    footerTeamName: "Chatting",
     rendered: report,
     attachments: [report.attachment]
   });

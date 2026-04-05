@@ -2,58 +2,25 @@ import { buildActivation, buildHealth } from "@/lib/data/dashboard-growth-activa
 import { getDashboardBillingSummary } from "@/lib/data/billing";
 import { mapSite, querySites } from "@/lib/data/shared";
 import { sendActivationReminderEmail, sendExpansionReminderEmail, sendHealthReminderEmail } from "@/lib/growth-outreach-email";
+import { getGrowthDeliverySettings, maybeSendGrowthEmail } from "@/lib/growth-outreach-shared";
 import {
   getActivationReminderKey,
-  isGrowthNudgeDue,
   shouldSendAnalyticsExpansionReminder,
   shouldSendHealthReminder,
   shouldSendTeamExpansionReminder
 } from "@/lib/growth-outreach-rules";
 import { getDashboardHomeResponseMetrics } from "@/lib/repositories/dashboard-home-repository";
 import { getDashboardGrowthSnapshot } from "@/lib/repositories/dashboard-growth-repository";
-import {
-  findGrowthEmailNudgeRow,
-  upsertGrowthEmailNudgeRow
-} from "@/lib/repositories/growth-email-nudges-repository";
-import { findNotificationSettingsRow } from "@/lib/repositories/settings-repository";
 import { findAuthUserById } from "@/lib/repositories/auth-repository";
 import { isSiteWidgetInstalled } from "@/lib/site-installation";
-import { optionalText } from "@/lib/utils";
 
 function roundToWhole(value: string | null | undefined) {
   return value == null ? null : Math.round(Number(value));
 }
 
-async function maybeSendGrowthEmail(
-  userId: string,
-  nudgeKey: string,
-  cooldownHours: number,
-  send: () => Promise<void>
-) {
-  const existing = await findGrowthEmailNudgeRow(userId, nudgeKey);
-  if (!isGrowthNudgeDue(existing?.last_sent_at ?? null, cooldownHours)) {
-    return;
-  }
-
-  await send();
-  await upsertGrowthEmailNudgeRow(userId, nudgeKey);
-}
-
 async function getSiteForGrowthEmails(siteId: string) {
   const result = await querySites("s.id = $1", [siteId], "LIMIT 1");
   return result.rows[0] ? mapSite(result.rows[0]) : null;
-}
-
-async function getGrowthDeliverySettings(userId: string) {
-  const row = await findNotificationSettingsRow(userId);
-  if (!row) {
-    return null;
-  }
-
-  return {
-    emailNotifications: row.email_notifications ?? true,
-    notificationEmail: optionalText(row.notification_email) || row.email
-  };
 }
 
 export async function maybeSendSiteLifecycleEmails(siteId: string) {

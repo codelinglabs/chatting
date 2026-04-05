@@ -41,7 +41,8 @@ describe("growth outreach rules", () => {
   it("flags team and analytics expansion moments", () => {
     expect(shouldSendTeamExpansionReminder("starter", 2)).toBe(true);
     expect(shouldSendTeamExpansionReminder("growth", 4)).toBe(false);
-    expect(shouldSendAnalyticsExpansionReminder("starter", 10, 1)).toBe(true);
+    expect(shouldSendAnalyticsExpansionReminder("starter", 39, 1)).toBe(false);
+    expect(shouldSendAnalyticsExpansionReminder("starter", 40, 1)).toBe(true);
     expect(shouldSendAnalyticsExpansionReminder("growth", 3, 2)).toBe(false);
   });
 });

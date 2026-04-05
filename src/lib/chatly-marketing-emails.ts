@@ -1,4 +1,13 @@
-import { joinEmailText, renderChattingEmailPage } from "@/lib/chatly-email-foundation";
+import {
+  joinEmailText,
+  renderBulletList,
+  renderChattingEmailPage,
+  renderLabelText,
+  renderParagraph,
+  renderSmallText,
+  renderStack,
+  renderTitleText
+} from "@/lib/chatly-email-foundation";
 import { formatBillingPriceLabel, getBillingPlanDefinition } from "@/lib/billing-plans";
 import { escapeHtml } from "@/lib/utils";
 
@@ -30,7 +39,7 @@ export function renderTrialEndingReminderEmail(input: {
         { kind: "metrics", metrics: input.metrics, padding: "0 26px 24px" },
         {
           kind: "html",
-          html: `<div style="text-align:center;font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;">Keep the momentum going. Upgrade now and never miss another visitor question.</div>`,
+          html: renderParagraph("Keep the momentum going. Upgrade now and never miss another visitor question.", "center"),
           padding: "0 32px 20px"
         }
       ],
@@ -49,7 +58,10 @@ export function renderTrialExpiredEmail(input: {
   reactivateUrl: string;
 }): RenderedEmail {
   const growthPlan = getBillingPlanDefinition("growth");
-  const growthPrice = `${growthPlan.name} - ${formatBillingPriceLabel("growth", "monthly")}`;
+  const growthPricing = `Starts at ${formatBillingPriceLabel("growth", "monthly").replace(
+    "for 1-3 members",
+    "for up to 3 members"
+  )}`;
   const growthHighlights = growthPlan.marketingFeatures.slice(0, 3);
 
   return {
@@ -57,7 +69,7 @@ export function renderTrialExpiredEmail(input: {
     bodyText: joinEmailText([
       `Your trial has ended\n\nHey ${input.firstName},`,
       "Your Chatting trial ended today. Your widget is now paused, but all your conversations and settings are safe.",
-      `Ready to keep chatting?\n${growthPrice}\n${growthHighlights.map((item) => `• ${item}`).join("\n")}`,
+      `Ready to keep chatting?\nGrowth pricing\n${growthPricing}\n${growthHighlights.map((item) => `• ${item}`).join("\n")}`,
       `Reactivate Account: ${input.reactivateUrl}`,
       "Not ready? Your data stays safe for 30 days."
     ]),
@@ -68,16 +80,19 @@ export function renderTrialExpiredEmail(input: {
       sections: [
         {
           kind: "panel",
-          html: `<div style="font:600 15px/1.6 Georgia,'Times New Roman',serif;color:#0F172A;">${escapeHtml(
-            growthPrice
-          )}</div><div style="margin-top:10px;font:400 14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;">${growthHighlights
-            .map((item) => `&#8226; ${escapeHtml(item)}`)
-            .join("<br />")}</div>`,
+          html: renderStack(
+            [
+              renderLabelText("Growth pricing"),
+              renderParagraph(escapeHtml(growthPricing)),
+              renderBulletList(growthHighlights)
+            ],
+            { gap: "10px" }
+          ),
           padding: "0 32px 24px"
         },
         {
           kind: "html",
-          html: `<div style="text-align:center;font:400 13px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#64748B;">Not ready? Your data stays safe for 30 days.</div>`,
+          html: renderSmallText("Not ready? Your data stays safe for 30 days.", "center"),
           padding: "0 32px 32px"
         }
       ],
@@ -110,18 +125,15 @@ export function renderProductUpdateEmail(input: {
       sections: [
         {
           kind: "panel",
-          html: `<div style="font:600 18px/1.4 Georgia,'Times New Roman',serif;color:#0F172A;">&#128640; ${escapeHtml(
-            input.featureName
-          )}</div><div style="margin-top:12px;font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;">${escapeHtml(
-            input.featureDescription
-          )}</div>`,
+          html: renderStack(
+            [renderTitleText(`&#128640; ${escapeHtml(input.featureName)}`), renderParagraph(escapeHtml(input.featureDescription))],
+            { gap: "12px" }
+          ),
           padding: "0 32px 24px"
         },
         {
           kind: "panel",
-          html: `<div style="font:600 13px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;letter-spacing:0.08em;text-transform:uppercase;color:#64748B;">Also in this update</div><div style="margin-top:10px;font:400 15px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#475569;">${input.additionalUpdates
-            .map((item) => `<div style="margin-top:8px;">&#8226; ${escapeHtml(item)}</div>`)
-            .join("")}</div>`,
+          html: renderStack([renderLabelText("Also in this update"), renderBulletList(input.additionalUpdates)], { gap: "10px" }),
           padding: "0 32px 24px"
         }
       ],

@@ -14,6 +14,7 @@ import { renderVisitorConversationEmailTemplate } from "@/lib/conversation-visit
 import { getDashboardEmailTemplateSettings } from "@/lib/data/settings";
 import { getPublicAppUrl } from "@/lib/env";
 import { getReplyDomain } from "@/lib/env.server";
+import { buildEmailUnsubscribeUrl } from "@/lib/email-unsubscribe";
 import { type DashboardEmailTemplateKey } from "@/lib/email-templates";
 import { resolveConversationTemplateMailFrom } from "@/lib/mail-from-addresses";
 import {
@@ -53,7 +54,7 @@ function formatTranscript(rows: Awaited<ReturnType<typeof listConversationTransc
   const formatter = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit" });
   return rows
     .map((message) => {
-      const author = message.sender === "founder" ? agentName : "Visitor";
+      const author = message.sender === "team" ? agentName : "Visitor";
       const content = message.content.trim() || "(attachment only)";
       return `[${formatter.format(new Date(message.created_at))}] ${author}: ${content}`;
     })
@@ -147,7 +148,7 @@ export async function sendConversationTemplateEmail(input: SendConversationTempl
       transcriptRows ?? (await listConversationTranscriptRows(input.conversationId)),
       agentName
     ),
-    unsubscribeLink: appUrl
+    unsubscribeLink: buildEmailUnsubscribeUrl(conversation.visitorEmail)
   };
   const rendered =
     input.templateKey === "conversation_transcript"
@@ -188,6 +189,8 @@ export async function sendConversationTemplateEmail(input: SendConversationTempl
       from: resolveConversationTemplateMailFrom(input.templateKey, conversation.siteName),
       to: conversation.visitorEmail,
       replyTo,
+      emailCategory: "optional",
+      footerTeamName: conversation.siteName,
       rendered,
       attachments: input.attachments ?? []
     });
