@@ -73,6 +73,7 @@ export function DashboardSettingsPage({
         onSetSelectedInterval: billing.setSelectedBillingInterval,
         onSyncBilling: () => void billing.syncBillingFromStripe(),
         onUpdateEmail: form.updateEmail,
+        onUpdateContacts: form.updateContacts,
         onUpdateAutomation: form.updateAutomation,
         onUpdateNotifications: form.updateNotifications,
         onUpdateProfile: form.updateProfile,

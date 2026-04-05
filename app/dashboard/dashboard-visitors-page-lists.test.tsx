@@ -34,9 +34,20 @@ describe("dashboard visitors page lists", () => {
       onSelectVisitor
     });
     const buttons = collectElements(liveTree, (element) => element.type === "button");
+    const idleLiveHtml = renderToStaticMarkup(
+      <LiveVisitorsSection
+        liveVisitors={[createVisitor()]}
+        refreshing={false}
+        onRefresh={vi.fn()}
+        onOpenConversation={vi.fn()}
+        onSelectVisitor={vi.fn()}
+      />
+    );
 
     expect(renderToStaticMarkup(<EmptyVisitorsCard refreshingFilters />)).toContain("No visitors found");
     expect(renderToStaticMarkup(liveTree)).toContain("Live now");
+    expect(renderToStaticMarkup(liveTree)).toContain("Auto-updating");
+    expect(idleLiveHtml).not.toContain("Auto-updating");
     buttons[0]?.props.onClick();
     buttons[1]?.props.onClick();
     buttons[2]?.props.onClick();

@@ -1,5 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams()
+}));
+
 vi.mock("./dashboard-shell", () => ({
   useDashboardNavigation: () => ({
     navigate: vi.fn()
@@ -84,6 +88,7 @@ describe("dashboard visitors page", () => {
     );
 
     expect(html).toContain("Live now");
+    expect(html).toContain("All contacts");
     expect(html).toContain("Recent visitors");
     expect(html).toContain("Alex");
     expect(html).toContain("Emma");

@@ -8,6 +8,11 @@ const entry = (period: string, title: string, summary: string, bullets: string[]
 });
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
+  entry("Early April 2026", "People now gives teams real contact memory, not just live sessions", "Chatting can now keep track of who a visitor is across conversations so teams have useful context the moment they open the inbox.", [
+    "Contact profiles now bring together identity, activity, tags, notes, conversations, and custom fields in one place.",
+    "Teams can create and manage their own contact statuses and custom fields from settings.",
+    "Notes, tags, and custom field values can now be updated directly from each contact profile."
+  ]),
   entry("Early April 2026", "Automation can now do much more before a teammate jumps in", "Teams can now shape more of the visitor journey from settings, with better routing, FAQ suggestions, and proactive outreach that feel much closer to the live widget experience.", [
     "Automation settings now cover offline behavior, routing rules, FAQ suggestions, and page-based proactive messages in one place.",
     "FAQ suggestions can match a visitor's first message and show help before handoff.",

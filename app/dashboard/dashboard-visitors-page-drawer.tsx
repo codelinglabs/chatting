@@ -1,22 +1,14 @@
 "use client";
 
 import { formatDateTime, formatRelativeTime } from "@/lib/utils";
+import {
+  SidebarDivider,
+  SidebarKeyValueRows,
+  SidebarSection
+} from "./dashboard-side-panel-ui";
 import { DashboardVisitorNoteEditor } from "./dashboard-visitor-note-editor";
 import { ChevronRightIcon, XIcon } from "./dashboard-ui";
 import { formatDuration, type VisitorRecord } from "./visitors-data";
-
-function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section>
-      <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.05em] text-slate-400">{title}</h3>
-      <div className="space-y-3">{children}</div>
-    </section>
-  );
-}
-
-function Rule() {
-  return <div className="h-px bg-slate-200" />;
-}
 
 export function VisitorDetailsDrawer({
   visitor,
@@ -33,6 +25,25 @@ export function VisitorDetailsDrawer({
     return null;
   }
 
+  const contactRows = [
+    { label: "Record", value: visitor.email ? "Email" : "Session" },
+    { label: "Session", value: visitor.sessionId },
+    { label: "First seen", value: formatDateTime(visitor.firstSeenAt) },
+    { label: "Last seen", value: formatRelativeTime(visitor.lastSeenAt) },
+    { label: "Conversations", value: `${visitor.conversationCount}` }
+  ] as const;
+  const sessionRows = [
+    { label: "Page", value: visitor.currentPage, valueClassName: "text-blue-600" },
+    { label: "Referrer", value: visitor.source },
+    { label: "Location", value: visitor.location || "Unknown" },
+    { label: "Browser", value: visitor.browser },
+    { label: "Timezone", value: visitor.timezone || "Unknown" },
+    {
+      label: "Time on site",
+      value: formatDuration(visitor.timeOnSiteSeconds)
+    }
+  ] as const;
+
   return (
     <div className="fixed inset-0 z-40 bg-slate-900/25" onClick={onClose}>
       <aside
@@ -40,7 +51,7 @@ export function VisitorDetailsDrawer({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-5">
-          <p className="text-base font-medium text-slate-900">Visitor details</p>
+          <p className="text-base font-medium text-slate-900">Contact profile</p>
           <button
             type="button"
             onClick={onClose}
@@ -60,26 +71,21 @@ export function VisitorDetailsDrawer({
             <p className="mt-1 text-[13px] text-slate-500">{visitor.email || "Anonymous visitor"}</p>
           </section>
 
-          <Rule />
+          <SidebarDivider />
 
-          <DetailSection title="Current session">
-            {[
-              ["Page", visitor.currentPage],
-              ["Referrer", visitor.source],
-              ["Location", visitor.location || "Unknown"],
-              ["Browser", visitor.browser],
-              ["Time on site", formatDuration(visitor.timeOnSiteSeconds)]
-            ].map(([label, value]) => (
-              <div key={label} className="flex items-start justify-between gap-3 text-[13px]">
-                <span className="text-slate-500">{label}</span>
-                <span className="text-right text-slate-900">{value}</span>
-              </div>
-            ))}
-          </DetailSection>
+          <SidebarSection title="Contact profile">
+            <SidebarKeyValueRows rows={contactRows} />
+          </SidebarSection>
 
-          <Rule />
+          <SidebarDivider />
 
-          <DetailSection title="Page history">
+          <SidebarSection title="Current session">
+            <SidebarKeyValueRows rows={sessionRows} />
+          </SidebarSection>
+
+          <SidebarDivider />
+
+          <SidebarSection title="Page history">
             {visitor.pageHistory.length ? (
               visitor.pageHistory.map((page, index) => (
                 <div key={`${page.page}-${page.seenAt}-${index}`} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
@@ -93,32 +99,36 @@ export function VisitorDetailsDrawer({
             ) : (
               <p className="text-sm text-slate-400">No page history captured yet.</p>
             )}
-          </DetailSection>
+          </SidebarSection>
 
-          <Rule />
+          <SidebarDivider />
 
-          <DetailSection title="Visit history">
-            {visitor.visitHistory.map((visit) => (
-              <button
-                key={visit.conversationId}
-                type="button"
-                onClick={() => onNavigateVisit(visit.conversationId)}
-                className="block w-full rounded-lg bg-slate-50 px-3 py-3 text-left transition hover:bg-slate-100"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-mono text-[13px] text-blue-600">{visit.page}</span>
-                  <span className="text-[13px] text-slate-500">{formatRelativeTime(visit.lastSeenAt)}</span>
-                </div>
-                <p className="mt-1 text-xs text-slate-400">
-                  Started {formatDateTime(visit.startedAt)} · Source {visit.source}
-                </p>
-              </button>
-            ))}
-          </DetailSection>
+          <SidebarSection title="Conversation history">
+            {visitor.visitHistory.length ? (
+              visitor.visitHistory.map((visit) => (
+                <button
+                  key={visit.conversationId}
+                  type="button"
+                  onClick={() => onNavigateVisit(visit.conversationId)}
+                  className="block w-full rounded-lg bg-slate-50 px-3 py-3 text-left transition hover:bg-slate-100"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-mono text-[13px] text-blue-600">{visit.page}</span>
+                    <span className="text-[13px] text-slate-500">{formatRelativeTime(visit.lastSeenAt)}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Started {formatDateTime(visit.startedAt)} · Source {visit.source}
+                  </p>
+                </button>
+              ))
+            ) : (
+              <p className="text-sm text-slate-400">No conversation history captured yet.</p>
+            )}
+          </SidebarSection>
 
-          <Rule />
+          <SidebarDivider />
 
-          <DetailSection title="Conversations">
+          <SidebarSection title="Latest conversation">
             {visitor.latestConversationId ? (
               <>
                 <button
@@ -138,11 +148,11 @@ export function VisitorDetailsDrawer({
                 This visitor is browsing live, but they haven&apos;t started a conversation yet.
               </p>
             )}
-          </DetailSection>
+          </SidebarSection>
 
-          <Rule />
+          <SidebarDivider />
 
-          <DetailSection title="Tags">
+          <SidebarSection title="Tags">
             <div className="flex flex-wrap gap-2">
               {visitor.tags.length ? (
                 visitor.tags.map((tag) => (
@@ -154,17 +164,17 @@ export function VisitorDetailsDrawer({
                 <span className="text-sm text-slate-400">No tags yet.</span>
               )}
             </div>
-          </DetailSection>
+          </SidebarSection>
 
-          <Rule />
+          <SidebarDivider />
 
-          <DetailSection title="Notes">
+          <SidebarSection title="Shared visitor notes">
             <DashboardVisitorNoteEditor
               siteId={visitor.siteId}
               sessionId={visitor.sessionId}
               email={visitor.email}
             />
-          </DetailSection>
+          </SidebarSection>
         </div>
       </aside>
     </div>

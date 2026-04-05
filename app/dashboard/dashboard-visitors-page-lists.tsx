@@ -97,10 +97,12 @@ export function LiveVisitorsSection({
             <p className="text-[15px] font-medium text-slate-900">Live now</p>
             <p className="text-sm text-slate-500">{liveVisitors.length} visitors</p>
           </div>
-          <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-            <RefreshIcon className="h-3 w-3 animate-spin [animation-duration:2.5s]" />
-            Auto-updating
-          </span>
+          {refreshing ? (
+            <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+              <RefreshIcon className="h-3 w-3 animate-spin [animation-duration:2.5s]" />
+              Auto-updating
+            </span>
+          ) : null}
         </div>
 
         <button

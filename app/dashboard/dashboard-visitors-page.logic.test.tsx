@@ -64,6 +64,7 @@ async function loadVisitorsPage() {
   const exportVisitors = vi.fn();
 
   vi.doMock("react", () => reactMocks.moduleFactory());
+  vi.doMock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams() }));
   vi.doMock("./dashboard-shell", () => ({ useDashboardNavigation: () => ({ navigate }) }));
   vi.doMock("./dashboard-visitors-page-sections", () => ({
     VisitorsToolbar: (props: unknown) => ((captures.toolbar = props), <div>toolbar</div>),

@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { ConversationSummary, VisitorPresenceSession } from "@/lib/types";
+import { DashboardContactsPanel } from "./dashboard-contacts-panel";
+import {
+  DashboardPeopleTabs,
+  type DashboardPeopleTab
+} from "./dashboard-people-tabs";
 import { useDashboardNavigation } from "./dashboard-shell";
 import {
   buildVisitorRecords,
@@ -29,6 +35,7 @@ export function DashboardVisitorsPage({
   initialConversations: ConversationSummary[];
   initialLiveSessions: VisitorPresenceSession[];
 }) {
+  const searchParams = useSearchParams();
   const dashboardNavigation = useDashboardNavigation();
   const { conversations, liveSessions, refreshing, refreshVisitors } = useDashboardVisitorsData({
     initialConversations,
@@ -44,6 +51,12 @@ export function DashboardVisitorsPage({
   const [filters, setFilters] = useState<VisitorFilterState>(DEFAULT_VISITOR_FILTERS);
   const [draftFilters, setDraftFilters] = useState<VisitorFilterState>(DEFAULT_VISITOR_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
+  const requestedTab =
+    searchParams.get("tab") === "contacts" || searchParams.get("contact")
+      ? "contacts"
+      : "live";
+  const [activeTab, setActiveTab] = useState<DashboardPeopleTab>(requestedTab);
+  const deeplinkContactId = searchParams.get("contact");
 
   const visitors = buildVisitorRecords(conversations, liveSessions);
   const filteredVisitors = sortVisitors(
@@ -82,6 +95,10 @@ export function DashboardVisitorsPage({
     }
   }, [selectedVisitorId, visitors]);
 
+  useEffect(() => {
+    setActiveTab(requestedTab);
+  }, [requestedTab]);
+
   function toggleSort(nextKey: string) {
     if (sortKey === nextKey) {
       setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
@@ -101,65 +118,80 @@ export function DashboardVisitorsPage({
     dashboardNavigation?.navigate(`/dashboard/inbox?id=${visitor.latestConversationId}`);
   }
 
+  function navigateConversation(conversationId: string) {
+    dashboardNavigation?.navigate(`/dashboard/inbox?id=${conversationId}`);
+  }
+
   return (
     <div className="space-y-6">
-      <VisitorsToolbar
-        searchQuery={searchQuery}
-        primaryFilter={primaryFilter}
-        timeRange={timeRange}
-        setSearchQuery={setSearchQuery}
-        setPrimaryFilter={setPrimaryFilter}
-        setTimeRange={setTimeRange}
-        onToggleFilters={() => {
-          setDraftFilters(filters);
-          setShowFilters((current) => !current);
-        }}
-      />
+      <DashboardPeopleTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <VisitorsFiltersPanel
-        visible={showFilters}
-        draftFilters={draftFilters}
-        setDraftFilters={setDraftFilters}
-        clearFilters={() => {
-          setDraftFilters(DEFAULT_VISITOR_FILTERS);
-          setFilters(DEFAULT_VISITOR_FILTERS);
-        }}
-        applyFilters={() => {
-          setFilters(draftFilters);
-          setShowFilters(false);
-        }}
-      />
+      {activeTab === "live" ? (
+        <>
+          <VisitorsToolbar
+            searchQuery={searchQuery}
+            primaryFilter={primaryFilter}
+            timeRange={timeRange}
+            setSearchQuery={setSearchQuery}
+            setPrimaryFilter={setPrimaryFilter}
+            setTimeRange={setTimeRange}
+            onToggleFilters={() => {
+              setDraftFilters(filters);
+              setShowFilters((current) => !current);
+            }}
+          />
 
-      <LiveVisitorsSection
-        liveVisitors={liveVisitors}
-        refreshing={refreshing}
-        onRefresh={() => void refreshVisitors(true)}
-        onOpenConversation={openConversation}
-        onSelectVisitor={setSelectedVisitorId}
-      />
+          <VisitorsFiltersPanel
+            visible={showFilters}
+            draftFilters={draftFilters}
+            setDraftFilters={setDraftFilters}
+            clearFilters={() => {
+              setDraftFilters(DEFAULT_VISITOR_FILTERS);
+              setFilters(DEFAULT_VISITOR_FILTERS);
+            }}
+            applyFilters={() => {
+              setFilters(draftFilters);
+              setShowFilters(false);
+            }}
+          />
 
-      <RecentVisitorsSection
-        filteredVisitors={filteredVisitors}
-        paginatedVisitors={paginatedVisitors}
-        sortKey={sortKey}
-        sortDirection={sortDirection}
-        refreshingFilters={filtersActive}
-        safeCurrentPage={safeCurrentPage}
-        pageCount={pageCount}
-        currentPage={safeCurrentPage}
-        onExport={() => exportVisitors(filteredVisitors)}
-        onToggleSort={toggleSort}
-        onOpenConversation={openConversation}
-        onSelectVisitor={setSelectedVisitorId}
-        setCurrentPage={setCurrentPage}
-      />
+          <LiveVisitorsSection
+            liveVisitors={liveVisitors}
+            refreshing={refreshing}
+            onRefresh={() => void refreshVisitors(true)}
+            onOpenConversation={openConversation}
+            onSelectVisitor={setSelectedVisitorId}
+          />
 
-      <VisitorDetailsDrawer
-        visitor={selectedVisitor}
-        onClose={() => setSelectedVisitorId(null)}
-        onOpenConversation={() => selectedVisitor && openConversation(selectedVisitor)}
-        onNavigateVisit={(conversationId) => dashboardNavigation?.navigate(`/dashboard/inbox?id=${conversationId}`)}
-      />
+          <RecentVisitorsSection
+            filteredVisitors={filteredVisitors}
+            paginatedVisitors={paginatedVisitors}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            refreshingFilters={filtersActive}
+            safeCurrentPage={safeCurrentPage}
+            pageCount={pageCount}
+            currentPage={safeCurrentPage}
+            onExport={() => exportVisitors(filteredVisitors)}
+            onToggleSort={toggleSort}
+            onOpenConversation={openConversation}
+            onSelectVisitor={setSelectedVisitorId}
+            setCurrentPage={setCurrentPage}
+          />
+
+          <VisitorDetailsDrawer
+            visitor={selectedVisitor}
+            onClose={() => setSelectedVisitorId(null)}
+            onOpenConversation={() => selectedVisitor && openConversation(selectedVisitor)}
+            onNavigateVisit={navigateConversation}
+          />
+        </>
+      ) : (
+        <DashboardContactsPanel
+          deeplinkContactId={deeplinkContactId}
+          onNavigateConversation={navigateConversation}
+        />
+      )}
     </div>
   );
 }

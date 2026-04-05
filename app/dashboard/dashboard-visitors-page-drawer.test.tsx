@@ -48,8 +48,10 @@ describe("visitor details drawer", () => {
     });
     const buttons = collectElements(tree, (element) => element.type === "button");
 
-    expect(renderToStaticMarkup(tree)).toContain("Visitor details");
+    expect(renderToStaticMarkup(tree)).toContain("Contact profile");
     expect(renderToStaticMarkup(tree)).toContain("Open latest conversation");
+    expect(renderToStaticMarkup(tree)).toContain("Shared visitor notes");
+    expect(renderToStaticMarkup(tree)).toContain("Timezone");
     expect(renderToStaticMarkup(tree)).toContain("notes:site_1:session_1");
 
     (tree as ReactElement).props.onClick();
@@ -82,5 +84,6 @@ describe("visitor details drawer", () => {
     expect(html).toContain("haven&#x27;t started a conversation yet");
     expect(html).toContain("No tags yet.");
     expect(html).toContain("No page history captured yet.");
+    expect(html).toContain("No conversation history captured yet.");
   });
 });

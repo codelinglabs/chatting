@@ -10,6 +10,7 @@ export function createVisitor(overrides: Partial<VisitorRecord> = {}): VisitorRe
     email: "alex@example.com",
     location: "London, England, UK",
     browser: "Chrome on macOS",
+    timezone: "Europe/London",
     currentPage: "/pricing",
     source: "google.com",
     sourceCategory: "google",

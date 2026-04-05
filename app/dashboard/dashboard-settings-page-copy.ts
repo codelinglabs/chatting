@@ -4,6 +4,8 @@ export function getSettingsPageCopy(activeSection: SettingsSection) {
   switch (activeSection) {
     case "profile":
       return { title: "Profile", subtitle: "Manage your personal information and preferences" };
+    case "contacts":
+      return { title: "Contacts", subtitle: "Customize statuses and custom fields for people you talk to" };
     case "automation":
       return { title: "Automation", subtitle: "Handle the repetitive stuff automatically" };
     case "notifications":

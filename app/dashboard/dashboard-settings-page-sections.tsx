@@ -8,6 +8,7 @@ import type { DashboardNoticeState } from "./dashboard-controls";
 import { SettingsSaveActions } from "./dashboard-settings-save-actions";
 import { type EditableSettings, type SettingsSection } from "./dashboard-settings-shared";
 import { SettingsAutomationSection } from "./dashboard-settings-automation-section";
+import { SettingsContactsSection } from "./dashboard-settings-contacts-section";
 import { SettingsEmailSection, SettingsBillingSection } from "./dashboard-settings-email-billing-sections";
 import { SettingsNotificationsSection } from "./dashboard-settings-notifications-section";
 import { SettingsPlaceholderSection } from "./dashboard-settings-placeholder-section";
@@ -42,6 +43,7 @@ export function renderSettingsPageSection(input: {
   onSetSelectedInterval: Dispatch<SetStateAction<BillingInterval>>;
   onSyncBilling: () => void;
   onUpdateEmail: <K extends keyof EditableSettings["email"]>(key: K, value: EditableSettings["email"][K]) => void;
+  onUpdateContacts: (value: EditableSettings["contacts"]) => void;
   onUpdateAutomation: (updater: (current: DashboardAutomationSettings) => DashboardAutomationSettings) => void;
   onUpdateNotifications: <K extends keyof EditableSettings["notifications"]>(key: K, value: EditableSettings["notifications"][K]) => void;
   onUpdateReports: <K extends keyof NonNullable<EditableSettings["reports"]>>(key: K, value: NonNullable<EditableSettings["reports"]>[K]) => void;
@@ -94,6 +96,19 @@ export function renderSettingsPageSection(input: {
         onSave={input.onSave}
         onDiscard={input.onDiscard}
         onChange={input.onUpdateAutomation}
+      />
+    );
+  }
+
+  if (input.activeSection === "contacts") {
+    return (
+      <SettingsContactsSection
+        title={input.pageCopy.title}
+        subtitle={input.pageCopy.subtitle}
+        headerActions={saveActions}
+        contacts={input.draftSettings.contacts}
+        planKey={input.billing.planKey}
+        onUpdateContacts={input.onUpdateContacts}
       />
     );
   }
