@@ -2,6 +2,7 @@
 
 import { startTransition, useEffect, useState } from "react";
 import { isSiteWidgetInstalled } from "@/lib/site-installation";
+import { trackGrometricsEvent } from "@/lib/grometrics";
 import type { Site } from "@/lib/types";
 import { buildWidgetSettingsPayload } from "@/lib/widget-settings";
 import {
@@ -222,6 +223,11 @@ export function useDashboardWidgetSettings(initialSites: Site[], initialTab: Wid
       setDraftSites((current) => current.map((site) => (site.id === payload.site?.id ? payload.site : site)));
       setSaveState("saved");
       setShowSavedToast(true);
+      trackGrometricsEvent("widget_settings_saved", {
+        source: "dashboard_widget_settings",
+        launcher_position: payload.site.launcherPosition,
+        show_online_status: payload.site.showOnlineStatus
+      });
     } catch (error) {
       setSaveState("idle");
       setSaveError(widgetSaveErrorMessage(error instanceof Error ? error.message : ""));
@@ -273,6 +279,10 @@ export function useDashboardWidgetSettings(initialSites: Site[], initialTab: Wid
 
       if (!payload.detected) {
         setVerificationError(installationCheckErrorMessage(payload.error || "", Boolean(activeSite.domain)));
+      } else if (payload.site) {
+        trackGrometricsEvent("widget_installation_verified", {
+          source: "dashboard_widget_settings"
+        });
       }
     } catch (error) {
       setVerificationError(
@@ -303,6 +313,10 @@ export function useDashboardWidgetSettings(initialSites: Site[], initialTab: Wid
     try {
       await navigator.clipboard.writeText(getPlatformSnippet(activeSite, installPlatform));
       setCopiedSnippet(true);
+      trackGrometricsEvent("widget_snippet_copied", {
+        source: "dashboard_widget_settings",
+        platform: installPlatform
+      });
       window.setTimeout(() => setCopiedSnippet(false), 2000);
     } catch (_error) {}
   }

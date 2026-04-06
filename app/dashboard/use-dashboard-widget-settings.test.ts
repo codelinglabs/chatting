@@ -21,6 +21,7 @@ async function loadWidgetSettings(options?: {
 }) {
   vi.resetModules();
   const reactMocks = createMockReactHooks({ stateOverrides: options?.stateOverrides });
+  const trackGrometricsEvent = vi.fn();
   const buildPayload = vi.fn((site: { widgetTitle: string; domain: string | null }) => ({
     widgetTitle: site.widgetTitle,
     domain: site.domain
@@ -29,10 +30,11 @@ async function loadWidgetSettings(options?: {
 
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("@/lib/site-installation", () => ({ isSiteWidgetInstalled: installed }));
+  vi.doMock("@/lib/grometrics", () => ({ trackGrometricsEvent }));
   vi.doMock("@/lib/widget-settings", () => ({ buildWidgetSettingsPayload: buildPayload }));
 
   const module = await import("./use-dashboard-widget-settings");
-  return { buildPayload, installed, reactMocks, useDashboardWidgetSettings: module.useDashboardWidgetSettings };
+  return { buildPayload, installed, reactMocks, trackGrometricsEvent, useDashboardWidgetSettings: module.useDashboardWidgetSettings };
 }
 
 describe("use dashboard widget settings", () => {
@@ -63,7 +65,7 @@ describe("use dashboard widget settings", () => {
       clearTimeout: vi.fn()
     });
 
-    const { reactMocks, useDashboardWidgetSettings } = await loadWidgetSettings();
+    const { reactMocks, trackGrometricsEvent, useDashboardWidgetSettings } = await loadWidgetSettings();
 
     reactMocks.beginRender();
     let result = useDashboardWidgetSettings([createSite()]);
@@ -87,6 +89,15 @@ describe("use dashboard widget settings", () => {
     expect((globalThis.navigator as Navigator).clipboard.writeText).toHaveBeenCalledWith(
       expect.stringContaining('data-site-id="site_1"')
     );
+    expect(trackGrometricsEvent).toHaveBeenCalledWith("widget_settings_saved", {
+      source: "dashboard_widget_settings",
+      launcher_position: "right",
+      show_online_status: true
+    });
+    expect(trackGrometricsEvent).toHaveBeenCalledWith("widget_snippet_copied", {
+      source: "dashboard_widget_settings",
+      platform: "html"
+    });
     expect(reactMocks.states[14]?.current).toBe(true);
     expect(addEventListener).toHaveBeenCalledWith("beforeunload", expect.any(Function));
   });
@@ -105,7 +116,7 @@ describe("use dashboard widget settings", () => {
       clearTimeout: vi.fn()
     });
 
-    const { reactMocks, useDashboardWidgetSettings } = await loadWidgetSettings({
+    const { reactMocks, trackGrometricsEvent, useDashboardWidgetSettings } = await loadWidgetSettings({
       installed: false,
       stateOverrides: new Map([
         [1, [createSite({ widgetTitle: "Draft title" })]],
@@ -127,6 +138,9 @@ describe("use dashboard widget settings", () => {
       "/dashboard/sites/verify-installation",
       expect.objectContaining({ method: "POST" })
     );
+    expect(trackGrometricsEvent).toHaveBeenCalledWith("widget_installation_verified", {
+      source: "dashboard_widget_settings"
+    });
     expect(result.savedActiveSite?.widgetInstallVerifiedAt).toBe("2026-03-29T12:00:00.000Z");
     expect(reactMocks.states[12]?.current).toEqual(["site_1"]);
     expect(event.preventDefault).toHaveBeenCalled();

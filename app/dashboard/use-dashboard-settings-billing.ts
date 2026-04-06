@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { BillingInterval, BillingPlanKey, DashboardBillingSummary } from "@/lib/data/billing-types";
+import { trackGrometricsEvent } from "@/lib/grometrics";
 import type { DashboardNoticeState } from "./dashboard-controls";
 import { billingErrorMessage, type SettingsSection } from "./dashboard-settings-shared";
 
@@ -73,6 +74,15 @@ export function useDashboardSettingsBilling(input: {
       const body: Record<string, unknown> = { plan: planKey, interval: billingInterval };
       if (typeof seatQuantity === "number" && Number.isFinite(seatQuantity)) {
         body.seatQuantity = Math.max(1, Math.floor(seatQuantity));
+      }
+
+      if (billing.planKey === "starter" && planKey !== "starter") {
+        trackGrometricsEvent("checkout_started", {
+          plan: planKey,
+          billing: billingInterval,
+          seat_quantity: typeof body.seatQuantity === "number" ? body.seatQuantity : billing.usedSeats,
+          source: "dashboard_billing"
+        });
       }
 
       const response = await fetch("/dashboard/settings/billing/plan", {
