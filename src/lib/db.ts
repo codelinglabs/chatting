@@ -25,7 +25,7 @@ declare global {
   var __chatlyDb: ChatlyDb | undefined;
 }
 
-const SCHEMA_VERSION = "2026-04-05-contact-list-indexes";
+const SCHEMA_VERSION = "2026-04-06-ai-assist-events";
 const SCHEMA_LOCK_KEY = [20260401, 1] as const;
 
 async function createPool() {

@@ -50,6 +50,27 @@
       "when": 1775389757000,
       "tag": "0006_contact_lookup_indexes",
       "breakpoints": false
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775433600000,
+      "tag": "0007_ai_assist_events",
+      "breakpoints": false
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1775455200000,
+      "tag": "0008_ai_assist_warning_deliveries",
+      "breakpoints": false
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1775461200000,
+      "tag": "0009_ai_assist_actor_indexes",
+      "breakpoints": false
     }
   ]
 }
