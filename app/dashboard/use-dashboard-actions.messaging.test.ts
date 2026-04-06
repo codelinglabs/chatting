@@ -1,8 +1,12 @@
 const mocks = vi.hoisted(() => ({
-  postDashboardForm: vi.fn()
+  postDashboardForm: vi.fn(),
+  trackGrometricsEvent: vi.fn()
 }));
 vi.mock("./dashboard-client.api", () => ({
   postDashboardForm: mocks.postDashboardForm
+}));
+vi.mock("@/lib/grometrics", () => ({
+  trackGrometricsEvent: mocks.trackGrometricsEvent
 }));
 import {
   createConversationSummary,
@@ -50,6 +54,10 @@ function createReplyEvent(content: string, attachments: File[] = []) {
 }
 
 describe("dashboard actions messaging handlers", () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   beforeAll(() => {
     globalThis.FormData = MockFormData as never;
     Object.defineProperty(globalThis, "window", {
@@ -102,6 +110,14 @@ describe("dashboard actions messaging handlers", () => {
       tone: "success",
       text: "Reply posted to the chat thread and emailed to the visitor."
     });
+    expect(mocks.trackGrometricsEvent).toHaveBeenCalledWith("team_reply_sent", {
+      source: "dashboard_inbox",
+      has_content: true,
+      has_attachments: false,
+      attachment_count: 0,
+      email_delivery: "sent",
+      retry: false
+    });
     expect(harness.sendingReplyState.current).toBe(false);
   });
 
@@ -120,6 +136,7 @@ describe("dashboard actions messaging handlers", () => {
       tone: "error",
       text: "Reply could not be sent."
     });
+    expect(mocks.trackGrometricsEvent).not.toHaveBeenCalled();
     expect(harness.sendingReplyState.current).toBe(false);
   });
 
@@ -153,6 +170,7 @@ describe("dashboard actions messaging handlers", () => {
       setSendingReply: harness.sendingReplyState.set,
       setAnsweredConversations: harness.answeredConversationsState.set,
       setBanner: harness.bannerState.set,
+      conversationCacheRef: harness.conversationCacheRef,
       recentOptimisticReplyAtRef: harness.recentOptimisticReplyAtRef,
       showBanner: harness.showBanner,
       clearTypingSignal: harness.clearTypingSignal
