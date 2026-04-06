@@ -6,6 +6,8 @@ import {
   CONVERSATION_SUMMARY_FROM,
   CONVERSATION_SUMMARY_GROUP_BY,
   CONVERSATION_SUMMARY_SELECT,
+  INBOX_CONVERSATION_SUMMARY_FROM,
+  INBOX_CONVERSATION_SUMMARY_SELECT,
   type SummaryRow
 } from "./shared-conversation-select";
 
@@ -44,6 +46,26 @@ export async function queryConversationSummaries(
       WHERE ${whereClause}
       GROUP BY
         ${CONVERSATION_SUMMARY_GROUP_BY}
+      ${suffix}
+    `,
+    [...values, viewerUserId]
+  );
+}
+
+export async function queryInboxConversationSummaries(
+  whereClause: string,
+  values: unknown[],
+  suffix: string,
+  viewerUserId: string
+) {
+  const viewerUserParam = `$${values.length + 1}`;
+
+  return query<SummaryRow>(
+    `
+      SELECT
+        ${INBOX_CONVERSATION_SUMMARY_SELECT}
+      ${INBOX_CONVERSATION_SUMMARY_FROM.replaceAll("$VIEWER_USER_PARAM", viewerUserParam)}
+      WHERE ${whereClause}
       ${suffix}
     `,
     [...values, viewerUserId]

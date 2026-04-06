@@ -36,6 +36,7 @@ export function useDashboardStateEffects(input: {
   refreshConversationList: () => Promise<void>;
   refreshConversationSummary: (conversationId: string) => Promise<{ id: string } | null>;
   refreshConversation: (conversationId: string) => Promise<{ id: string } | null>;
+  hydrateConversationVisitorActivity: (conversationId: string) => Promise<unknown>;
   openConversation: (conversationId: string) => Promise<{ id: string } | null>;
   clearActiveConversation: () => void;
   clearTypingSignal: () => Promise<void>;
@@ -126,6 +127,18 @@ export function useDashboardStateEffects(input: {
     );
     void input.markConversationAsRead(input.activeConversation.id);
   }, [input.activeConversation?.id, input.markConversationAsRead, input.setVisitorTypingConversationId]);
+
+  useEffect(() => {
+    if (!input.activeConversation?.id || input.activeConversation.visitorActivity) {
+      return;
+    }
+
+    void input.hydrateConversationVisitorActivity(input.activeConversation.id);
+  }, [
+    input.activeConversation?.id,
+    input.activeConversation?.visitorActivity,
+    input.hydrateConversationVisitorActivity
+  ]);
 
   useEffect(() => {
     if (!input.searchParams) {

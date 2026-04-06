@@ -32,44 +32,6 @@ export function createHomeData(overrides: Record<string, unknown> = {}) {
         { label: "Wed", count: 5 }
       ]
     },
-    growth: {
-      activation: {
-        status: "countdown",
-        tone: "neutral",
-        badge: "First 24 hours",
-        title: "The widget is live. Now push for the first conversation.",
-        description: "You still have 18 hours to hit the first-chat activation target.",
-        helper: "Put the widget on pricing, demo, or contact pages and send yourself a test message.",
-        action: { label: "Customize widget", href: "/dashboard/widget" }
-      },
-      health: {
-        status: "watch",
-        tone: "neutral",
-        score: 68,
-        badge: "Watchlist",
-        title: "Customer health score",
-        description: "Conversation volume is the biggest risk right now. Step in before the drop becomes a habit.",
-        action: { label: "Open analytics", href: "/dashboard/analytics" },
-        metrics: [
-          { label: "Conversation volume", value: "5 this week", detail: "-20% vs last week", tone: "warning" },
-          { label: "Response time", value: "1.2m", detail: "Average first reply", tone: "positive" },
-          { label: "Login frequency", value: "3 this week", detail: "Last login today", tone: "neutral" }
-        ]
-      },
-      expansion: {
-        title: "Expansion revenue",
-        description: "Upgrade nudges appear when team usage, conversation volume, or reporting needs signal expansion potential.",
-        prompts: [
-          {
-            id: "analytics",
-            tone: "neutral",
-            title: "Unlock deeper analytics and API access",
-            description: "Growing teams usually need more than basic reporting.",
-            action: { label: "See plan benefits", href: "/dashboard/settings?section=billing" }
-          }
-        ]
-      }
-    },
     hasWidgetInstalled: true,
     widgetSiteIds: ["site_1"],
     ...overrides

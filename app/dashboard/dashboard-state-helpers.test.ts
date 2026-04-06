@@ -7,6 +7,7 @@ import {
   settleOptimisticMessage,
   toSummary
 } from "./dashboard-state-helpers";
+import { mergeConversationThread } from "./dashboard-thread-merge";
 import { createConversationThread } from "./use-dashboard-actions.test-helpers";
 
 describe("dashboard state helpers", () => {
@@ -67,6 +68,59 @@ describe("dashboard state helpers", () => {
     expect(settleOptimisticMessage([optimistic], "optimistic", real)[0]).toMatchObject({ id: "msg_2", pending: false });
     expect(settleOptimisticMessage([real], "optimistic", real)).toEqual([real]);
     expect(settleOptimisticMessage([], "optimistic", real)).toEqual([real]);
+  });
+
+  it("keeps local pending and failed team messages when a stale thread refresh arrives", () => {
+    const current = createConversationThread({
+      updatedAt: "2026-03-29T10:06:00.000Z",
+      lastMessageAt: "2026-03-29T10:06:00.000Z",
+      lastMessagePreview: "Still here",
+      unreadCount: 0,
+      messages: [
+        {
+          id: "msg_1",
+          conversationId: "conv_1",
+          sender: "user",
+          content: "Need help with pricing",
+          createdAt: "2026-03-29T10:05:00.000Z",
+          attachments: []
+        },
+        {
+          id: "optimistic_1",
+          conversationId: "conv_1",
+          sender: "team",
+          content: "Still here",
+          createdAt: "2026-03-29T10:06:00.000Z",
+          attachments: [],
+          pending: true
+        },
+        {
+          id: "failed_1",
+          conversationId: "conv_1",
+          sender: "team",
+          content: "Retry me",
+          createdAt: "2026-03-29T10:07:00.000Z",
+          attachments: [],
+          failed: true
+        }
+      ]
+    });
+    const incoming = createConversationThread({
+      updatedAt: "2026-03-29T10:05:00.000Z",
+      lastMessageAt: "2026-03-29T10:05:00.000Z",
+      lastMessagePreview: "Need help with pricing"
+    });
+
+    expect(mergeConversationThread(current, incoming)).toMatchObject({
+      unreadCount: 0,
+      lastMessagePreview: "Still here"
+    });
+    expect(mergeConversationThread(current, incoming).messages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "optimistic_1", pending: true }),
+        expect.objectContaining({ id: "failed_1", failed: true })
+      ])
+    );
   });
 
   it("filters conversations by status, assignment, and search", () => {

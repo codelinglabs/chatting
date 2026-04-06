@@ -1,4 +1,5 @@
 import type { FormEvent } from "react";
+import type { DashboardAiAssistSettings } from "@/lib/data/settings-ai-assist";
 import type { DashboardTeamMember } from "@/lib/data/settings-types";
 import type { ConversationThread } from "@/lib/types";
 import { DashboardThreadDetailSidebar } from "./dashboard-thread-detail-sidebar";
@@ -8,6 +9,7 @@ export function renderDashboardThreadDetailSidebars(input: {
   activeConversation: ConversationThread;
   savingEmail: boolean;
   assigningConversation: boolean;
+  aiAssistSettings: DashboardAiAssistSettings;
   teamMembers: DashboardTeamMember[];
   showSidebarInline: boolean;
   showSidebarDrawer: boolean;
@@ -24,6 +26,7 @@ export function renderDashboardThreadDetailSidebars(input: {
             activeConversation={input.activeConversation}
             savingEmail={input.savingEmail}
             assigningConversation={input.assigningConversation}
+            aiAssistSettings={input.aiAssistSettings}
             teamMembers={input.teamMembers}
             onSaveConversationEmail={input.onSaveConversationEmail}
             onConversationAssignmentChange={input.onConversationAssignmentChange}
@@ -53,6 +56,7 @@ export function renderDashboardThreadDetailSidebars(input: {
               activeConversation={input.activeConversation}
               savingEmail={input.savingEmail}
               assigningConversation={input.assigningConversation}
+              aiAssistSettings={input.aiAssistSettings}
               teamMembers={input.teamMembers}
               onSaveConversationEmail={input.onSaveConversationEmail}
               onConversationAssignmentChange={input.onConversationAssignmentChange}

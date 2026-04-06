@@ -4,6 +4,8 @@ import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { ConversationSummary, ConversationThread } from "@/lib/types";
 import type { BannerState } from "./dashboard-client.types";
 import { syncConversationSummaryList, toSummary } from "./dashboard-state-helpers";
+import { hydrateConversationVisitorActivity as hydrateThreadVisitorActivity } from "./dashboard-state-visitor-activity";
+import { mergeConversationThread } from "./dashboard-thread-merge";
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -13,6 +15,7 @@ export function createDashboardStateNetwork(input: {
   setActiveConversation: SetState<ConversationThread | null>;
   setLoadingConversationId: SetState<string | null>;
   conversationCacheRef: MutableRefObject<Map<string, ConversationThread>>;
+  visitorActivityRequestedRef: MutableRefObject<Set<string>>;
   openRequestIdRef: MutableRefObject<number>;
   activeTypingConversationIdRef: MutableRefObject<string | null>;
   lastTypingSentAtRef: MutableRefObject<number>;
@@ -57,7 +60,7 @@ export function createDashboardStateNetwork(input: {
   async function refreshConversationSummary(conversationId: string) {
     try {
       const response = await fetch(
-        `/dashboard/conversation-summary?conversationId=${encodeURIComponent(conversationId)}`,
+        `/dashboard/inbox-summary?conversationId=${encodeURIComponent(conversationId)}`,
         { method: "GET", cache: "no-store" }
       );
 
@@ -65,18 +68,7 @@ export function createDashboardStateNetwork(input: {
         return null;
       }
       const payload = (await response.json()) as { ok: true; summary: ConversationSummary };
-      const cachedConversation = input.conversationCacheRef.current.get(payload.summary.id);
-      if (cachedConversation) {
-        input.conversationCacheRef.current.set(payload.summary.id, {
-          ...cachedConversation,
-          ...payload.summary
-        });
-      }
-
       syncSummary(payload.summary);
-      input.setActiveConversation((current) =>
-        current && current.id === payload.summary.id ? { ...current, ...payload.summary } : current
-      );
       return payload.summary;
     } catch {
       return null;
@@ -95,11 +87,24 @@ export function createDashboardStateNetwork(input: {
       }
 
       const payload = (await response.json()) as { ok: true; conversation: ConversationThread };
-      input.conversationCacheRef.current.set(payload.conversation.id, payload.conversation);
-      return payload.conversation;
+      const conversation = mergeConversationThread(
+        input.conversationCacheRef.current.get(payload.conversation.id) ?? null,
+        payload.conversation
+      );
+      input.conversationCacheRef.current.set(conversation.id, conversation);
+      return conversation;
     } catch {
       return null;
     }
+  }
+
+  function hydrateConversationVisitorActivity(conversationId: string) {
+    return hydrateThreadVisitorActivity({
+      conversationId,
+      setActiveConversation: input.setActiveConversation,
+      conversationCacheRef: input.conversationCacheRef,
+      visitorActivityRequestedRef: input.visitorActivityRequestedRef
+    });
   }
 
   function syncActiveConversation(conversation: ConversationThread) {
@@ -114,6 +119,7 @@ export function createDashboardStateNetwork(input: {
     }
 
     syncActiveConversation(conversation);
+    void hydrateConversationVisitorActivity(conversationId);
     return conversation;
   }
 
@@ -130,6 +136,7 @@ export function createDashboardStateNetwork(input: {
     if (conversation) {
       syncActiveConversation(conversation);
       void markConversationAsRead(conversationId);
+      void hydrateConversationVisitorActivity(conversationId);
     }
 
     input.setLoadingConversationId(null);
@@ -177,6 +184,7 @@ export function createDashboardStateNetwork(input: {
     refreshConversationList,
     refreshConversationSummary,
     refreshConversation,
+    hydrateConversationVisitorActivity,
     openConversation,
     clearActiveConversation,
     markConversationAsRead,

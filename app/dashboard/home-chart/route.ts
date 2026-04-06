@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   return jsonOk(
     await getDashboardHomeChartData(
       auth.user.id,
-      resolveDashboardHomeRange(new URL(request.url).searchParams.get("range"))
+      resolveDashboardHomeRange(new URL(request.url).searchParams.get("range")),
+      auth.user.workspaceOwnerId
     )
   );
 }

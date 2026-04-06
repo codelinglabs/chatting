@@ -7,9 +7,11 @@ import {
   type ReactNode
 } from "react";
 import type { Route } from "next";
+import type { DashboardAiAssistWarningBanner as DashboardAiAssistWarningBannerData } from "@/lib/ai-assist-warning";
 import { usePathname, useRouter } from "next/navigation";
 import type { DashboardSettingsNotifications } from "@/lib/data/settings-types";
 import { classNames } from "@/lib/utils";
+import { DashboardAiAssistWarningBanner } from "./dashboard-ai-assist-warning-banner";
 import { DashboardNotificationCenter } from "./dashboard-notification-center";
 import { DashboardUnreadCountProvider } from "./dashboard-unread-count";
 import { useDashboardLiveUnreadCount } from "./use-dashboard-live-unread-count";
@@ -37,13 +39,17 @@ type DashboardShellProps = {
   userEmail: string;
   unreadCount: number;
   notificationSettings: DashboardSettingsNotifications;
+  aiAssistWarning: DashboardAiAssistWarningBannerData | null;
+  canManageBilling: boolean;
 };
 
 export function DashboardShell({
   children,
   userEmail,
   unreadCount,
-  notificationSettings
+  notificationSettings,
+  aiAssistWarning,
+  canManageBilling
 }: DashboardShellProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -176,6 +182,10 @@ export function DashboardShell({
                 unreadCount={liveUnreadCount}
                 initials={initials}
                 firstName={firstName}
+              />
+              <DashboardAiAssistWarningBanner
+                warning={aiAssistWarning}
+                canManageBilling={canManageBilling}
               />
               <DashboardMain isInboxRoute={isInboxRoute}>
                 {children}

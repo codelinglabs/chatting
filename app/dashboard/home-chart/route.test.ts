@@ -25,7 +25,7 @@ describe("dashboard home-chart route", () => {
 
   it("returns the requested chart range for the current viewer", async () => {
     const response = Response.json({ ok: true, chartPending: false });
-    mocks.requireJsonRouteUser.mockResolvedValueOnce({ user: { id: "user_1" } });
+    mocks.requireJsonRouteUser.mockResolvedValueOnce({ user: { id: "user_1", workspaceOwnerId: "owner_1" } });
     mocks.getDashboardHomeChartData.mockResolvedValueOnce({
       chartPending: false,
       chart: { rangeDays: 30, total: 0, totalLabel: "", comparisonLabel: "", changePercent: null, points: [] }
@@ -33,12 +33,12 @@ describe("dashboard home-chart route", () => {
     mocks.jsonOk.mockReturnValueOnce(response);
 
     await expect(GET(new Request("http://localhost/dashboard/home-chart?range=30"))).resolves.toBe(response);
-    expect(mocks.getDashboardHomeChartData).toHaveBeenCalledWith("user_1", 30);
+    expect(mocks.getDashboardHomeChartData).toHaveBeenCalledWith("user_1", 30, "owner_1");
   });
 
   it("falls back to the default range when the request is invalid", async () => {
     const response = Response.json({ ok: true, chartPending: false });
-    mocks.requireJsonRouteUser.mockResolvedValueOnce({ user: { id: "user_1" } });
+    mocks.requireJsonRouteUser.mockResolvedValueOnce({ user: { id: "user_1", workspaceOwnerId: "owner_1" } });
     mocks.getDashboardHomeChartData.mockResolvedValueOnce({
       chartPending: false,
       chart: { rangeDays: 7, total: 0, totalLabel: "", comparisonLabel: "", changePercent: null, points: [] }
@@ -47,6 +47,6 @@ describe("dashboard home-chart route", () => {
 
     await GET(new Request("http://localhost/dashboard/home-chart?range=nope"));
 
-    expect(mocks.getDashboardHomeChartData).toHaveBeenCalledWith("user_1", 7);
+    expect(mocks.getDashboardHomeChartData).toHaveBeenCalledWith("user_1", 7, "owner_1");
   });
 });

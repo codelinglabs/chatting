@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AUTH_REQUEST_PATH_HEADER, AUTH_SESSION_COOKIE_NAME, buildLoginPath } from "@/lib/auth-redirect";
@@ -50,7 +51,7 @@ export async function clearUserSession() {
   cookieStore.delete(AUTH_SESSION_COOKIE_NAME);
 }
 
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async function getCurrentUser() {
   const token = (await cookies()).get(AUTH_SESSION_COOKIE_NAME)?.value;
   if (!token) {
     return null;
@@ -68,7 +69,7 @@ export async function getCurrentUser() {
     workspaceOwnerId: workspace.ownerUserId,
     workspaceRole: workspace.role
   };
-}
+});
 
 export async function requireUser() {
   const user = await getCurrentUser();

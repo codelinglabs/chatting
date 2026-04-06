@@ -24,6 +24,57 @@ export type SummaryRow = {
   tags: string[] | null;
 };
 
+export const INBOX_CONVERSATION_SUMMARY_SELECT = `
+  c.id,
+  c.site_id,
+  s.name AS site_name,
+  c.email,
+  c.assigned_user_id,
+  c.session_id,
+  c.status,
+  c.created_at,
+  c.updated_at,
+  cm.page_url AS page_url,
+  cm.page_url AS recorded_page_url,
+  NULL::text AS referrer,
+  NULL::text AS user_agent,
+  cm.country AS country,
+  cm.region AS region,
+  cm.city AS city,
+  cm.timezone AS timezone,
+  cm.locale AS locale,
+  latest.created_at AS last_message_at,
+  latest.content AS last_message_preview,
+  COALESCE(unread.unread_count, '0') AS unread_count,
+  NULL::int AS rating,
+  '{}'::text[] AS tags
+`;
+
+export const INBOX_CONVERSATION_SUMMARY_FROM = `
+  FROM conversations c
+  INNER JOIN sites s
+    ON s.id = c.site_id
+  LEFT JOIN conversation_metadata cm
+    ON cm.conversation_id = c.id
+  LEFT JOIN LATERAL (
+    SELECT m.content, m.created_at
+    FROM messages m
+    WHERE m.conversation_id = c.id
+    ORDER BY m.created_at DESC
+    LIMIT 1
+  ) latest ON TRUE
+  LEFT JOIN LATERAL (
+    SELECT COUNT(*)::text AS unread_count
+    FROM messages unread_messages
+    LEFT JOIN conversation_reads cr
+      ON cr.conversation_id = c.id
+     AND cr.user_id = $VIEWER_USER_PARAM
+    WHERE unread_messages.conversation_id = c.id
+      AND unread_messages.sender = 'user'
+      AND unread_messages.created_at > COALESCE(cr.last_read_at, TO_TIMESTAMP(0))
+  ) unread ON TRUE
+`;
+
 export const CONVERSATION_SUMMARY_SELECT = `
   c.id,
   c.site_id,

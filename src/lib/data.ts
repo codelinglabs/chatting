@@ -24,6 +24,10 @@ export {
   updateVisitorTyping,
   updateConversationEmail
 } from "./data/conversations";
+export {
+  getInboxConversationSummaryById,
+  listInboxConversationSummaries
+} from "./data/inbox-conversations";
 export { updateConversationAssignment } from "./data/conversation-assignment";
 export {
   getOnboardingData,

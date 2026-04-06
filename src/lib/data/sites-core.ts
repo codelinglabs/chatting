@@ -54,9 +54,9 @@ export async function createSiteForUser(
   return mapSite(created);
 }
 
-export async function listSitesForUser(userId: string) {
-  const ownerUserId = await getWorkspaceOwnerId(userId);
-  const result = await querySites("s.user_id = $1", [ownerUserId], "ORDER BY s.created_at ASC");
+export async function listSitesForUser(userId: string, ownerUserId?: string) {
+  const workspaceOwnerId = ownerUserId ?? (await getWorkspaceOwnerId(userId));
+  const result = await querySites("s.user_id = $1", [workspaceOwnerId], "ORDER BY s.created_at ASC");
   return result.rows.map(mapSite);
 }
 

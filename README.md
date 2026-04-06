@@ -20,6 +20,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ## Recent Updates
 
 - AI Assist is now built into the inbox with reply suggestions, summaries, rewrites, suggested tags, starter usage limits, and a full activity log.
+- Dashboard home, inbox, and thread loading now do less work up front so the main team views open faster.
 - Tightened public indexing signals by noindexing utility/help routes, adding legal-page canonicals, and making the legacy ROI tool URL a permanent redirect.
 - Blog post registration now auto-generates during `dev` and `build`, so new `src/lib/blog-post-*.ts` files automatically feed the published blog routes and sitemap.
 - Updated public changelog notes so follow-up routing and email changes read like product updates instead of engineering filler.
@@ -181,6 +182,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ### Dashboard
 
 - AI Assist is now built into the inbox with reply suggestions, summaries, rewrites, suggested tags, starter usage metering, warning states, and detailed usage history.
+- Dashboard home, inbox, and thread loading now use lighter data paths so key team views open faster.
 - People now stores contact memory with saved profiles, statuses, custom fields, and in-place profile editing.
 - People contact data services now live in focused modules for access, sync, mutations, notes, and settings instead of one oversized data file.
 - Inbox contact editing and visitor-note flows now stay aligned with the new People experience across the dashboard.

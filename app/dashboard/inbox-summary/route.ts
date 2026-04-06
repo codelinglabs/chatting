@@ -1,4 +1,4 @@
-import { getDashboardConversationThreadById } from "@/lib/data/dashboard-conversation-thread";
+import { getInboxConversationSummaryById } from "@/lib/data";
 import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
 
 export async function GET(request: Request) {
@@ -14,13 +14,10 @@ export async function GET(request: Request) {
     return jsonError("missing-fields", 400);
   }
 
-  const conversation = await getDashboardConversationThreadById(
-    conversationId,
-    auth.user.id
-  );
-  if (!conversation) {
+  const summary = await getInboxConversationSummaryById(conversationId, auth.user.id);
+  if (!summary) {
     return jsonError("not-found", 404);
   }
 
-  return jsonOk({ conversation });
+  return jsonOk({ summary });
 }

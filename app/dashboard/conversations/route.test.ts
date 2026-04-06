@@ -1,10 +1,10 @@
 const mocks = vi.hoisted(() => ({
-  listConversationSummaries: vi.fn(),
+  listInboxConversationSummaries: vi.fn(),
   requireJsonRouteUser: vi.fn()
 }));
 
 vi.mock("@/lib/data", () => ({
-  listConversationSummaries: mocks.listConversationSummaries
+  listInboxConversationSummaries: mocks.listInboxConversationSummaries
 }));
 
 vi.mock("@/lib/route-helpers", () => ({
@@ -33,11 +33,11 @@ describe("dashboard conversations route", () => {
   });
 
   it("returns conversation summaries for the current user", async () => {
-    mocks.listConversationSummaries.mockResolvedValueOnce([{ id: "conv_1" }, { id: "conv_2" }]);
+    mocks.listInboxConversationSummaries.mockResolvedValueOnce([{ id: "conv_1" }, { id: "conv_2" }]);
 
     const response = await GET();
 
-    expect(mocks.listConversationSummaries).toHaveBeenCalledWith("user_123");
+    expect(mocks.listInboxConversationSummaries).toHaveBeenCalledWith("user_123");
     expect(await response.json()).toEqual({
       ok: true,
       conversations: [{ id: "conv_1" }, { id: "conv_2" }]

@@ -48,11 +48,14 @@ describe("dashboard home", () => {
     const html = renderToStaticMarkup(
       await DashboardHome({
         userEmail: "tina@chatly.example",
-        userId: "user_123"
+        userId: "user_123",
+        workspaceOwnerId: "owner_123"
       })
     );
 
-    expect(mocks.getDashboardHomeData).toHaveBeenCalledWith("user_123");
+    expect(mocks.getDashboardHomeData).toHaveBeenCalledWith("user_123", {
+      workspaceOwnerId: "owner_123"
+    });
     expect(html).toContain("Open conversations");
     expect(html).toContain("Resolved today");
     expect(html).toContain("Avg response time");
@@ -91,51 +94,6 @@ describe("dashboard home", () => {
           { label: "Tue", count: 0 }
         ]
       },
-      growth: {
-        activation: {
-          status: "needs-install",
-          tone: "warning",
-          badge: "Install blocker",
-          title: "Activation is blocked until the widget is live",
-          description: "No chats can happen until the widget is installed.",
-          helper: "Finish installation to start the clock",
-          action: { label: "Check installation", href: "/dashboard/widget" }
-        },
-        health: {
-          status: "at-risk",
-          tone: "warning",
-          score: 44,
-          badge: "Intervene now",
-          title: "Customer health score",
-          description: "Health will stabilize once you have a few real conversations to benchmark.",
-          action: { label: "Open analytics", href: "/dashboard/analytics" },
-          metrics: [
-            {
-              label: "Conversation volume",
-              value: "0 this week",
-              detail: "No conversation baseline yet",
-              tone: "warning"
-            },
-            {
-              label: "Response time",
-              value: "No reply data",
-              detail: "We need a few replied conversations first",
-              tone: "neutral"
-            },
-            {
-              label: "Login frequency",
-              value: "0 this week",
-              detail: "No recent login history",
-              tone: "warning"
-            }
-          ]
-        },
-        expansion: {
-          title: "Expansion revenue",
-          description: "No upgrade pressure yet. We'll surface expansion signals as the workspace grows.",
-          prompts: []
-        }
-      },
       hasWidgetInstalled: false,
       widgetSiteIds: []
     }));
@@ -143,7 +101,8 @@ describe("dashboard home", () => {
     const html = renderToStaticMarkup(
       await DashboardHome({
         userEmail: "tina@chatly.example",
-        userId: "user_123"
+        userId: "user_123",
+        workspaceOwnerId: "owner_123"
       })
     );
 
@@ -165,7 +124,8 @@ describe("dashboard home", () => {
     const html = renderToStaticMarkup(
       await DashboardHome({
         userEmail: "tina@chatly.example",
-        userId: "user_123"
+        userId: "user_123",
+        workspaceOwnerId: "owner_123"
       })
     );
 

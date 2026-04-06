@@ -1,4 +1,4 @@
-import { listConversationSummaries } from "@/lib/data";
+import { listInboxConversationSummaries } from "@/lib/data";
 import { jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
 
 export async function GET() {
@@ -7,6 +7,6 @@ export async function GET() {
     return auth.response;
   }
 
-  const conversations = await listConversationSummaries(auth.user.id);
+  const conversations = await listInboxConversationSummaries(auth.user.id);
   return jsonOk({ conversations });
 }

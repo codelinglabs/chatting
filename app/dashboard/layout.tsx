@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { getDashboardNotificationSettings, getUserOnboardingStep, listConversationSummaries } from "@/lib/data";
+import { getDashboardShellData } from "@/lib/data/dashboard-shell-data";
+import { getUserOnboardingStep } from "@/lib/data";
 import { DashboardShell } from "./dashboard-shell";
 
 export default async function DashboardLayout({
@@ -13,17 +14,19 @@ export default async function DashboardLayout({
     redirect(`/onboarding?step=${onboardingStep}`);
   }
 
-  const [conversations, notificationSettings] = await Promise.all([
-    listConversationSummaries(user.id),
-    getDashboardNotificationSettings(user.id)
-  ]);
-  const unreadCount = conversations.reduce((count, conversation) => count + conversation.unreadCount, 0);
+  const shellData = await getDashboardShellData({
+    userId: user.id,
+    ownerUserId: user.workspaceOwnerId,
+    workspaceRole: user.workspaceRole
+  });
 
   return (
     <DashboardShell
       userEmail={user.email}
-      unreadCount={unreadCount}
-      notificationSettings={notificationSettings}
+      unreadCount={shellData.unreadCount}
+      notificationSettings={shellData.notificationSettings}
+      aiAssistWarning={shellData.aiAssistWarning}
+      canManageBilling={shellData.canManageBilling}
     >
       {children}
     </DashboardShell>

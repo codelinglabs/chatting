@@ -1,4 +1,4 @@
-import { getDashboardConversationThreadById } from "@/lib/data/dashboard-conversation-thread";
+import { getDashboardConversationVisitorActivityById } from "@/lib/data/dashboard-conversation-thread";
 import { jsonError, jsonOk, requireJsonRouteUser } from "@/lib/route-helpers";
 
 export async function GET(request: Request) {
@@ -14,13 +14,14 @@ export async function GET(request: Request) {
     return jsonError("missing-fields", 400);
   }
 
-  const conversation = await getDashboardConversationThreadById(
+  const visitorActivity = await getDashboardConversationVisitorActivityById(
     conversationId,
     auth.user.id
   );
-  if (!conversation) {
+
+  if (!visitorActivity) {
     return jsonError("not-found", 404);
   }
 
-  return jsonOk({ conversation });
+  return jsonOk({ visitorActivity });
 }

@@ -1,21 +1,17 @@
 import {
-  getDashboardHomeOverview,
-  getDashboardHomeResponseMetrics,
-  getDashboardHomeSatisfactionMetrics,
   getDashboardHomeConversationRange
 } from "@/lib/repositories/dashboard-home-repository";
-import { findAuthUserById } from "@/lib/repositories/auth-repository";
+import { getDashboardHomeSnapshot } from "@/lib/repositories/dashboard-home-snapshot-repository";
 import { isSiteWidgetInstalled } from "@/lib/site-installation";
 import type { ConversationSummary } from "@/lib/types";
 import { resolvePreferredTimeZoneForUserWithSource } from "../user-timezone-preference";
-import { listConversationSummaries } from "./conversations";
+import { listRecentInboxConversationSummaries } from "./inbox-conversations";
 import {
   buildDashboardHomeChart,
   calculatePercentChange,
   type DashboardHomeChart,
   type DashboardHomeRangeDays
 } from "./dashboard-home-chart";
-import { getDashboardGrowthData, type DashboardHomeGrowthData } from "./dashboard-growth";
 import { listSitesForUser } from "./sites";
 
 export type DashboardHomeChartData = {
@@ -26,7 +22,6 @@ export type DashboardHomeChartData = {
 export type DashboardHomeData = DashboardHomeChartData & {
   hasWidgetInstalled: boolean;
   widgetSiteIds: string[];
-  unreadCount: number;
   openConversations: number;
   openConversationsDelta: number;
   resolvedToday: number;
@@ -36,7 +31,6 @@ export type DashboardHomeData = DashboardHomeChartData & {
   satisfactionPercent: number | null;
   satisfactionDeltaPercent: number | null;
   recentConversations: ConversationSummary[];
-  growth: DashboardHomeGrowthData;
 };
 
 function toNumber(value: string | null | undefined) {
@@ -49,10 +43,15 @@ function roundToWhole(value: number | null) {
 
 export async function getDashboardHomeChartData(
   userId: string,
-  rangeDays: DashboardHomeRangeDays = 7
+  rangeDays: DashboardHomeRangeDays = 7,
+  ownerUserId?: string
 ): Promise<DashboardHomeChartData> {
   const timeZone = await resolvePreferredTimeZoneForUserWithSource(userId);
-  const chartRange = await getDashboardHomeConversationRange(userId, timeZone.timeZone, rangeDays);
+  const chartRange = await getDashboardHomeConversationRange(
+    ownerUserId ?? userId,
+    timeZone.timeZone,
+    rangeDays
+  );
 
   return {
     chartPending: timeZone.source === "site" || timeZone.source === "utc",
@@ -62,55 +61,45 @@ export async function getDashboardHomeChartData(
 
 export async function getDashboardHomeData(
   userId: string,
-  rangeDays: DashboardHomeRangeDays = 7
+  input: {
+    rangeDays?: DashboardHomeRangeDays;
+    workspaceOwnerId?: string;
+  } = {}
 ): Promise<DashboardHomeData> {
-  const [user, summaries, sites, overview, response, satisfaction, chartData] =
-    await Promise.all([
-      findAuthUserById(userId),
-      listConversationSummaries(userId),
-      listSitesForUser(userId),
-      getDashboardHomeOverview(userId),
-      getDashboardHomeResponseMetrics(userId),
-      getDashboardHomeSatisfactionMetrics(userId),
-      getDashboardHomeChartData(userId, rangeDays)
-    ]);
+  const rangeDays = input.rangeDays ?? 7;
+  const ownerUserId = input.workspaceOwnerId ?? userId;
+  const timeZone = await resolvePreferredTimeZoneForUserWithSource(userId);
+  const [snapshot, recentConversations, sites] = await Promise.all([
+    getDashboardHomeSnapshot(ownerUserId, timeZone.timeZone, rangeDays),
+    listRecentInboxConversationSummaries(userId, 4, input.workspaceOwnerId),
+    listSitesForUser(userId, input.workspaceOwnerId)
+  ]);
 
-  if (!user) {
-    throw new Error("USER_NOT_FOUND");
-  }
-
-  const currentAvgResponse = roundToWhole(toNumber(response?.current_avg_seconds));
-  const previousAvgResponse = roundToWhole(toNumber(response?.previous_avg_seconds));
+  const currentAvgResponse = roundToWhole(toNumber(snapshot.response.current_avg_seconds));
+  const previousAvgResponse = roundToWhole(toNumber(snapshot.response.previous_avg_seconds));
   const avgResponseDeltaPercent =
     currentAvgResponse != null && previousAvgResponse != null && previousAvgResponse > 0
       ? Math.round(((previousAvgResponse - currentAvgResponse) / previousAvgResponse) * 100)
       : null;
 
-  const currentSatisfaction = roundToWhole(toNumber(satisfaction?.current_rate));
-  const previousSatisfaction = roundToWhole(toNumber(satisfaction?.previous_rate));
+  const currentSatisfaction = roundToWhole(toNumber(snapshot.satisfaction.current_rate));
+  const previousSatisfaction = roundToWhole(toNumber(snapshot.satisfaction.previous_rate));
   const hasWidgetInstalled = sites.some((site) => isSiteWidgetInstalled(site));
-  const growth = await getDashboardGrowthData(
-    userId,
-    user.created_at,
-    hasWidgetInstalled,
-    currentAvgResponse
-  );
 
   return {
     hasWidgetInstalled,
     widgetSiteIds: sites.map((site) => site.id),
-    unreadCount: summaries.reduce((count, conversation) => count + conversation.unreadCount, 0),
-    openConversations: Number(overview?.open_conversations ?? 0),
-    openConversationsDelta: Number(overview?.opened_today ?? 0),
-    resolvedToday: Number(overview?.resolved_today ?? 0),
+    openConversations: Number(snapshot.overview.open_conversations),
+    openConversationsDelta: Number(snapshot.overview.opened_today),
+    resolvedToday: Number(snapshot.overview.resolved_today),
     resolvedTodayDelta:
-      Number(overview?.resolved_today ?? 0) - Number(overview?.resolved_yesterday ?? 0),
+      Number(snapshot.overview.resolved_today) - Number(snapshot.overview.resolved_yesterday),
     avgResponseSeconds: currentAvgResponse,
     avgResponseDeltaPercent,
     satisfactionPercent: currentSatisfaction,
     satisfactionDeltaPercent: calculatePercentChange(currentSatisfaction, previousSatisfaction),
-    recentConversations: summaries.slice(0, 4),
-    ...chartData,
-    growth
+    recentConversations,
+    chartPending: timeZone.source === "site" || timeZone.source === "utc",
+    chart: buildDashboardHomeChart(snapshot.chart.rows, snapshot.chart.previousTotal, rangeDays)
   };
 }

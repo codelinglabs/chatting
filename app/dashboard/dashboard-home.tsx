@@ -7,12 +7,16 @@ import { DashboardHomeTimeZoneBootstrap } from "./dashboard-home-timezone-bootst
 
 export async function DashboardHome({
   userEmail,
-  userId
+  userId,
+  workspaceOwnerId
 }: {
   userEmail: string;
   userId: string;
+  workspaceOwnerId: string;
 }) {
-  const data = await getDashboardHomeData(userId);
+  const data = await getDashboardHomeData(userId, {
+    workspaceOwnerId
+  });
   const profileName = displayNameFromEmail(userEmail);
   const firstName = firstNameFromDisplayName(profileName);
   const teamRows = [
