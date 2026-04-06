@@ -1,7 +1,7 @@
 "use client";
 
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
-import { useState } from "react";
+import { forwardRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   Button,
@@ -20,9 +20,17 @@ const FORM_TEXT_INPUT_CLASS =
 const FORM_TEXTAREA_CLASS =
   "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500";
 
-export function FormInput({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={classNames(FORM_TEXT_INPUT_CLASS, className)} />;
-}
+export const FormInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
+  function FormInput({ className, ...props }, ref) {
+    return (
+      <input
+        {...props}
+        ref={ref}
+        className={classNames(FORM_TEXT_INPUT_CLASS, className)}
+      />
+    );
+  }
+);
 
 export function FormSelect({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (

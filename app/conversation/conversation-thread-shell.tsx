@@ -1,6 +1,6 @@
 "use client";
 
-import type { ChangeEvent, FormEvent } from "react";
+import { useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
 import { Button } from "../components/ui/Button";
 import { PaperclipIcon } from "../dashboard/dashboard-ui";
 import { FormInput } from "../ui/form-controls";
@@ -54,6 +54,15 @@ export function ConversationThreadShell({
   widgetTitle
 }: ConversationThreadShellProps) {
   const canSend = Boolean(content.trim() || attachments.length);
+  const composerRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!sending) {
+      return;
+    }
+
+    composerRef.current?.focus();
+  }, [sending]);
 
   function handleAttachmentInputChange(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.currentTarget.files ?? []).filter((file) => file.size > 0);
@@ -126,6 +135,7 @@ export function ConversationThreadShell({
               ) : null}
 
               <FormInput
+                ref={composerRef}
                 value={content}
                 onChange={(event) => onChangeContent(event.target.value)}
                 placeholder={allowAttachments ? "Type your reply or add files" : "Type your reply"}
