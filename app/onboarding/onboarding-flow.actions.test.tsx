@@ -7,8 +7,10 @@ async function loadFlow() {
   vi.resetModules();
   const reactMocks = createMockReactHooks();
   const captures: Record<string, unknown> = {};
+  const trackGrometricsEvent = vi.fn();
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("next/navigation", () => ({ useRouter: () => routerMocks }));
+  vi.doMock("@/lib/grometrics", () => ({ trackGrometricsEvent }));
   vi.doMock("./onboarding-done-screen", () => ({ OnboardingDoneScreen: () => <div>done-screen</div> }));
   vi.doMock("./onboarding-flow-sections", () => ({
     OnboardingLeftPanel: (props: unknown) => ((captures.left = props), <div>left-panel</div>)
@@ -19,7 +21,7 @@ async function loadFlow() {
   }));
 
   const module = await import("./onboarding-flow");
-  return { OnboardingFlow: module.OnboardingFlow, captures, reactMocks };
+  return { OnboardingFlow: module.OnboardingFlow, captures, reactMocks, trackGrometricsEvent };
 }
 
 describe("onboarding flow actions", () => {
@@ -33,7 +35,7 @@ describe("onboarding flow actions", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("updates customize state from left-panel callbacks and copies the install snippet", async () => {
-    const { OnboardingFlow, captures, reactMocks } = await loadFlow();
+    const { OnboardingFlow, captures, reactMocks, trackGrometricsEvent } = await loadFlow();
     const initialSite = { id: "site_1", name: "Docs", domain: "", brandColor: "#2563EB" } as never;
 
     reactMocks.beginRender();
@@ -55,6 +57,10 @@ describe("onboarding flow actions", () => {
     reactMocks.beginRender();
     renderToStaticMarkup(<OnboardingFlow initialStep="install" initialSite={{ ...initialSite, domain: "docs.example.com" }} />);
     expect(navigator.clipboard.writeText).toHaveBeenCalled();
+    expect(trackGrometricsEvent).toHaveBeenCalledWith("widget_snippet_copied", {
+      source: "onboarding_install",
+      platform: "code"
+    });
     expect((captures.left as { copiedCode: boolean }).copiedCode).toBe(true);
   });
 
@@ -65,7 +71,7 @@ describe("onboarding flow actions", () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) } as Response);
 
-    const { OnboardingFlow, captures, reactMocks } = await loadFlow();
+    const { OnboardingFlow, captures, reactMocks, trackGrometricsEvent } = await loadFlow();
     const initialSite = { id: "site_1", name: "Docs", domain: "docs.example.com" } as never;
 
     reactMocks.beginRender();
@@ -79,10 +85,23 @@ describe("onboarding flow actions", () => {
     reactMocks.beginRender();
     renderToStaticMarkup(<OnboardingFlow initialStep="install" initialSite={initialSite} />);
     expect((captures.left as { showInstallSuccess: boolean }).showInstallSuccess).toBe(true);
+    expect(trackGrometricsEvent).toHaveBeenCalledWith("widget_installation_verified", {
+      source: "onboarding_install"
+    });
 
     await (captures.left as { onSkipInstall: () => Promise<void> }).onSkipInstall();
     await (captures.left as { onCompleteAndGo: (path: string) => Promise<void> }).onCompleteAndGo("/dashboard/inbox");
 
+    expect(trackGrometricsEvent).toHaveBeenNthCalledWith(2, "onboarding_completed", {
+      source: "onboarding_install",
+      destination: "done",
+      installation_verified: true
+    });
+    expect(trackGrometricsEvent).toHaveBeenNthCalledWith(3, "onboarding_completed", {
+      source: "onboarding_install",
+      destination: "/dashboard/inbox",
+      installation_verified: true
+    });
     expect(routerMocks.replace).toHaveBeenCalledWith("/onboarding?step=done");
     expect(routerMocks.replace).toHaveBeenCalledWith("/dashboard/inbox");
     expect(fetch).toHaveBeenCalledWith("/onboarding/complete", expect.any(Object));

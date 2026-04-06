@@ -9,10 +9,12 @@ async function loadFlow() {
   vi.resetModules();
   const reactMocks = createMockReactHooks();
   const captures: Record<string, unknown> = {};
+  const trackGrometricsEvent = vi.fn();
   vi.doMock("react", () => reactMocks.moduleFactory());
   vi.doMock("next/navigation", () => ({
     useRouter: () => routerMocks
   }));
+  vi.doMock("@/lib/grometrics", () => ({ trackGrometricsEvent }));
   vi.doMock("./onboarding-done-screen", () => ({
     OnboardingDoneScreen: () => <div>done-screen</div>
   }));
@@ -25,7 +27,7 @@ async function loadFlow() {
   }));
 
   const module = await import("./onboarding-flow");
-  return { OnboardingFlow: module.OnboardingFlow, captures, reactMocks };
+  return { OnboardingFlow: module.OnboardingFlow, captures, reactMocks, trackGrometricsEvent };
 }
 
 describe("onboarding flow", () => {
@@ -60,7 +62,7 @@ describe("onboarding flow", () => {
         json: async () => ({ ok: true, site: { id: "site_1", name: "Docs", domain: "docs.usechatting.com" } })
       } as Response)
       .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) } as Response);
-    const { OnboardingFlow, captures, reactMocks } = await loadFlow();
+    const { OnboardingFlow, captures, reactMocks, trackGrometricsEvent } = await loadFlow();
     reactMocks.beginRender();
     renderToStaticMarkup(
       <OnboardingFlow initialStep="customize" initialSite={{ id: "site_1", name: "Docs", domain: "" } as never} />
@@ -72,6 +74,10 @@ describe("onboarding flow", () => {
     );
 
     expect(fetch).toHaveBeenCalledWith("/dashboard/sites/update", expect.any(Object));
+    expect(trackGrometricsEvent).toHaveBeenCalledWith(
+      "widget_settings_saved",
+      expect.objectContaining({ source: "onboarding_customize" })
+    );
     expect(routerMocks.replace).toHaveBeenCalledWith("/onboarding?step=install");
     expect((captures.left as { activeStep: string }).activeStep).toBe("install");
   });

@@ -2,6 +2,7 @@
 
 import { startTransition, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { trackGrometricsEvent } from "@/lib/grometrics";
 import { DEFAULT_BRAND_COLOR } from "@/lib/widget-settings";
 import type { Site } from "@/lib/types";
 import { OnboardingDoneScreen } from "./onboarding-done-screen";
@@ -149,6 +150,11 @@ export function OnboardingFlow({
       });
 
       setSiteDraft(createWidgetDraft(payload.site));
+      trackGrometricsEvent("widget_settings_saved", {
+        source: "onboarding_customize",
+        launcher_position: payload.site.launcherPosition,
+        show_online_status: payload.site.showOnlineStatus
+      });
       setActiveStep("install");
       startTransition(() => {
         router.replace("/onboarding?step=install" as never);
@@ -162,8 +168,12 @@ export function OnboardingFlow({
 
   async function handleCopyCode() {
     try {
-      await navigator.clipboard.writeText(buildSnippet(siteDraft.id));
+      await navigator.clipboard.writeText(installSnippet);
       setCopiedCode(true);
+      trackGrometricsEvent("widget_snippet_copied", {
+        source: "onboarding_install",
+        platform: installTab
+      });
       setTimeout(() => setCopiedCode(false), 1600);
     } catch {}
   }
@@ -207,6 +217,9 @@ export function OnboardingFlow({
       const detectedUrl = payload.checkedUrl ?? getDetectedInstallUrl(createWidgetDraft(payload.site));
       setVerifiedUrl(detectedUrl);
       setVerificationMessage(`Verified on ${detectedUrl}`);
+      trackGrometricsEvent("widget_installation_verified", {
+        source: "onboarding_install"
+      });
     } catch {
       setVerificationState("error");
       setVerificationMessage("We couldn't verify the widget right now. Try again in a moment.");
@@ -226,6 +239,11 @@ export function OnboardingFlow({
 
     setActiveStep("done");
     setVerificationMessage("You can finish installation later from Widget settings.");
+    trackGrometricsEvent("onboarding_completed", {
+      source: "onboarding_install",
+      destination: "done",
+      installation_verified: verificationState === "verified"
+    });
 
     startTransition(() => {
       router.replace("/onboarding?step=done" as never);
@@ -242,6 +260,12 @@ export function OnboardingFlow({
         body: JSON.stringify({ step: "done" })
       });
     } catch {}
+
+    trackGrometricsEvent("onboarding_completed", {
+      source: "onboarding_install",
+      destination: path,
+      installation_verified: verificationState === "verified"
+    });
 
     startTransition(() => {
       router.replace(path as never);
