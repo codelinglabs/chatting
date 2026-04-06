@@ -1,6 +1,7 @@
 "use client";
 
 import type { ConversationResumeIdentity } from "@/lib/conversation-resume-types";
+import { trackGrometricsEvent } from "@/lib/grometrics";
 import type { MessageAttachment } from "@/lib/types";
 
 type PublicConversationReplyPayload = {
@@ -58,6 +59,13 @@ export async function postPublicConversationReply(input: {
   if (!response.ok || !("ok" in payload && payload.ok)) {
     throw new Error(("error" in payload && payload.error) || "Unable to store message.");
   }
+
+  trackGrometricsEvent("visitor_reply_sent", {
+    source: "conversation_resume",
+    has_content: Boolean(input.content.trim()),
+    has_attachments: input.attachments.length > 0,
+    attachment_count: input.attachments.length
+  });
 
   return payload;
 }

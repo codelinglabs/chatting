@@ -1,12 +1,18 @@
+vi.mock("@/lib/grometrics", () => ({
+  trackGrometricsEvent: vi.fn()
+}));
+
 import {
   createOptimisticConversationAttachments,
   postPublicConversationReply,
   revokeOptimisticConversationAttachments
 } from "./conversation-thread-compose";
+import { trackGrometricsEvent } from "@/lib/grometrics";
 
 describe("conversation thread compose helpers", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.clearAllMocks();
   });
 
   it("creates and revokes optimistic attachment urls", () => {
@@ -79,6 +85,12 @@ describe("conversation thread compose helpers", () => {
         pageUrl: "https://usechatting.com/conversation/abc"
       })
     ).resolves.toMatchObject({ ok: true, conversationId: "conv_1" });
+    expect(trackGrometricsEvent).toHaveBeenCalledWith("visitor_reply_sent", {
+      source: "conversation_resume",
+      has_content: true,
+      has_attachments: true,
+      attachment_count: 1
+    });
 
     await expect(
       postPublicConversationReply({
@@ -88,5 +100,6 @@ describe("conversation thread compose helpers", () => {
         pageUrl: "https://usechatting.com/conversation/abc"
       })
     ).rejects.toThrow("Each attachment must be smaller than 4 MB.");
+    expect(trackGrometricsEvent).toHaveBeenCalledTimes(1);
   });
 });
