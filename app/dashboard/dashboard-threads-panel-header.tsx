@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { DashboardTeamMember } from "@/lib/data/settings-types";
 import type { ConversationSummary } from "@/lib/types";
 import { classNames } from "@/lib/utils";
@@ -41,6 +42,7 @@ const ASSIGNMENT_FILTERS: Array<{ id: AssignmentFilter; label: string }> = [
   { id: "mine", label: "Assigned to me" },
   { id: "assignedToTeammate", label: "Assigned to teammate" }
 ];
+const SHORTCUTS_GUIDE_HREF = "/guides/chatting-inbox-shortcuts";
 
 export function getThreadCounts(allConversations: ConversationSummary[]): ThreadCounts {
   return allConversations.reduce<ThreadCounts>(
@@ -139,6 +141,23 @@ export function renderThreadsHeader({
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="mt-4">
+        <Link
+          href={SHORTCUTS_GUIDE_HREF}
+          target="_blank"
+          rel="noreferrer"
+          className="flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-800 transition hover:bg-slate-50"
+        >
+          <span className="truncate text-left">Keyboard shortcuts</span>
+          <span className="flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-500">
+            <span>Ctrl/Cmd</span>
+            <span className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 font-mono text-[10px] leading-none text-slate-500">
+              /
+            </span>
+          </span>
+        </Link>
       </div>
     </div>
   );

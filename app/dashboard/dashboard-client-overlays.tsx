@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import type { ConversationThread } from "@/lib/types";
 import { SearchIcon } from "./dashboard-ui";
@@ -183,6 +184,11 @@ export function renderDashboardShortcutsDialog({
             <span className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-500">{shortcut}</span>
           </div>
         ))}
+      </div>
+      <div className="border-t border-slate-200 px-5 py-4">
+        <Link href="/guides/chatting-inbox-shortcuts" className="text-sm font-medium text-blue-600 transition hover:text-blue-700">
+          Read the full inbox shortcuts guide
+        </Link>
       </div>
     </OverlayPanel>
   );

@@ -21,6 +21,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 - AI Assist is now built into the inbox with reply suggestions, summaries, rewrites, suggested tags, starter usage limits, and a full activity log.
 - Dashboard home, inbox, and thread loading now do less work up front so the main team views open faster.
+- Added a public guides area plus a dedicated inbox shortcuts guide, with direct shortcuts-guide entry points from the dashboard inbox.
 - Tightened public indexing signals by noindexing utility/help routes, adding legal-page canonicals, and making the legacy ROI tool URL a permanent redirect.
 - Blog post registration now auto-generates during `dev` and `build`, so new `src/lib/blog-post-*.ts` files automatically feed the published blog routes and sitemap.
 - Updated public changelog notes so follow-up routing and email changes read like product updates instead of engineering filler.
@@ -135,6 +136,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ## 🚀 Key Modules
 
 ### Public Site & Auth
+- The public site now includes a dedicated guides area, and the inbox shortcuts guide is linked directly from the dashboard for easier discovery.
 - Utility public routes like feedback, verification, preference links, and hosted help-center pages now emit explicit `noindex` metadata, while legal pages expose canonicals and the legacy ROI calculator path permanently redirects to its indexed free-tool URL.
 - Shared landing navigation and footer links now stay aligned with Next route typing during production builds.
 - Newsletter signups now preserve source updates correctly even for first-time subscribers.
