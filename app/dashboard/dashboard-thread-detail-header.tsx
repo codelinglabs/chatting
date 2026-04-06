@@ -1,7 +1,11 @@
 import type { DashboardTeamMember } from "@/lib/data/settings-types";
 import type { ConversationStatus } from "@/lib/types";
 import { classNames } from "@/lib/utils";
-import { ConversationAssigneeBadge, findConversationAssignee } from "./dashboard-conversation-assignee";
+import {
+  canAssignConversation,
+  ConversationAssigneeBadge,
+  findConversationAssignee
+} from "./dashboard-conversation-assignee";
 import { ArrowLeftIcon, InfoIcon } from "./dashboard-ui";
 
 export function renderDashboardThreadDetailHeader(input: {
@@ -18,6 +22,8 @@ export function renderDashboardThreadDetailHeader(input: {
   onOpenSidebar?: () => void;
 }) {
   const assignee = findConversationAssignee(input.teamMembers, input.assignedUserId);
+  const showUnassigned = canAssignConversation(input.teamMembers);
+  const showAssigneeBadge = Boolean(assignee) || showUnassigned;
 
   return (
     <div className="flex h-16 items-center justify-between border-b border-slate-200 px-5">
@@ -37,7 +43,9 @@ export function renderDashboardThreadDetailHeader(input: {
           <p className="truncate text-[15px] font-medium text-slate-900">{input.name}</p>
           <div className="flex min-w-0 items-center gap-2">
             <p className="truncate text-[13px] font-normal text-slate-500">{input.secondary}</p>
-            <ConversationAssigneeBadge assignee={assignee} compact />
+            {showAssigneeBadge ? (
+              <ConversationAssigneeBadge assignee={assignee} compact showUnassigned={showUnassigned} />
+            ) : null}
           </div>
         </div>
       </div>

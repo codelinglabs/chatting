@@ -13,6 +13,31 @@ vi.mock("./dashboard-shell", () => ({
 
 import { DashboardThreadsPanel } from "./dashboard-threads-panel";
 
+const TEAM_MEMBERS = [
+  {
+    id: "user_1",
+    name: "Tina",
+    email: "tina@example.com",
+    initials: "TI",
+    role: "owner" as const,
+    status: "online" as const,
+    lastActiveLabel: "Now",
+    isCurrentUser: true,
+    avatarDataUrl: null
+  },
+  {
+    id: "user_2",
+    name: "Marcus",
+    email: "marcus@example.com",
+    initials: "MA",
+    role: "member" as const,
+    status: "offline" as const,
+    lastActiveLabel: "5m ago",
+    isCurrentUser: false,
+    avatarDataUrl: null
+  }
+];
+
 async function loadThreadsPanel() {
   vi.resetModules();
   const reactMocks = createMockReactHooks();
@@ -151,6 +176,7 @@ describe("dashboard threads panel", () => {
       conversations: [createConversationSummary(), createConversationSummary({ id: "conv_2" })],
       initialWidgetInstalled: false,
       widgetSiteIds: ["site_1"],
+      teamMembers: TEAM_MEMBERS,
       activeConversationId: "conv_1",
       highlightedConversationId: "conv_2",
       threadFilter: "all",

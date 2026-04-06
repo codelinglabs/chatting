@@ -3,6 +3,10 @@
 import type { DashboardTeamMember } from "@/lib/data/settings-types";
 import { classNames } from "@/lib/utils";
 
+export function canAssignConversation(teamMembers: DashboardTeamMember[]) {
+  return teamMembers.length > 1;
+}
+
 export function findConversationAssignee(
   teamMembers: DashboardTeamMember[],
   assignedUserId: string | null | undefined
@@ -16,12 +20,18 @@ export function findConversationAssignee(
 
 export function ConversationAssigneeBadge({
   assignee,
-  compact = false
+  compact = false,
+  showUnassigned = true
 }: {
   assignee: DashboardTeamMember | null;
   compact?: boolean;
+  showUnassigned?: boolean;
 }) {
   if (!assignee) {
+    if (!showUnassigned) {
+      return null;
+    }
+
     return (
       <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500">
         Unassigned

@@ -158,7 +158,7 @@ describe("dashboard thread detail sidebar", () => {
     expect(html).toContain("notes:conv_1");
     expect(html).toContain("https://usechatting.com/campaigns/80dfca69-4637-42e0-9171-b6ec33868ab8");
     expect(html).toContain("This visitor asked 2 other questions last month.");
-    expect(html).toContain("Assignment");
+    expect(html).not.toContain("Assignment");
   });
 
   it("shows the email capture form and forwards tag toggles", () => {

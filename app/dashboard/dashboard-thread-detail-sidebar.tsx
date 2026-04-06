@@ -29,6 +29,7 @@ import {
   locationLabel,
   referrerLabel
 } from "./dashboard-thread-detail.utils";
+import { canAssignConversation } from "./dashboard-conversation-assignee";
 
 export function DashboardThreadDetailSidebar({
   activeConversation,
@@ -57,6 +58,7 @@ export function DashboardThreadDetailSidebar({
     aiAssistSettings.conversationSummariesEnabled;
   const availableTags = DASHBOARD_TAGS.filter((tag) => !activeConversation.tags.includes(tag));
   const currentPageUrl = conversationPageUrl(activeConversation);
+  const showAssignmentControls = canAssignConversation(teamMembers);
   const [contactTagDraft, setContactTagDraft] = useState("");
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const contactId = activeConversation.email
@@ -147,14 +149,18 @@ export function DashboardThreadDetailSidebar({
           </>
         ) : null}
 
-        <DashboardThreadAssignmentControls
-          assignedUserId={activeConversation.assignedUserId}
-          teamMembers={teamMembers}
-          assigningConversation={assigningConversation}
-          onAssignConversation={onConversationAssignmentChange}
-        />
+        {showAssignmentControls ? (
+          <>
+            <DashboardThreadAssignmentControls
+              assignedUserId={activeConversation.assignedUserId}
+              teamMembers={teamMembers}
+              assigningConversation={assigningConversation}
+              onAssignConversation={onConversationAssignmentChange}
+            />
 
-        <SidebarDivider />
+            <SidebarDivider />
+          </>
+        ) : null}
 
         <ThreadConversationTagsSection
           tags={activeConversation.tags}

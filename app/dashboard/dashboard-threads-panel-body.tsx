@@ -3,7 +3,11 @@
 import type { ReactNode } from "react";
 import { classNames, truncate } from "@/lib/utils";
 import { conversationRowDetails } from "./dashboard-conversation-display";
-import { ConversationAssigneeBadge, findConversationAssignee } from "./dashboard-conversation-assignee";
+import {
+  canAssignConversation,
+  ConversationAssigneeBadge,
+  findConversationAssignee
+} from "./dashboard-conversation-assignee";
 import { DashboardLink } from "./dashboard-shell";
 import type { DashboardThreadsPanelProps } from "./dashboard-threads-panel-header";
 import { CheckIcon, SearchIcon } from "./dashboard-ui";
@@ -60,6 +64,8 @@ function renderConversationRow({
     previewFallback: "No messages yet"
   });
   const assignee = findConversationAssignee(teamMembers ?? [], conversation.assignedUserId);
+  const showUnassigned = canAssignConversation(teamMembers ?? []);
+  const showAssigneeBadge = Boolean(assignee) || showUnassigned;
 
   return (
     <DashboardLink
@@ -111,9 +117,11 @@ function renderConversationRow({
             </p>
           </div>
 
-          <div className="mt-2">
-            <ConversationAssigneeBadge assignee={assignee} compact />
-          </div>
+          {showAssigneeBadge ? (
+            <div className="mt-2">
+              <ConversationAssigneeBadge assignee={assignee} compact showUnassigned={showUnassigned} />
+            </div>
+          ) : null}
         </div>
       </div>
     </DashboardLink>

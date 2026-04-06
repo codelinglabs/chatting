@@ -3,7 +3,11 @@
 import { useToast } from "../ui/toast-provider";
 import { Button } from "../components/ui/Button";
 import type { DashboardTeamMember } from "@/lib/data/settings-types";
-import { ConversationAssigneeBadge, findConversationAssignee } from "./dashboard-conversation-assignee";
+import {
+  canAssignConversation,
+  ConversationAssigneeBadge,
+  findConversationAssignee
+} from "./dashboard-conversation-assignee";
 import { DASHBOARD_SELECT_CLASS } from "./dashboard-controls";
 
 export function DashboardThreadAssignmentControls({
@@ -18,8 +22,13 @@ export function DashboardThreadAssignmentControls({
   onAssignConversation: (assignedUserId: string | null) => Promise<void>;
 }) {
   const { showToast } = useToast();
+  const showAssignmentControls = canAssignConversation(teamMembers);
   const assignee = findConversationAssignee(teamMembers, assignedUserId);
   const currentUser = teamMembers.find((member) => member.isCurrentUser) ?? null;
+
+  if (!showAssignmentControls) {
+    return null;
+  }
 
   async function handleAssign(nextAssignedUserId: string | null) {
     try {

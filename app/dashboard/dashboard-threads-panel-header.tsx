@@ -71,6 +71,7 @@ export function renderThreadsHeader({
   counts,
   threadFilter,
   assignmentFilter,
+  showAssignmentFilter,
   searchQuery,
   searchInputId,
   onThreadFilterChange,
@@ -81,6 +82,7 @@ export function renderThreadsHeader({
   counts: ThreadCounts;
   threadFilter: ThreadFilter;
   assignmentFilter: AssignmentFilter;
+  showAssignmentFilter: boolean;
   searchQuery: string;
   searchInputId?: string;
   onThreadFilterChange: (value: ThreadFilter) => void;
@@ -127,21 +129,23 @@ export function renderThreadsHeader({
         ) : null}
       </label>
 
-      <div className="mt-4 space-y-2">
-        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-slate-400">Assignment</p>
-        <select
-          aria-label="Filter by assignment"
-          value={assignmentFilter}
-          onChange={(event) => onAssignmentFilterChange(event.currentTarget.value as AssignmentFilter)}
-          className={DASHBOARD_SELECT_CLASS}
-        >
-          {ASSIGNMENT_FILTERS.map((filter) => (
-            <option key={filter.id} value={filter.id}>
-              {filter.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {showAssignmentFilter ? (
+        <div className="mt-4 space-y-2">
+          <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-slate-400">Assignment</p>
+          <select
+            aria-label="Filter by assignment"
+            value={assignmentFilter}
+            onChange={(event) => onAssignmentFilterChange(event.currentTarget.value as AssignmentFilter)}
+            className={DASHBOARD_SELECT_CLASS}
+          >
+            {ASSIGNMENT_FILTERS.map((filter) => (
+              <option key={filter.id} value={filter.id}>
+                {filter.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
 
       <div className="mt-4">
         <Link
