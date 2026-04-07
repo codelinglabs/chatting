@@ -70,7 +70,10 @@ async function loadDashboardShell(options?: {
       }
     },
     PRIMARY_NAV: [{ href: "/dashboard" }, { href: "/dashboard/inbox" }],
-    SETTINGS_NAV: [{ href: "/dashboard/settings" }]
+    getDashboardSettingsNav: (userEmail: string) =>
+      userEmail === "tina@usechatting.com"
+        ? [{ href: "/dashboard/settings" }, { href: "/dashboard/publishing" }]
+        : [{ href: "/dashboard/settings" }]
   }));
   vi.doMock("@/lib/utils", () => ({
     classNames: (...values: Array<string | false | null | undefined>) => values.filter(Boolean).join(" ")
@@ -95,7 +98,6 @@ describe("dashboard shell", () => {
       })
     });
     const { DashboardShell, captures, heartbeat, reactMocks, router, timezoneSync } = await loadDashboardShell();
-
     reactMocks.beginRender();
     renderToStaticMarkup(
       <DashboardShell
@@ -113,13 +115,14 @@ describe("dashboard shell", () => {
     expect(timezoneSync).toHaveBeenCalled();
     expect(captures.mobile).toEqual({
       pathname: "/dashboard/inbox",
-      unreadCount: 3
+      unreadCount: 3,
+      userEmail: "tina@usechatting.com"
     });
     expect(captures.header).toEqual(
       expect.objectContaining({ showUnreadBadge: true, unreadCount: 3, firstName: "Tina" })
     );
     expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: true }));
-    expect(router.prefetch).toHaveBeenCalledTimes(3);
+    expect(router.prefetch).toHaveBeenCalledTimes(4);
     expect((globalThis.document as Document).documentElement.style.overflow).toBe("hidden");
     cleanups.at(-1)?.();
     expect((globalThis.document as Document).documentElement.style.overflow).toBe("");
@@ -133,7 +136,6 @@ describe("dashboard shell", () => {
     const { DashboardShell, captures, reactMocks, router } = await loadDashboardShell({
       pathname: "/dashboard"
     });
-
     reactMocks.beginRender();
     renderToStaticMarkup(
       <DashboardShell
@@ -149,7 +151,8 @@ describe("dashboard shell", () => {
     expect(captures.main).toEqual(expect.objectContaining({ isInboxRoute: false }));
     expect(captures.mobile).toEqual({
       pathname: "/dashboard",
-      unreadCount: 0
+      unreadCount: 0,
+      userEmail: "tina@usechatting.com"
     });
 
     const navigation = captures.navigation as { navigate: (href: string) => void; onLinkNavigate: (event: Record<string, unknown>, href: string) => void };
@@ -169,7 +172,6 @@ describe("dashboard shell", () => {
   it("renders the shell with live unread totals when the shared unread hook refreshes them", async () => {
     vi.stubGlobal("window", { location: { pathname: "/dashboard/visitors", search: "", hash: "" } });
     const { DashboardShell, captures, reactMocks } = await loadDashboardShell({ pathname: "/dashboard/visitors", liveUnreadCount: 5 });
-
     reactMocks.beginRender();
     renderToStaticMarkup(
       <DashboardShell
@@ -181,10 +183,10 @@ describe("dashboard shell", () => {
       </DashboardShell>
     );
     await runMockEffects(reactMocks.effects);
-
     expect(captures.mobile).toEqual({
       pathname: "/dashboard/visitors",
-      unreadCount: 5
+      unreadCount: 5,
+      userEmail: "tina@usechatting.com"
     });
     expect(captures.sidebar).toEqual(
       expect.objectContaining({

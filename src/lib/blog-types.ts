@@ -30,6 +30,8 @@ export type BlogImage = {
   alt: string;
 };
 
+export type BlogPublicationStatus = "draft" | "scheduled" | "published";
+
 export type BlogComparisonRow = {
   label: string;
   values: string[];
@@ -73,6 +75,7 @@ export type BlogPost = {
   excerpt: string;
   subtitle: string;
   seoTitle?: string;
+  publicationStatus?: BlogPublicationStatus;
   publishedAt: string;
   updatedAt: string;
   readingTime: number;

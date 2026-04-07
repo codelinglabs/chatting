@@ -8,6 +8,9 @@ type BlogArticleRouteProps = {
   params: Promise<{ slug: string }>;
 };
 
+export const revalidate = 60;
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   return getAllBlogPosts().map((post) => ({ slug: post.slug }));
 }

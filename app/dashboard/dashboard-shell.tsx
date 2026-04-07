@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  type MouseEvent,
-  type ReactNode
-} from "react";
+import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import type { Route } from "next";
 import type { DashboardAiAssistWarningBanner as DashboardAiAssistWarningBannerData } from "@/lib/ai-assist-warning";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,8 +23,8 @@ import {
 } from "./dashboard-shell-layout";
 import {
   DashboardNavigationContext,
+  getDashboardSettingsNav,
   PRIMARY_NAV,
-  SETTINGS_NAV
 } from "./dashboard-shell-navigation";
 
 export { DashboardLink, useDashboardNavigation } from "./dashboard-shell-navigation";
@@ -66,12 +61,12 @@ export function DashboardShell({
   }, []);
 
   useEffect(() => {
-    const routes = [...PRIMARY_NAV, ...SETTINGS_NAV].map((item) => item.href);
+    const routes = [...PRIMARY_NAV, ...getDashboardSettingsNav(userEmail)].map((item) => item.href);
 
     for (const href of routes) {
       router.prefetch(href);
     }
-  }, [router]);
+  }, [router, userEmail]);
 
   useEffect(() => {
     if (!isInboxRoute) {
@@ -154,7 +149,7 @@ export function DashboardShell({
           )}
         >
           <DashboardNotificationCenter initialSettings={notificationSettings} />
-          <MobileChrome pathname={pathname} unreadCount={liveUnreadCount} />
+          <MobileChrome pathname={pathname} unreadCount={liveUnreadCount} userEmail={userEmail} />
 
           <div
             className={classNames(

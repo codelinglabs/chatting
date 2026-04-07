@@ -3,8 +3,10 @@
 import { createContext, useContext, type ComponentProps, type ComponentType, type MouseEvent, type SVGProps } from "react";
 import type { Route } from "next";
 import Link from "next/link";
+import { canAccessDashboardPublishing } from "@/lib/dashboard-publishing-access";
 import {
   BarChartIcon,
+  CalendarIcon,
   GearIcon,
   HouseIcon,
   InboxIcon,
@@ -45,9 +47,16 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 export const SETTINGS_NAV: readonly NavItem[] = [
   { label: "Widget", href: "/dashboard/widget", icon: PaintbrushIcon },
   { label: "Help center", href: "/dashboard/help-center", icon: HelpCenterIcon },
+  { label: "Publishing", href: "/dashboard/publishing", icon: CalendarIcon },
   { label: "Team", href: "/dashboard/team", icon: UsersIcon },
   { label: "Settings", href: "/dashboard/settings", icon: GearIcon }
 ] as const;
+
+export function getDashboardSettingsNav(userEmail: string) {
+  return canAccessDashboardPublishing(userEmail)
+    ? SETTINGS_NAV
+    : SETTINGS_NAV.filter((item) => item.href !== "/dashboard/publishing");
+}
 
 export function isActivePath(pathname: string, href: string) {
   if (href === "/dashboard") {

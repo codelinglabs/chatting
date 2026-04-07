@@ -7,6 +7,8 @@ type BlogIndexPageProps = {
   searchParams?: Promise<{ category?: string | string[] }>;
 };
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Chatting Blog",
   description:

@@ -49,6 +49,8 @@ describe("dashboard shell layout", () => {
     });
     expect(routeHeaderText("/dashboard/analytics", "Tina", "Hello").title).toBe("Analytics");
     expect(routeHeaderText("/dashboard/help-center", "Tina", "Hello").title).toBe("Help center");
+    expect(routeHeaderText("/dashboard/publishing", "Tina", "Hello").title).toBe("Publishing");
+    expect(routeHeaderText("/dashboard/publishing/traffic-low-conversion", "Tina", "Hello").title).toBe("Publishing preview");
     expect(routeHeaderText("/dashboard/unknown", "Tina", "Hello").title).toBe("Dashboard");
     expect(dashboardGreeting(null)).toBe("Hello");
     expect(dashboardGreeting(9)).toBe("Good morning");
@@ -56,7 +58,10 @@ describe("dashboard shell layout", () => {
 
   it("renders mobile and desktop navigation chrome", () => {
     const mobileHtml = renderToStaticMarkup(
-      <MobileChrome pathname="/dashboard/inbox" unreadCount={3} />
+      <MobileChrome pathname="/dashboard/inbox" unreadCount={3} userEmail="tina@usechatting.com" />
+    );
+    const restrictedMobileHtml = renderToStaticMarkup(
+      <MobileChrome pathname="/dashboard/inbox" unreadCount={3} userEmail="alex@example.com" />
     );
     const sidebarHtml = renderToStaticMarkup(
       <DesktopSidebar
@@ -67,15 +72,28 @@ describe("dashboard shell layout", () => {
         userEmail="tina@usechatting.com"
       />
     );
+    const restrictedSidebarHtml = renderToStaticMarkup(
+      <DesktopSidebar
+        pathname="/dashboard/visitors"
+        unreadCount={2}
+        initials="AB"
+        displayName="Alex Buyer"
+        userEmail="alex@example.com"
+      />
+    );
 
     expect(mobileHtml).toContain("Chatting");
     expect(mobileHtml).toContain("Log out");
     expect(mobileHtml).toContain("Inbox");
     expect(mobileHtml).toContain("Help center");
+    expect(mobileHtml).toContain("Publishing");
     expect(mobileHtml).toContain(">3<");
     expect(sidebarHtml).toContain("People");
     expect(sidebarHtml).toContain("tina@usechatting.com");
     expect(sidebarHtml).toContain("Chatting");
+    expect(sidebarHtml).toContain("Publishing");
+    expect(restrictedMobileHtml).not.toContain("Publishing");
+    expect(restrictedSidebarHtml).not.toContain("Publishing");
     expect(sidebarHtml).not.toContain("Teams");
   });
 

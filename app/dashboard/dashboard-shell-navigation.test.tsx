@@ -19,6 +19,7 @@ vi.mock("next/link", () => ({
 import {
   DashboardLink,
   DashboardNavigationContext,
+  getDashboardSettingsNav,
   PRIMARY_NAV,
   SETTINGS_NAV,
   isActivePath,
@@ -28,7 +29,9 @@ import {
 describe("dashboard shell navigation", () => {
   it("keeps the primary and settings nav definitions stable", () => {
     expect(PRIMARY_NAV.map((item) => item.label)).toEqual(["Home", "Inbox", "People", "Analytics"]);
-    expect(SETTINGS_NAV.map((item) => item.label)).toEqual(["Widget", "Help center", "Team", "Settings"]);
+    expect(SETTINGS_NAV.map((item) => item.label)).toEqual(["Widget", "Help center", "Publishing", "Team", "Settings"]);
+    expect(getDashboardSettingsNav("tina@usechatting.com").map((item) => item.label)).toContain("Publishing");
+    expect(getDashboardSettingsNav("alex@example.com").map((item) => item.label)).not.toContain("Publishing");
   });
 
   it("matches active paths correctly", () => {

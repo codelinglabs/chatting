@@ -34,8 +34,10 @@ vi.mock("../blog-article-page", () => ({
 }));
 
 import BlogArticleRoute, {
+  dynamicParams,
   generateMetadata,
-  generateStaticParams
+  generateStaticParams,
+  revalidate
 } from "./page";
 
 describe("blog article route", () => {
@@ -92,5 +94,10 @@ describe("blog article route", () => {
       params: Promise.resolve({ slug: "missing" })
     });
     expect(mocks.notFound).toHaveBeenCalled();
+  });
+
+  it("allows on-demand article generation with a short revalidation window", () => {
+    expect(dynamicParams).toBe(true);
+    expect(revalidate).toBe(60);
   });
 });

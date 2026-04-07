@@ -4,6 +4,8 @@ import { buildAbsoluteUrl } from "@/lib/blog-utils";
 import { freeToolCategories, getAllFreeTools } from "@/lib/free-tools-data";
 import { getAllGuides } from "@/lib/guides-data";
 
+export const revalidate = 60;
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: buildAbsoluteUrl("/"), changeFrequency: "weekly", priority: 1 },

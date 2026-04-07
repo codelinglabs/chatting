@@ -23,8 +23,10 @@ vi.mock("@/lib/env", () => ({
 }));
 
 import BlogAuthorRoute, {
+  dynamicParams,
   generateMetadata,
-  generateStaticParams
+  generateStaticParams,
+  revalidate
 } from "./page";
 
 describe("blog author route", () => {
@@ -100,5 +102,10 @@ describe("blog author route", () => {
       params: Promise.resolve({ slug: "missing" })
     });
     expect(mocks.notFound).toHaveBeenCalled();
+  });
+
+  it("allows on-demand author pages with a short revalidation window", () => {
+    expect(dynamicParams).toBe(true);
+    expect(revalidate).toBe(60);
   });
 });

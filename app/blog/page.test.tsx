@@ -30,7 +30,7 @@ vi.mock("./blog-home-page", () => ({
   )
 }));
 
-import BlogIndexPage, { metadata } from "./page";
+import BlogIndexPage, { metadata, revalidate } from "./page";
 
 describe("blog index page route", () => {
   beforeEach(() => {
@@ -80,5 +80,9 @@ describe("blog index page route", () => {
   it("exposes the canonical blog metadata", () => {
     expect(metadata.title).toBe("Chatting Blog");
     expect(String(metadata.alternates?.canonical)).toContain("/blog");
+  });
+
+  it("revalidates on a short interval so scheduled posts can appear without a redeploy", () => {
+    expect(revalidate).toBe(60);
   });
 });

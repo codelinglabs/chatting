@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Dashboard now includes an internal publishing queue and preview workspace, and the Publishing nav only appears for the designated reviewer account.
 - AI Assist is now built into the inbox with reply suggestions, summaries, rewrites, suggested tags, starter usage limits, and a full activity log.
 - Dashboard home, inbox, and thread loading now do less work up front so the main team views open faster.
 - Added a public guides area plus a dedicated inbox shortcuts guide, with direct shortcuts-guide entry points from the dashboard inbox.
@@ -184,6 +185,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Dashboard
 
+- Dashboard now includes an internal Publishing workspace with queued-post previews, and only the designated reviewer account sees the Publishing navigation entry.
 - AI Assist is now built into the inbox with reply suggestions, summaries, rewrites, suggested tags, starter usage metering, warning states, and detailed usage history.
 - Dashboard home, inbox, and thread loading now use lighter data paths so key team views open faster.
 - Solo workspaces now hide assignment badges, filters, and controls that only make sense once a team has more than one member.

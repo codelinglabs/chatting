@@ -1,4 +1,8 @@
 import { generatedBlogPosts } from "@/lib/generated-blog-posts";
+import {
+  getPublishedBlogPosts,
+  getQueuedBlogPosts as getQueuedBlogPublicationPosts
+} from "@/lib/blog-publication";
 import type { BlogAuthor, BlogCategory, BlogCategorySlug, BlogPost, BlogPostWithDetails } from "@/lib/blog-types";
 
 const authors: BlogAuthor[] = [
@@ -75,8 +79,18 @@ export const blogCategories: BlogCategory[] = [
 
 const posts: BlogPost[] = generatedBlogPosts;
 
-const publishedAuthorSlugs = new Set(posts.map((post) => post.authorSlug));
-const publishedAuthors = authors.filter((author) => publishedAuthorSlugs.has(author.slug));
+function getPublishedPosts(now = new Date()) {
+  return getPublishedBlogPosts(posts, now);
+}
+
+function getQueuedPosts(now = new Date()) {
+  return getQueuedBlogPublicationPosts(posts, now);
+}
+
+function getPublishedAuthors(now = new Date()) {
+  const publishedAuthorSlugs = new Set(getPublishedPosts(now).map((post) => post.authorSlug));
+  return authors.filter((author) => publishedAuthorSlugs.has(author.slug));
+}
 
 function withDetails(post: BlogPost): BlogPostWithDetails {
   const author = authors.find((entry) => entry.slug === post.authorSlug);
@@ -90,18 +104,24 @@ function withDetails(post: BlogPost): BlogPostWithDetails {
 }
 
 export function getAllBlogPosts() {
-  return posts
-    .slice()
-    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt))
-    .map(withDetails);
+  return getPublishedPosts().map(withDetails);
+}
+
+export function getQueuedBlogPosts() {
+  return getQueuedPosts().map(withDetails);
+}
+
+export function getQueuedBlogPostBySlug(slug: string) {
+  const post = getQueuedPosts().find((entry) => entry.slug === slug || entry.aliases?.includes(slug));
+  return post ? withDetails(post) : null;
 }
 
 export function getAllBlogAuthors() {
-  return publishedAuthors;
+  return getPublishedAuthors();
 }
 
 export function getBlogAuthorBySlug(slug: string) {
-  return publishedAuthors.find((author) => author.slug === slug) || null;
+  return getPublishedAuthors().find((author) => author.slug === slug) || null;
 }
 
 export function getFeaturedBlogPost() {
@@ -109,7 +129,7 @@ export function getFeaturedBlogPost() {
 }
 
 export function getBlogPostBySlug(slug: string) {
-  const post = posts.find((entry) => entry.slug === slug || entry.aliases?.includes(slug));
+  const post = getPublishedPosts().find((entry) => entry.slug === slug || entry.aliases?.includes(slug));
   return post ? withDetails(post) : null;
 }
 

@@ -8,10 +8,10 @@ import {
 } from "./dashboard-ui";
 import {
   DashboardLink,
+  getDashboardSettingsNav,
   isActivePath,
   NavItem,
-  PRIMARY_NAV,
-  SETTINGS_NAV
+  PRIMARY_NAV
 } from "./dashboard-shell-navigation";
 
 function AppLogo() {
@@ -69,11 +69,15 @@ function SidebarNav({
 
 export function MobileChrome({
   pathname,
-  unreadCount
+  unreadCount,
+  userEmail
 }: {
   pathname: string;
   unreadCount: number;
+  userEmail: string;
 }) {
+  const settingsNav = getDashboardSettingsNav(userEmail);
+
   return (
     <div className="border-b border-slate-200 bg-white lg:hidden">
       <div className="flex items-center justify-between px-4 py-5">
@@ -90,7 +94,7 @@ export function MobileChrome({
       <div className="space-y-4 px-4 pb-4">
         <div className="overflow-x-auto">
           <div className="flex gap-2">
-            {PRIMARY_NAV.concat(SETTINGS_NAV).map((item) => {
+            {PRIMARY_NAV.concat(settingsNav).map((item) => {
               const active = isActivePath(pathname, item.href);
               const Icon = item.icon;
 
@@ -135,6 +139,8 @@ export function DesktopSidebar({
   displayName: string;
   userEmail: string;
 }) {
+  const settingsNav = getDashboardSettingsNav(userEmail);
+
   return (
     <aside className="hidden border-r border-slate-200 bg-white lg:flex lg:h-screen lg:min-h-0 lg:flex-col lg:sticky lg:top-0">
       <div className="border-b border-slate-200 px-5 py-6">
@@ -149,7 +155,7 @@ export function DesktopSidebar({
         <div className="mt-8">
           <p className="px-3 text-xs font-medium uppercase tracking-[0.24em] text-slate-400">Settings</p>
           <div className="mt-3">
-            <SidebarNav items={SETTINGS_NAV} pathname={pathname} unreadCount={0} />
+            <SidebarNav items={settingsNav} pathname={pathname} unreadCount={0} />
           </div>
         </div>
       </div>
