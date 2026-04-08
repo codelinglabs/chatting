@@ -10,7 +10,7 @@ import { GET, OPTIONS } from "./route";
 
 describe("public conversation route", () => {
   it("returns the CORS preflight response", async () => {
-    const response = OPTIONS();
+    const response = await OPTIONS();
 
     expect(response.status).toBe(204);
     expect(response.headers.get("Access-Control-Allow-Origin")).toBe("*");

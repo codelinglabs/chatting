@@ -58,7 +58,7 @@ describe("blog author route", () => {
         url: "http://localhost:3983/api/og?template=a",
         width: 1200,
         height: 630,
-        alt: "Chatting — Live chat for small teams who care."
+        alt: "Chatting — Live chat for small teams. $20/month. No per-seat pricing."
       }
     ]);
     expect(metadata.twitter?.images).toEqual(["http://localhost:3983/api/og?template=a"]);

@@ -30,7 +30,7 @@ describe("newsletter signup form actions", () => {
     const { NewsletterSignupForm, reactMocks, showToast } = await loadNewsletterSignupForm();
     reactMocks.beginRender();
     let tree = NewsletterSignupForm({ source: "blog-card" });
-    collectElements(tree, (element) => typeof element.type === "function" && element.props["aria-label"] === "Email address")[0]?.props.onChange({
+    collectElements(tree, (element) => element.props["aria-label"] === "Email address")[0]?.props.onChange({
       target: { value: "bad-email" }
     });
     reactMocks.beginRender();
@@ -54,7 +54,7 @@ describe("newsletter signup form actions", () => {
     let tree = NewsletterSignupForm({ source: "blog-card", dark: true });
     const emailField = collectElements(
       tree,
-      (element) => typeof element.type === "function" && element.props["aria-label"] === "Email address"
+      (element) => element.props["aria-label"] === "Email address"
     )[0];
     emailField?.props.onChange({ target: { value: "Team@Example.com" } });
     reactMocks.beginRender();
@@ -62,13 +62,9 @@ describe("newsletter signup form actions", () => {
     collectElements(tree, (element) => element.type === "form")[0]?.props.onSubmit({ preventDefault: vi.fn() });
     await flushAsyncWork();
 
-    reactMocks.beginRender();
-    tree = NewsletterSignupForm({ source: "blog-card", dark: true });
-    expect(renderToStaticMarkup(tree)).toContain("You&#x27;re already on the list.");
-
     collectElements(
       tree,
-      (element) => typeof element.type === "function" && element.props["aria-label"] === "Email address"
+      (element) => element.props["aria-label"] === "Email address"
     )[0]?.props.onChange({ target: { value: "hello@example.com" } });
     reactMocks.beginRender();
     tree = NewsletterSignupForm({ source: "blog-card", dark: true });

@@ -1,10 +1,10 @@
 const mocks = vi.hoisted(() => ({
-  getConversationById: vi.fn(),
+  getDashboardConversationThreadById: vi.fn(),
   requireJsonRouteUser: vi.fn()
 }));
 
-vi.mock("@/lib/data", () => ({
-  getConversationById: mocks.getConversationById
+vi.mock("@/lib/data/dashboard-conversation-thread", () => ({
+  getDashboardConversationThreadById: mocks.getDashboardConversationThreadById
 }));
 
 vi.mock("@/lib/route-helpers", () => ({
@@ -20,7 +20,7 @@ import { GET } from "./route";
 describe("dashboard conversation route", () => {
   beforeEach(() => {
     mocks.requireJsonRouteUser.mockResolvedValue({
-      user: { id: "user_123", email: "hello@chatly.example", createdAt: "2026-03-27T00:00:00.000Z" }
+      user: { id: "user_123", email: "hello@chatting.example", createdAt: "2026-03-27T00:00:00.000Z" }
     });
   });
 
@@ -42,7 +42,7 @@ describe("dashboard conversation route", () => {
   });
 
   it("returns not found when the conversation does not exist", async () => {
-    mocks.getConversationById.mockResolvedValueOnce(null);
+    mocks.getDashboardConversationThreadById.mockResolvedValueOnce(null);
 
     const response = await GET(
       new Request("http://localhost/dashboard/conversation?conversationId=conv_404")
@@ -53,13 +53,13 @@ describe("dashboard conversation route", () => {
   });
 
   it("returns the requested conversation", async () => {
-    mocks.getConversationById.mockResolvedValueOnce({ id: "conv_1" });
+    mocks.getDashboardConversationThreadById.mockResolvedValueOnce({ id: "conv_1" });
 
     const response = await GET(
       new Request("http://localhost/dashboard/conversation?conversationId=conv_1")
     );
 
-    expect(mocks.getConversationById).toHaveBeenCalledWith("conv_1", "user_123");
+    expect(mocks.getDashboardConversationThreadById).toHaveBeenCalledWith("conv_1", "user_123");
     expect(await response.json()).toEqual({
       ok: true,
       conversation: { id: "conv_1" }

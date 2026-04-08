@@ -72,7 +72,7 @@ describe("email templates edge cases", () => {
     });
 
     const fragment = renderDashboardEmailTemplateFragment(
-      "[Open](https://chatly.example/open)\n![ ](https://chatly.example/image.png)",
+      "[Open](https://chatting.example/open)\n![ ](https://chatting.example/image.png)",
       context
     );
 

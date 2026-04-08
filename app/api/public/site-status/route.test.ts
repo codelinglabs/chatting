@@ -16,8 +16,8 @@ describe("public site-status route", () => {
     vi.clearAllMocks();
   });
 
-  it("returns the shared cors preflight response", () => {
-    const response = OPTIONS();
+  it("returns the shared cors preflight response", async () => {
+    const response = await OPTIONS();
 
     expect(response.status).toBe(204);
     expect(response.headers.get("access-control-allow-origin")).toBe("*");

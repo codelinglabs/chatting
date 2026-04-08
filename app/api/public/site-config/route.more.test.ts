@@ -36,7 +36,7 @@ describe("public site-config route extra coverage", () => {
   });
 
   it("handles OPTIONS, missing site ids, and missing sites", async () => {
-    expect(OPTIONS().status).toBe(204);
+    expect((await OPTIONS()).status).toBe(204);
     expect((await GET(new Request("https://chatting.test/api/public/site-config"))).status).toBe(400);
 
     mocks.getSiteWidgetConfig.mockResolvedValueOnce(null);

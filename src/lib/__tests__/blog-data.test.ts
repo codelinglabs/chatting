@@ -59,22 +59,24 @@ describe("blog data", () => {
   });
 
   it("keeps draft backlog posts out of public blog lookups", () => {
-    expect(getBlogPostBySlug("chatting-vs-gorgias")).toBeNull();
     expect(getBlogPostBySlug("best-live-chat-software-customer-support")).toBeNull();
     expect(getBlogPostBySlug("zendesk-alternatives-small-teams")).toBeNull();
     expect(getBlogPostBySlug("traffic-low-conversion")).toBeNull();
     expect(getBlogPostBySlug("small-ecommerce-customer-support-workflow")).toBeNull();
     expect(getBlogPostBySlug("shopify-live-chat-growth-uses")).toBeNull();
+    expect(getBlogPostBySlug("live-chat-worth-it-small-business")).toBeNull();
+    expect(getBlogPostBySlug("what-is-live-chat-benefits")).toBeNull();
   });
 
   it("returns queued posts with hydrated author and category details", () => {
     expect(getQueuedBlogPosts().map((post) => post.slug)).toEqual([
-      "chatting-vs-gorgias",
       "best-live-chat-software-customer-support",
       "zendesk-alternatives-small-teams",
       "traffic-low-conversion",
       "small-ecommerce-customer-support-workflow",
-      "shopify-live-chat-growth-uses"
+      "shopify-live-chat-growth-uses",
+      "live-chat-worth-it-small-business",
+      "what-is-live-chat-benefits"
     ]);
     expect(getQueuedBlogPosts().every((post) => post.author.name && post.category.label)).toBe(true);
   });

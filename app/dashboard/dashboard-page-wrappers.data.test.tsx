@@ -10,7 +10,7 @@ const mocks = {
   getAnalyticsDataset: vi.fn(),
   getDashboardAiAssistAccess: vi.fn(),
   getDashboardSettingsData: vi.fn(),
-  getConversationById: vi.fn(),
+  getDashboardConversationThreadById: vi.fn(),
   listDashboardTeamMembers: vi.fn(),
   listInboxConversationSummaries: vi.fn(),
   listSitesForUser: vi.fn(),
@@ -25,11 +25,13 @@ vi.mock("@/lib/data/settings-ai-assist-access", () => ({
   getDashboardAiAssistAccess: mocks.getDashboardAiAssistAccess
 }));
 vi.mock("@/lib/data", () => ({
-  getConversationById: mocks.getConversationById,
   getDashboardSettingsData: mocks.getDashboardSettingsData,
   listDashboardTeamMembers: mocks.listDashboardTeamMembers,
   listInboxConversationSummaries: mocks.listInboxConversationSummaries,
   listSitesForUser: mocks.listSitesForUser
+}));
+vi.mock("@/lib/data/dashboard-conversation-thread", () => ({
+  getDashboardConversationThreadById: mocks.getDashboardConversationThreadById
 }));
 
 describe("dashboard page wrappers data pages", () => {
@@ -46,7 +48,7 @@ describe("dashboard page wrappers data pages", () => {
     mocks.listInboxConversationSummaries.mockResolvedValueOnce([{ id: "conv_1" }]);
     mocks.listSitesForUser.mockResolvedValueOnce([{ id: "site_1" }]);
     mocks.listDashboardTeamMembers.mockResolvedValueOnce([{ id: "member_1" }]);
-    mocks.getConversationById.mockResolvedValueOnce({ id: "conv_1", subject: "Pricing" });
+    mocks.getDashboardConversationThreadById.mockResolvedValueOnce({ id: "conv_1", subject: "Pricing" });
     vi.doMock("./dashboard-analytics-page", () => ({
       DashboardAnalyticsPage: (props: unknown) => ((captures.analytics = props), <div>analytics</div>)
     }));
@@ -81,10 +83,13 @@ describe("dashboard page wrappers data pages", () => {
 
   it("requests ai assist usage when opening the ai assist settings section", async () => {
     mocks.getDashboardSettingsData.mockResolvedValueOnce({
-      profile: { email: OWNER_USER.email },
+      profile: { email: OWNER_USER.email, firstName: "Tina", lastName: "Li" },
       aiAssist: GROWTH_AI_ASSIST_ACCESS.settings,
       billing: { planKey: "growth" }
     });
+    vi.doMock("./dashboard-settings-page", () => ({
+      DashboardSettingsPage: () => <div>settings</div>
+    }));
 
     const settingsPage = (await import("./settings/page")).default;
 

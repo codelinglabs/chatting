@@ -14,8 +14,8 @@ vi.mock("@/lib/conversation-template-emails", () => ({
 import { OPTIONS, POST } from "./route";
 
 describe("public conversation email route", () => {
-  it("returns the CORS preflight response", () => {
-    expect(OPTIONS().status).toBe(204);
+  it("returns the CORS preflight response", async () => {
+    expect((await OPTIONS()).status).toBe(204);
   });
 
   it("requires site, session, conversation, and email", async () => {

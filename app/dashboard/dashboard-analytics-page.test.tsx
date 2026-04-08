@@ -1,5 +1,18 @@
 import { renderToStaticMarkup } from "react-dom/server";
 
+const mocks = vi.hoisted(() => ({
+  replace: vi.fn(),
+  showToast: vi.fn()
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: mocks.replace })
+}));
+
+vi.mock("../ui/toast-provider", () => ({
+  useToast: () => ({ showToast: mocks.showToast })
+}));
+
 import { DashboardAnalyticsPage } from "./dashboard-analytics-page";
 
 describe("dashboard analytics page", () => {
@@ -117,7 +130,7 @@ describe("dashboard analytics page", () => {
   it("renders overview by default with the analytics sidebar", () => {
     const html = renderToStaticMarkup(
       <DashboardAnalyticsPage
-        userEmail="tina@chatly.example"
+        userEmail="tina@chatting.example"
         initialDataset={dataset}
       />
     );
@@ -134,7 +147,7 @@ describe("dashboard analytics page", () => {
   it("renders the conversations section when selected", () => {
     const html = renderToStaticMarkup(
       <DashboardAnalyticsPage
-        userEmail="tina@chatly.example"
+        userEmail="tina@chatting.example"
         initialDataset={dataset}
         activeSection="conversations"
       />
@@ -151,14 +164,14 @@ describe("dashboard analytics page", () => {
   it("renders the team performance and ai assist sections when selected", () => {
     const teamHtml = renderToStaticMarkup(
       <DashboardAnalyticsPage
-        userEmail="tina@chatly.example"
+        userEmail="tina@chatting.example"
         initialDataset={dataset}
         activeSection="teamPerformance"
       />
     );
     const aiHtml = renderToStaticMarkup(
       <DashboardAnalyticsPage
-        userEmail="tina@chatly.example"
+        userEmail="tina@chatting.example"
         initialDataset={dataset}
         activeSection="aiAssist"
       />
@@ -174,7 +187,7 @@ describe("dashboard analytics page", () => {
   it("renders personal-only ai assist analytics for members", () => {
     const html = renderToStaticMarkup(
       <DashboardAnalyticsPage
-        userEmail="tina@chatly.example"
+        userEmail="tina@chatting.example"
         initialDataset={{
           ...dataset,
           aiAssist: {
@@ -210,7 +223,7 @@ describe("dashboard analytics page", () => {
   it("renders the dedicated ai assist activity page when requested", () => {
     const html = renderToStaticMarkup(
       <DashboardAnalyticsPage
-        userEmail="tina@chatly.example"
+        userEmail="tina@chatting.example"
         initialDataset={{
           ...dataset,
           aiAssistActivityPage: {
@@ -243,7 +256,7 @@ describe("dashboard analytics page", () => {
     const oldDate = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString();
     const html = renderToStaticMarkup(
       <DashboardAnalyticsPage
-        userEmail="tina@chatly.example"
+        userEmail="tina@chatting.example"
         initialDataset={{
           ...dataset,
           conversations: [
@@ -267,7 +280,7 @@ describe("dashboard analytics page", () => {
   it("renders the global empty state when there is no analytics data", () => {
     const html = renderToStaticMarkup(
       <DashboardAnalyticsPage
-        userEmail="tina@chatly.example"
+        userEmail="tina@chatting.example"
         initialDataset={{
           conversations: [],
           replyEvents: [],

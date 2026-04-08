@@ -10,7 +10,7 @@ import {
 
 describe("email templates", () => {
   const previewContext = buildDashboardEmailTemplatePreviewContext({
-    profileEmail: "sarah@chatly.example",
+    profileEmail: "sarah@chatting.example",
     profileName: "Sarah Chen"
   });
 
@@ -53,8 +53,8 @@ describe("email templates", () => {
             title: "Helpful?",
             textTitle: "Helpful?",
             links: [
-              { label: "Yes", href: "https://chatly.example/yes" },
-              { label: "No", href: "https://chatly.example/no" }
+              { label: "Yes", href: "https://chatting.example/yes" },
+              { label: "No", href: "https://chatting.example/no" }
             ]
           }
         ]
@@ -63,9 +63,9 @@ describe("email templates", () => {
 
     expect(rendered.bodyText).toContain("Best,\nChatting Team");
     expect(rendered.bodyText).toContain("Helpful?");
-    expect(rendered.bodyText).toContain("Yes: https://chatly.example/yes");
+    expect(rendered.bodyText).toContain("Yes: https://chatting.example/yes");
     expect(rendered.bodyHtml).toContain("Best,<br />Chatting Team");
-    expect(rendered.bodyHtml).toContain('href="https://chatly.example/yes"');
+    expect(rendered.bodyHtml).toContain('href="https://chatting.example/yes"');
     expect(rendered.bodyHtml).toContain(">Helpful?</td>");
   });
 
@@ -123,8 +123,8 @@ describe("email templates", () => {
       [
         "Hi **{{team_name}}**",
         "__Heads up__ and *thanks*",
-        "[Open](https://chatly.example/open)",
-        "![Screenshot](https://chatly.example/image.png)",
+        "[Open](https://chatting.example/open)",
+        "![Screenshot](https://chatting.example/image.png)",
         "```console.log('hi')```"
       ].join("\n"),
       previewContext,
@@ -135,7 +135,7 @@ describe("email templates", () => {
     expect(fragment.html).toContain("<strong>");
     expect(fragment.html).toContain("<u>Heads up</u>");
     expect(fragment.html).toContain("<em>thanks</em>");
-    expect(fragment.html).toContain('href="https://chatly.example/open"');
+    expect(fragment.html).toContain('href="https://chatting.example/open"');
     expect(fragment.html).toContain("<figure");
     expect(fragment.html).toContain("<pre");
     expect(fragment.html).toContain("<mark");
@@ -185,7 +185,7 @@ describe("email templates", () => {
       profileName: "Tina Bauer"
     });
     const fallback = buildDashboardEmailTemplatePreviewContext({
-      profileEmail: "hello@chatly.example",
+      profileEmail: "hello@chatting.example",
       profileName: "   "
     });
 

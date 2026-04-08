@@ -16,8 +16,8 @@ vi.mock("@/lib/live-events", () => ({
 import { OPTIONS, POST } from "./route";
 
 describe("public typing route", () => {
-  it("returns the preflight response", () => {
-    expect(OPTIONS().status).toBe(204);
+  it("returns the preflight response", async () => {
+    expect((await OPTIONS()).status).toBe(204);
   });
 
   it("requires site, session, and conversation ids", async () => {

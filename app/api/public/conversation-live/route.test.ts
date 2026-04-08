@@ -15,8 +15,8 @@ vi.mock("@/lib/live-events", () => ({
 import { GET, OPTIONS } from "./route";
 
 describe("public conversation live route", () => {
-  it("returns the preflight response", () => {
-    expect(OPTIONS().status).toBe(204);
+  it("returns the preflight response", async () => {
+    expect((await OPTIONS()).status).toBe(204);
   });
 
   it("requires the full conversation identity", async () => {

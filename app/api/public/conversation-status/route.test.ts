@@ -9,8 +9,8 @@ vi.mock("@/lib/data", () => ({
 import { GET, OPTIONS } from "./route";
 
 describe("public conversation status route", () => {
-  it("returns the preflight response", () => {
-    expect(OPTIONS().status).toBe(204);
+  it("returns the preflight response", async () => {
+    expect((await OPTIONS()).status).toBe(204);
   });
 
   it("requires the full conversation identity", async () => {

@@ -37,6 +37,10 @@ class MockFormData {
   getAll(name: string) {
     return this.values.get(name) ?? [];
   }
+
+  set(name: string, value: string | File) {
+    this.values.set(name, [value]);
+  }
 }
 
 const originalFormData = globalThis.FormData;

@@ -130,6 +130,7 @@ describe("dashboard reply action hotspots", () => {
     const harness = createDashboardActionsHarness();
 
     const sendPromise = harness.actions.handleReplySend(createReplyEvent("Hello there"));
+    await Promise.resolve();
 
     expect(harness.recentOptimisticReplyAtRef.current.has("conv_1")).toBe(true);
     expect(harness.activeConversationState.current?.messages[1]).toMatchObject({
