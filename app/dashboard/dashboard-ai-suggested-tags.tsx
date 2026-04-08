@@ -70,14 +70,15 @@ export function DashboardAiSuggestedTags({
       return;
     }
 
+    if (outcome.status === "error") {
+      setTagState("error");
+      setSuggestedTags(EMPTY_SUGGESTED_TAGS);
+      return;
+    }
+
     const tags = outcome.result?.tags?.filter(
       (tag) => !activeConversation.tags.includes(tag)
     ) ?? EMPTY_SUGGESTED_TAGS;
-
-    if (outcome.status === "error") {
-      setTagState("error");
-      return;
-    }
 
     if (!tags.length) {
       setTagState("idle");
