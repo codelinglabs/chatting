@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   ...NO_INDEX_METADATA
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function VerifyPage({ searchParams }: VerifyPageProps) {
   const params = await searchParams;
   const token = params.token?.trim() ?? "";
