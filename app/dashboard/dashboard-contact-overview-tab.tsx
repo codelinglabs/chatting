@@ -2,19 +2,12 @@
 
 import { useState } from "react";
 import type { BillingPlanKey } from "@/lib/billing-plans";
-import type {
-  ContactCustomFieldDefinition,
-  ContactDetail,
-  ContactNote
-} from "@/lib/contact-types";
+import type { ContactCustomFieldDefinition, ContactDetail, ContactNote } from "@/lib/contact-types";
 import { formatDateTime, formatRelativeTime } from "@/lib/utils";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import {
-  contactLocationLabel,
-  contactSourceSummary,
-  formatAvgSessionLabel
-} from "./dashboard-contact-drawer-utils";
+import { contactLocationLabel, contactSourceSummary, formatAvgSessionLabel } from "./dashboard-contact-drawer-utils";
+import { buildOptimisticContactTagRemoval } from "./dashboard-contact-tag-optimistic";
 import { ContactCustomFieldsSection } from "./dashboard-contact-custom-fields-section";
 import { ContactProfileRow, ContactProfileSection } from "./dashboard-contact-profile-ui";
 import { AutomationTagPicker } from "./dashboard-settings-automation-tag-picker";
@@ -81,6 +74,11 @@ export function ContactOverviewTab({
     setEditingContactInfo(false);
   }
 
+  function removeTag(tag: string) {
+    const optimisticDetail = buildOptimisticContactTagRemoval(detail, tag);
+    void onSavePatch({ tags: optimisticDetail.tags }, { optimisticDetail, previousDetail: detail });
+  }
+
   return (
     <div className="space-y-5">
       <ContactProfileSection
@@ -140,7 +138,7 @@ export function ContactOverviewTab({
             <button
               key={tag}
               type="button"
-              onClick={() => void onSavePatch({ tags: detail.tags.filter((entry) => entry !== tag) })}
+              onClick={() => removeTag(tag)}
               className="rounded-full bg-blue-100 px-2.5 py-1 text-xs text-blue-700"
             >
               {tag} ×
@@ -156,6 +154,7 @@ export function ContactOverviewTab({
               primaryOptions={tagOptions}
               placeholder="Search or create tag..."
               onChange={onDraftTagChange}
+              onEnterKey={onAddTag}
             />
           </div>
           <Button type="button" size="md" onClick={onAddTag}>Add</Button>

@@ -14,11 +14,11 @@ import {
   SidebarKeyValueRows,
   SidebarSection
 } from "./dashboard-side-panel-ui";
-import { ThreadContactNotes, ThreadContactTags, ThreadCustomerContext } from "./dashboard-thread-detail-contact-panels";
+import { ThreadContactNotes, ThreadCustomerContext } from "./dashboard-thread-detail-contact-panels";
+import { DashboardThreadTagsPanel } from "./dashboard-thread-detail-tags-panel";
 import { DashboardThreadAssignmentControls } from "./dashboard-thread-assignment-controls";
 import {
   ThreadContactNoteModalSection,
-  ThreadConversationTagsSection,
   ThreadRecentHistorySection,
   ThreadSharedVisitorNotesSection,
   ThreadSidebarIdentity
@@ -128,27 +128,6 @@ export function DashboardThreadDetailSidebar({
 
         <SidebarDivider />
 
-        {contact ? (
-          <>
-            <ThreadContactTags
-              contact={contact}
-              draftTag={contactTagDraft}
-              onDraftTagChange={setContactTagDraft}
-              onSavePatch={saveContactPatch}
-            />
-
-            <SidebarDivider />
-
-            <ThreadContactNotes
-              contact={contact}
-              onAddNote={() => setActiveNoteId("new")}
-              onEditNote={setActiveNoteId}
-            />
-
-            <SidebarDivider />
-          </>
-        ) : null}
-
         {showAssignmentControls ? (
           <>
             <DashboardThreadAssignmentControls
@@ -162,7 +141,11 @@ export function DashboardThreadDetailSidebar({
           </>
         ) : null}
 
-        <ThreadConversationTagsSection
+        <DashboardThreadTagsPanel
+          contact={contact}
+          draftTag={contactTagDraft}
+          onDraftTagChange={setContactTagDraft}
+          onSaveContactPatch={saveContactPatch}
           tags={activeConversation.tags}
           availableTags={availableTags}
           onToggleTag={onToggleTag}
@@ -171,6 +154,18 @@ export function DashboardThreadDetailSidebar({
         <SidebarDivider />
 
         <ThreadSharedVisitorNotesSection conversationId={activeConversation.id} />
+        {contact ? (
+          <>
+            <ThreadContactNotes
+              contact={contact}
+              onAddNote={() => setActiveNoteId("new")}
+              onEditNote={setActiveNoteId}
+            />
+
+            <SidebarDivider />
+          </>
+        ) : null}
+
 
         <ThreadRecentHistorySection visitorActivity={visitorActivity} />
       </div>

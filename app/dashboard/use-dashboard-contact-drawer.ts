@@ -15,10 +15,8 @@ import {
   patchDashboardContact,
   patchDashboardContactSettings
 } from "./dashboard-contact-drawer-requests";
-import {
-  type SavePatchOptions,
-  type SaveSettingsOptions
-} from "./dashboard-contact-drawer-state";
+import { buildOptimisticContactTagAddition } from "./dashboard-contact-tag-optimistic";
+import { type SavePatchOptions, type SaveSettingsOptions } from "./dashboard-contact-drawer-state";
 import { useDashboardContactDrawerDrafts } from "./use-dashboard-contact-drawer-drafts";
 import { useDashboardContactDrawerSettings } from "./use-dashboard-contact-drawer-settings";
 import { useToast } from "../ui/toast-provider";
@@ -160,15 +158,17 @@ export function useDashboardContactDrawer({
   }
 
   function addTag() {
-    const tag = draftTag.trim().toLowerCase();
-    if (!tag || !detail) return;
+    if (!detail) return;
+    const optimisticDetail = buildOptimisticContactTagAddition(detail, draftTag);
+    if (!optimisticDetail) return;
     setDraftTag("");
-    void savePatch({ tags: Array.from(new Set([...detail.tags, tag])) });
+    void savePatch(
+      { tags: optimisticDetail.tags },
+      { optimisticDetail, previousDetail: detail }
+    );
   }
 
-  useEffect(() => {
-    void loadContact();
-  }, [contactId]);
+  useEffect(() => void loadContact(), [contactId]);
 
   return {
     detail,

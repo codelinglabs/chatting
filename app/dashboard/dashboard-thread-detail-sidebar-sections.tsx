@@ -59,42 +59,50 @@ export function ThreadSidebarIdentity({
 }
 
 export function ThreadConversationTagsSection({
+  title = "Tags",
   tags,
   availableTags,
   onToggleTag
 }: {
+  title?: string | null;
   tags: string[];
   availableTags: string[];
   onToggleTag: (tag: string) => Promise<void>;
 }) {
-  return (
-    <SidebarSection title="Tags">
-      <div className="flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <button
-            key={tag}
-            type="button"
-            onClick={() => onToggleTag(tag)}
-            className={
-              tagToneClass(tag) +
-              " rounded-full px-2.5 py-1 text-xs font-normal transition"
-            }
-          >
-            {tag}
-          </button>
-        ))}
-        {availableTags.map((tag) => (
-          <button
-            key={tag}
-            type="button"
-            onClick={() => onToggleTag(tag)}
-            className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-normal text-slate-500 transition hover:bg-slate-200"
-          >
-            {`+ ${tag}`}
-          </button>
-        ))}
-      </div>
+  const content = (
+    <div className="flex flex-wrap gap-2">
+      {tags.map((tag) => (
+        <button
+          key={tag}
+          type="button"
+          onClick={() => onToggleTag(tag)}
+          className={
+            tagToneClass(tag) +
+            " rounded-full px-2.5 py-1 text-xs font-normal transition"
+          }
+        >
+          {tag}
+        </button>
+      ))}
+      {availableTags.map((tag) => (
+        <button
+          key={tag}
+          type="button"
+          onClick={() => onToggleTag(tag)}
+          className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100 hover:text-slate-700"
+        >
+          {`+ ${tag}`}
+        </button>
+      ))}
+    </div>
+  );
+
+  return title ? (
+    <SidebarSection title={title}>
+      {content}
     </SidebarSection>
+  ) : (
+    content
   );
 }
 

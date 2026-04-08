@@ -22,6 +22,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     "Contact profiles now bring together identity, activity, tags, notes, conversations, and custom fields in one place.",
     "Teams can create and manage their own contact statuses and custom fields from settings.",
     "Notes, tags, and custom field values can now be updated directly from each contact profile."
+    "Contact tags now update immediately in the inbox sidebar and contact drawer, and the thread tag area is easier to scan while editing live conversations."
   ]),
   entry("Early April 2026", "Automation can now do much more before a teammate jumps in", "Teams can now shape more of the visitor journey from settings, with better routing, FAQ suggestions, and proactive outreach that feel much closer to the live widget experience.", [
     "Automation settings now cover offline behavior, routing rules, FAQ suggestions, and page-based proactive messages in one place.",

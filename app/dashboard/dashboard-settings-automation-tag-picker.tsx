@@ -14,7 +14,8 @@ export function AutomationTagPicker({
   inputId,
   hasError,
   placeholder,
-  onChange
+  onChange,
+  onEnterKey
 }: {
   value: string;
   options: string[];
@@ -24,6 +25,7 @@ export function AutomationTagPicker({
   hasError?: boolean;
   placeholder?: string;
   onChange: (value: string) => void;
+  onEnterKey?: () => void;
 }) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -37,10 +39,7 @@ export function AutomationTagPicker({
       normalizedValue ? 8 : 6
     );
 
-    return [
-      { title: "Workspace tags", items: visiblePrimary.items, hiddenCount: visiblePrimary.hiddenCount },
-      { title: "Suggested tags", items: visibleSecondary.items, hiddenCount: visibleSecondary.hiddenCount }
-    ].filter((group) => group.items.length);
+    return [{ title: "Workspace tags", items: visiblePrimary.items, hiddenCount: visiblePrimary.hiddenCount }, { title: "Suggested tags", items: visibleSecondary.items, hiddenCount: visibleSecondary.hiddenCount }].filter((group) => group.items.length);
   }, [normalizedValue, options, primaryOptions, secondaryOptions]);
 
   const hasExactMatch = options.some((option) => option.toLowerCase() === normalizedValue);
@@ -71,6 +70,12 @@ export function AutomationTagPicker({
             setIsOpen(true);
           }}
           onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              onEnterKey?.();
+              setIsOpen(false);
+              return;
+            }
             if (event.key === "Escape") {
               setIsOpen(false);
             }
@@ -100,9 +105,7 @@ export function AutomationTagPicker({
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                 {normalizedValue ? "Matching tags" : "Suggested tags"}
               </p>
-              <p className="text-xs text-slate-500">
-                {normalizedValue ? "Choose a tag or create a new one." : "Pick a clean label for this routing rule."}
-              </p>
+              <p className="text-xs text-slate-500">{normalizedValue ? "Choose a tag or create a new one." : "Pick a clean label for this routing rule."}</p>
             </div>
           </div>
 
