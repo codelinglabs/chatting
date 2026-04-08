@@ -46,7 +46,34 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     "Teammate mention emails link more directly to the right context.",
     "Visitor follow-up templates now avoid repeating extra conversation-link instructions when that guidance is already in the email."
   ]),
-  entry("Earlier 2026", "Invites, referrals, and billing are easier to manage as a team", "Joining a team, sharing referrals, and tracking rewards now feel more connected.", [
-    "Invite flows make it easier for teammates to join the right workspace and land in the right place."
+  entry("Early March 2026", "Joining your team got easier", "Teammates can get into the right Chatting workspace faster, and account setup is less likely to stall along the way.", [
+    "Invite links now take teammates straight into the workspace that invited them.",
+    "Teammates can finish signup without losing the invite that brought them there.",
+    "Email verification and password recovery now make it easier to finish setup and get back in."
+  ]),
+  entry("Early March 2026", "Upgrading got clearer for growing teams", "Chatting now makes it easier to compare plans, understand what extra seats will cost, and keep referral rewards in view.", [
+    "Starter and Growth plans now show clearer monthly and annual pricing before checkout.",
+    "Team-size pricing updates on the page so it is easier to see what a larger team will cost before you upgrade.",
+    "Referral links, signups, and reward progress now live together in one billing view."
+  ]),
+  entry("February 2026", "Important updates started showing up by email", "Chatting began emailing teams the updates that matter most, so keeping up with conversations and weekly performance takes less dashboard checking.", [
+    "Daily digests and weekly performance emails can now arrive automatically for each teammate.",
+    "Reminder emails help teams catch setup gaps, slow activity, and other moments that need attention.",
+    "Conversation and notification emails now feel more polished and easier to scan."
+  ]),
+  entry("February 2026", "The dashboard became easier to run day to day", "Chatting brought inbox, visitors, analytics, settings, and growth views into one workspace so teams could manage chat without bouncing between scattered screens.", [
+    "Inbox, visitors, analytics, team, settings, and widget controls now live together in the dashboard.",
+    "The home view now highlights workspace activity and trends instead of acting like a blank landing page.",
+    "Teams can move from live conversations to visitor context and setup controls without losing their place."
+  ]),
+  entry("January 2026", "Getting your widget live took fewer steps", "New teams got a more guided setup flow so they could customize the widget, install it, and confirm everything was working faster.", [
+    "Setup now walks owners through widget customization, install, and go-live checks.",
+    "New workspaces start with a more sensible default site name based on the signup email domain.",
+    "Onboarding stays focused on the next step instead of extra setup friction."
+  ]),
+  entry("Start of 2026", "Chatting launched with the essentials for live chat", "The first release gave small teams a branded website widget, a shared inbox, and email follow-up in one place.", [
+    "Teams can add a chat widget to their site and start collecting visitor context right away.",
+    "A shared inbox gives teammates one place to read, reply to, and tag conversations.",
+    "Email follow-up keeps conversations moving after a visitor leaves the site."
   ])
 ];
