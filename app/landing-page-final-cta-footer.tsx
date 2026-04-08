@@ -11,12 +11,20 @@ const footerGroups = [
     ]
   },
   {
-    title: "Learn",
-    links: [{ label: "Blog", href: "/blog" }, { label: "How it works", href: "/#how-it-works" }]
+    title: "Resources",
+    links: [
+      { label: "Help Center", href: "/guides" },
+      { label: "Blog", href: "/blog" }
+    ]
   },
   {
-    title: "Resources",
-    links: [{ label: "Free Tools", href: "/free-tools" }, { label: "Everything You Need", href: "/#everything" }]
+    title: "Compare",
+    links: [
+      { label: "All comparisons", href: "/blog?category=comparisons" },
+      { label: "Chatting vs Intercom", href: "/blog/chatting-vs-intercom" },
+      { label: "Intercom alternatives", href: "/blog/intercom-alternatives-small-business" },
+      { label: "Chatting vs Zendesk", href: "/blog/chatting-vs-zendesk" }
+    ]
   },
   {
     title: "Legal",
@@ -29,27 +37,29 @@ export function LandingFinalCtaFooter() {
     <section
       className="relative -mt-px overflow-hidden text-white"
       style={{
-        backgroundColor: "#2563EB"
+        backgroundImage: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 58%, #1E40AF 100%)"
       }}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.18),transparent_48%)]" />
       <div className="relative mx-auto w-full max-w-[1240px] px-4 sm:px-6 lg:px-8">
-        <section className="px-2 py-32 sm:py-36">
-          <div className="mx-auto max-w-5xl text-center">
+        <section className="relative px-2 py-28 sm:py-32">
+          <div className="mx-auto max-w-4xl text-center">
             <h2 className="display-font text-5xl leading-tight text-white sm:text-6xl lg:text-7xl">
               Live chat for small teams.
               <br />
               No enterprise bloat.
             </h2>
-            <div className="mt-12 flex flex-col items-center gap-8">
+            <div className="mt-12 flex flex-col items-center gap-4">
               <GrometricsButtonLink
                 href="/signup"
                 eventName="signup_started"
                 eventProperties={{ source: "landing_footer" }}
                 variant="secondary"
-                className="border-white bg-white px-9 text-blue-700 hover:border-blue-100 hover:bg-blue-50 hover:text-blue-700"
+                className="min-h-[60px] border-white bg-white px-10 text-base text-blue-700 shadow-[0_18px_46px_rgba(15,23,42,0.16)] hover:border-blue-100 hover:bg-blue-50 hover:text-blue-700"
               >
-                Start 14 day free trial — live in 3 minutes →
+                Start free — live in 3 minutes →
               </GrometricsButtonLink>
+              <p className="text-sm font-medium text-blue-100/82">No credit card. No sales call.</p>
             </div>
           </div>
         </section>

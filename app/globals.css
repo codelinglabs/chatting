@@ -114,15 +114,59 @@ pre {
 }
 
 .typing-dot {
-  animation: typingDot 1.4s infinite ease-in-out;
+  animation: typingDot 1.28s infinite ease-in-out;
 }
 
 .typing-dot:nth-child(2) {
-  animation-delay: 0.2s;
+  animation-delay: 0.18s;
+  animation-duration: 1.44s;
 }
 
 .typing-dot:nth-child(3) {
-  animation-delay: 0.4s;
+  animation-delay: 0.34s;
+  animation-duration: 1.18s;
+}
+
+.hero-loop-launcher {
+  animation: heroLauncher 3.7s linear infinite both;
+}
+
+.hero-loop-window {
+  transform-origin: bottom right;
+  animation: heroWindow 3.7s linear infinite both;
+}
+
+.hero-status-dot {
+  animation: heroStatusDot 1.6s ease-in-out infinite;
+}
+
+.hero-chat-proactive {
+  animation: heroChatProactive 3.7s linear infinite both;
+}
+
+.hero-chat-typing {
+  animation: heroChatTyping 3.7s linear infinite both;
+}
+
+.hero-chat-visitor {
+  animation: heroChatVisitor 3.7s linear infinite both;
+}
+
+.hero-chat-reply {
+  animation: heroChatReply 3.7s linear infinite both;
+}
+
+.what-does-proactive-launcher {
+  animation: whatDoesProactiveLauncher 4.4s ease-in-out infinite both;
+}
+
+.what-does-proactive-window {
+  transform-origin: bottom right;
+  animation: whatDoesProactiveWindow 4.4s ease-in-out infinite both;
+}
+
+.what-does-proactive-message {
+  animation: whatDoesProactiveMessage 4.4s ease-in-out infinite both;
 }
 
 @keyframes messageIn {
@@ -148,6 +192,191 @@ pre {
   30% {
     opacity: 1;
     transform: translateY(-4px);
+  }
+}
+
+@keyframes heroStatusDot {
+  0%,
+  100% {
+    opacity: 0.85;
+    box-shadow: 0 0 0 0 rgba(110, 231, 183, 0);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 8px rgba(110, 231, 183, 0.18);
+  }
+}
+
+@keyframes heroChatProactive {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  24%,
+  86% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  90%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroChatVisitor {
+  0%,
+  48% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  54%,
+  86% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  90%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroChatTyping {
+  0%,
+  35% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  39%,
+  48% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  52%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroChatReply {
+  0%,
+  65% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  70%,
+  86% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  90%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes whatDoesProactiveLauncher {
+  0%,
+  45% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  45.01%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes whatDoesProactiveWindow {
+  0%,
+  45% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  45.01%,
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes whatDoesProactiveMessage {
+  0%,
+  51% {
+    opacity: 0;
+    transform: none;
+  }
+
+  51.01%,
+  94% {
+    opacity: 1;
+    transform: none;
+  }
+
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes heroLauncher {
+  0%,
+  13% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  19%,
+  89% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+
+  93%,
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes heroWindow {
+  0%,
+  13% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.88);
+  }
+
+  19%,
+  86% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  90%,
+  100% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
   }
 }
 
@@ -285,6 +514,36 @@ button:disabled {
   .typing-dot,
   .message-enter {
     animation: none !important;
+  }
+
+  .hero-loop-launcher,
+  .hero-loop-window,
+  .hero-status-dot,
+  .hero-chat-proactive,
+  .hero-chat-typing,
+  .hero-chat-visitor,
+  .hero-chat-reply,
+  .what-does-proactive-launcher,
+  .what-does-proactive-window,
+  .what-does-proactive-message {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .hero-loop-launcher,
+  .hero-chat-typing,
+  .what-does-proactive-launcher {
+    opacity: 0 !important;
+  }
+
+  .hero-loop-window,
+  .hero-chat-proactive,
+  .hero-chat-visitor,
+  .hero-chat-reply,
+  .hero-status-dot,
+  .what-does-proactive-window,
+  .what-does-proactive-message {
+    opacity: 1 !important;
   }
 
   .hover-lift:hover,

@@ -12,31 +12,30 @@ const starterFeatures: PricingFeatureItem[] = [
 const growthFeatures: PricingFeatureItem[] = [
   "Unlimited conversations",
   {
-    label: "Up to 3 team members included",
-    note: "Volume pricing from $6/member after that"
+    label: "3 team members included",
+    note: "Then $6/member/month"
   },
   "Proactive chat",
   "Visitor tracking",
   "Advanced analytics",
   "AI assist",
+  "Routing rules",
   "Saved replies",
   "API access",
   "Custom branding",
-  "White-label widget"
+  "White-label widget",
+  "Integrations"
 ];
 
 export function LandingPricingSection() {
   return (
     <section id="pricing" className="bg-slate-50">
       <div className="mx-auto w-full max-w-[1200px] px-6 py-24">
-        <div className="mx-auto max-w-[600px] text-center">
-          <div className="inline-flex rounded-full bg-blue-50 px-[14px] py-[6px] text-[13px] font-medium text-blue-700">
-            Pricing
-          </div>
-          <h2 className="display-font mt-4 text-4xl leading-tight text-slate-900 sm:text-5xl">
-            Simple, transparent pricing
+        <div className="mx-auto max-w-[900px] text-center">
+          <h2 className="display-font text-4xl leading-tight text-slate-900 lg:text-5xl">
+            Simple pricing. No per-seat games.
           </h2>
-          <p className="mt-4 text-lg leading-8 text-slate-500">Start 14 day free trial. Upgrade when you&apos;re ready.</p>
+          <p className="mt-4 text-lg leading-8 text-slate-500">Start free. Pay when you&apos;re ready.</p>
         </div>
 
         <div className="mx-auto mt-12 grid max-w-[820px] gap-6 md:grid-cols-2">
@@ -47,7 +46,6 @@ export function LandingPricingSection() {
             displayPriceOverride={{ amount: "Free", cadence: "", note: null }}
             featureItems={starterFeatures}
             priceNotePlacement="hidden"
-            summaryLabel="For testing the waters"
             action={
               <GrometricsButtonLink
                 href="/signup"
@@ -57,7 +55,7 @@ export function LandingPricingSection() {
                 eventName="signup_started"
                 eventProperties={{ plan: "starter", source: "pricing_page" }}
               >
-                Start 14 day free trial →
+                Start free →
               </GrometricsButtonLink>
             }
           />
@@ -68,7 +66,6 @@ export function LandingPricingSection() {
             displayPriceOverride={{ amount: "$20", cadence: "/month", note: null }}
             featureItems={growthFeatures}
             priceNotePlacement="hidden"
-            summaryLabel="For teams ready to convert"
             action={
               <GrometricsButtonLink
                 href="/signup"
@@ -90,17 +87,17 @@ export function LandingPricingSection() {
           <span>No credit card required</span>
         </div>
 
-        <div className="mx-auto mt-10 max-w-[820px] rounded-[16px] border border-slate-200 bg-white px-7 py-6">
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 text-blue-600">
+        <div className="mx-auto mt-10 max-w-[820px] px-7 py-4">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <span className="text-blue-600">
               <ChatBubbleIcon className="h-6 w-6" />
             </span>
             <div>
-              <h3 className="text-base font-semibold text-slate-900">What if I need more than 3 members?</h3>
+              <h3 className="text-base font-semibold text-slate-900">Need more than 3 people?</h3>
               <p className="mt-2 text-[15px] leading-7 text-slate-600">
-                No problem. After 3, it&apos;s just <span className="font-semibold text-slate-700">$6/member/month</span>.
-                {" "}A team of 10 costs <span className="font-semibold text-slate-700">$62/month</span>. Still cheaper
-                than one Intercom seat.
+                <span className="font-semibold text-slate-700">$6/member/month</span> after that. Team of 10 =
+                {" "}<span className="font-semibold text-slate-700">$62/month</span>. Still less than one Intercom
+                seat.
               </p>
             </div>
           </div>

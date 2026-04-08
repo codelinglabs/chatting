@@ -33,21 +33,18 @@ export const testimonials = [
 export const setupSteps = [
   {
     number: "1",
-    title: "Copy one snippet",
-    body:
-      "One line of code. Works with any site — WordPress, Webflow, Shopify, custom."
+    title: "Add one snippet",
+    body: "Copy a line of code to your site. Works everywhere — WordPress, Webflow, Shopify, custom builds."
   },
   {
     number: "2",
-    title: "Customize (optional)",
-    body:
-      "Pick colors. Write your welcome message. Set hours. Or just use the defaults and go."
+    title: "Customize",
+    body: "Your colors, your message. Or skip it."
   },
   {
     number: "3",
-    title: "Start chatting",
-    body:
-      "Visitor asks a question. You answer. Desktop notifications and email alerts also help your team stay on top of every conversation."
+    title: "Start talking",
+    body: "Visitor asks a question. You answer. They convert."
   }
 ];
 

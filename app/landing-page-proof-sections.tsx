@@ -1,5 +1,5 @@
-import { SectionLabel } from "./landing-page-primitives";
-import { LandingOtherFeaturesSection } from "./landing-page-other-features-section";
+import { LandingEverythingIncludedSection } from "./landing-page-everything-included-section";
+import { LandingIntegrationsSection } from "./landing-page-integrations-section";
 
 const comparisonRows = [
   {
@@ -31,18 +31,19 @@ const comparisonRows = [
 export function LandingProofSections() {
   return (
     <>
-      <LandingOtherFeaturesSection />
+      <LandingIntegrationsSection />
+      <LandingEverythingIncludedSection />
+      <LandingComparisonSection />
     </>
   );
 }
 
 export function LandingComparisonSection() {
   return (
-    <section className="bg-[#FFFDF9]">
+    <section id="compare" className="bg-[#FFFDF9]">
       <div className="mx-auto w-full max-w-[1240px] px-4 py-24 sm:px-6 lg:px-8">
         <div className="max-w-4xl px-2">
-          <SectionLabel>Why small teams pick Chatting</SectionLabel>
-          <h2 className="display-font mt-5 text-4xl text-slate-900 sm:text-5xl">Built for small teams. Not stripped-down enterprise software.</h2>
+          <h2 className="display-font text-4xl text-slate-900 sm:text-5xl">How we stack up.</h2>
         </div>
         <div className="mt-12 overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
           <div className="overflow-x-auto">
@@ -79,9 +80,8 @@ export function LandingComparisonSection() {
           </div>
         </div>
         <div className="mx-auto mt-10 max-w-4xl px-2 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">The bottom line</p>
-          <p className="mt-4 text-lg leading-8 text-slate-700">Intercom is built for enterprise teams with enterprise budgets. HubSpot locks you into their ecosystem. Crisp is solid, but gets expensive as your team grows.</p>
-          <p className="mt-4 text-lg font-medium leading-8 text-slate-900">Chatting gives you what you actually need — at a price that makes sense.</p>
+          <p className="text-lg leading-8 text-slate-700">Intercom is built for enterprise teams with enterprise budgets. HubSpot locks you into their ecosystem. Crisp is solid, but gets expensive as your team grows.</p>
+          <p className="mt-4 text-lg font-medium leading-8 text-slate-900">Chatting is $20/month for up to 3 people. After that, $6/member. Simple.</p>
         </div>
       </div>
     </section>

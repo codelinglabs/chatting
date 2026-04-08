@@ -5,8 +5,10 @@ export const SITE_SEO_TITLE = "Live Chat Software for Small Teams | Chatting";
 export const SITE_SEO_DESCRIPTION =
   "Chatting is live chat software for small teams that want to answer website visitors faster, support customers in real time, and turn more conversations into revenue.";
 export const HOME_PAGE_SEO_DESCRIPTION =
-  "Answer website visitors in real time with a lightweight live chat widget, shared inbox, and proactive visitor insights for small teams.";
-export const DEFAULT_OG_IMAGE_ALT = "Chatting — Live chat for small teams who care.";
+  "Live chat that's simple to set up and easy to afford. Shared inbox, visitor tracking, proactive messages. $20/month flat — no per-seat pricing. Free plan available.";
+export const HOME_PAGE_OG_DESCRIPTION =
+  "See who's on your site. Answer their questions. Close the deal. Simple pricing, no per-seat games. Start free.";
+export const DEFAULT_OG_IMAGE_ALT = "Chatting — Live chat for small teams. $20/month. No per-seat pricing.";
 const DEFAULT_OG_IMAGE_WIDTH = 1200;
 const DEFAULT_OG_IMAGE_HEIGHT = 630;
 export const NO_INDEX_METADATA: Pick<Metadata, "robots"> = {

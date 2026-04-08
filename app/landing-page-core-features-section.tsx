@@ -1,81 +1,107 @@
 import { GrometricsButtonLink } from "./grometrics-button-link";
 import {
-  ContactContextFeatureIllustration,
   InboxFeatureIllustration,
+  ProactiveMessagesFeatureIllustration
+} from "./landing-page-conversation-feature-illustrations";
+import { ContactHistoryFeatureIllustration } from "./landing-page-contact-history-illustration";
+import { FAQSuggestionsFeatureIllustration } from "./landing-page-faq-suggestions-illustration";
+import {
   OfflineFeatureIllustration,
+  SmartRoutingFeatureIllustration,
   VisitorsFeatureIllustration
 } from "./landing-page-feature-illustrations";
 
 const coreFeatures = [
   {
-    number: "1",
-    title: "Catch buyers before they leave",
-    body: "See who's on your site right now. What page they're on. How long they've been there.",
-    detail: "Spot someone stuck on pricing for 8 minutes → start a conversation → remove the hesitation → close the deal.",
-    close: "This is how small teams outsell bigger competitors.",
-    reverse: false,
-    Illustration: VisitorsFeatureIllustration
-  },
-  {
-    number: "2",
-    title: "Reply faster than your competitors",
-    body: "Every conversation in one place. No missed messages. No delays.",
+    title: "Team Inbox",
+    body: "One inbox. Whole team.",
     detail:
-      "Chats automatically route to the right person—sales questions to sales, support issues to support. Assign conversations, tag them, search them, and use keyboard shortcuts for speed.",
-    close: "Your team of 3 responds faster than their team of 30.",
+      "Every conversation in one place. Assign chats, tag them, search them. Keyboard shortcuts for speed. Nobody drops the ball.",
     reverse: true,
+    wideIllustration: true,
     Illustration: InboxFeatureIllustration
   },
   {
-    number: "3",
-    title: "Turn missed chats into revenue",
-    body: "Not online? No problem.",
+    title: "Offline Mode",
+    body: "Never lose a lead.",
     detail:
-      "Set business hours. Show a custom offline message. Auto-reply instantly so visitors know you got their message, then capture their email. Follow up later — your reply goes straight to their inbox, and they can reply back into the chat.",
-    close: "No lead left behind. Even at 2am.",
-    reverse: false,
+      "Set business hours. Show a custom offline message. Capture their email. Reply later — it goes straight to their inbox, and they can reply back into the chat.",
+    reverse: true,
     Illustration: OfflineFeatureIllustration
   },
   {
-    number: "4",
-    title: "Know who you're talking to",
-    body:
-      "When a visitor shares their email, they stop being a session and start being a person. Their history follows them across devices, sessions, and conversations.",
+    title: "Proactive Messages",
+    body: "Start conversations first.",
     detail:
-      "See past chats, pages visited, notes, company details, and the context your team needs to reply personally — without asking the same questions again.",
-    close: "This isn't a CRM. It's just enough context to know who you're talking to.",
+      "Don't wait for visitors to reach out. Set automated messages on high-intent pages. Someone's been on pricing for 30 seconds? \"Questions about our plans?\" You make the first move.",
+    reverse: false,
+    Illustration: ProactiveMessagesFeatureIllustration
+  },
+  {
+    title: "Smart Routing",
+    body: "Right chat. Right person. Automatically.",
+    detail:
+      "Route conversations based on page URL, keywords, or visitor data. Pricing questions go to sales. Support issues go to support. No manual sorting.",
     reverse: true,
-    Illustration: ContactContextFeatureIllustration
+    Illustration: SmartRoutingFeatureIllustration
+  },
+  {
+    title: "Contact History",
+    body: "Know who you're talking to.",
+    detail:
+      "Chatting remembers visitors across sessions. See their full history — every page, every conversation, every visit. When someone comes back, you have context. Not \"Visitor #4827.\"",
+    reverse: false,
+    wideIllustration: true,
+    Illustration: ContactHistoryFeatureIllustration
+  },
+  {
+    title: "FAQ Suggestions",
+    body: "Instant answers before the chat starts.",
+    detail:
+      "Show relevant help articles before connecting to your team. Visitors get instant answers. You handle the complex stuff.",
+    reverse: true,
+    Illustration: FAQSuggestionsFeatureIllustration
+  },
+  {
+    title: "Visitor Tracking",
+    body: "See who's on your site right now.",
+    detail:
+      "Watch visitors browse in real-time. See what page they're on, where they came from, how long they've been there. Spot high-intent prospects on your pricing page. Reach out before they leave.",
+    reverse: false,
+    wideIllustration: true,
+    Illustration: VisitorsFeatureIllustration
   }
 ] as const;
 
 function CoreFeatureCard({
-  close,
   detail,
   Illustration,
-  number,
   reverse,
   title,
-  body
+  body,
+  close,
+  wideIllustration
 }: (typeof coreFeatures)[number]) {
   const illustrationOrder = reverse ? "lg:order-2" : "";
   const copyOrder = reverse ? "lg:order-1" : "";
+  const gridClassName = wideIllustration
+    ? reverse
+      ? "lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)]"
+      : "lg:grid-cols-[minmax(0,1.14fr)_minmax(0,0.86fr)]"
+    : "lg:grid-cols-2";
 
   return (
     <article className="rounded-[28px] border border-slate-200 bg-slate-50 p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)] sm:p-8 lg:p-12">
-      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+      <div className={`grid items-center gap-10 lg:gap-14 ${gridClassName}`}>
         <div className={illustrationOrder}>
           <Illustration />
         </div>
         <div className={copyOrder}>
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-[10px] bg-blue-600 text-sm font-semibold text-white">
-            {number}
-          </span>
-          <h3 className="mt-4 text-3xl font-semibold leading-tight text-slate-900">{title}</h3>
+          <h3 className="text-3xl font-semibold leading-tight text-slate-900">{title}</h3>
           <div className="mt-5 space-y-4 text-[17px] leading-8 text-slate-600">
             <p>{body}</p>
             <p className="text-base leading-7 text-slate-500">{detail}</p>
-            <p className="font-semibold text-slate-900">{close}</p>
+            {close ? <p className="font-semibold text-slate-900">{close}</p> : null}
           </div>
         </div>
       </div>
@@ -85,11 +111,11 @@ function CoreFeatureCard({
 
 export function LandingCoreFeaturesSection() {
   return (
-    <section className="bg-white">
+    <section id="features" className="bg-white">
       <div className="mx-auto w-full max-w-[1240px] px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
+        <div className="mx-auto max-w-4xl text-center">
           <h2 className="display-font text-4xl leading-[1.12] text-slate-900 sm:text-5xl">
-            Four features that pay for themselves.
+            The difference between a visitor and a customer is often one answer.
           </h2>
         </div>
 
@@ -100,9 +126,7 @@ export function LandingCoreFeaturesSection() {
         </div>
 
         <div className="mx-auto mt-16 max-w-3xl px-6 text-center sm:px-10">
-          <p className="text-xl font-medium leading-8 text-slate-700">
-            This is all most teams need to convert more visitors.
-          </p>
+          <p className="text-lg font-medium text-slate-600">This is all most teams need.</p>
           <div className="mt-6">
             <GrometricsButtonLink
               href="/signup"
