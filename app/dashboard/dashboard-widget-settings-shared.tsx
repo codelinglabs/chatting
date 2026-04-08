@@ -1,9 +1,12 @@
 "use client";
 
 import type { ComponentType, SVGProps } from "react";
-import { getWidgetSnippet } from "@/lib/dashboard";
-import { getPublicAppUrl } from "@/lib/env";
 import type { Site, WidgetOperatingHours } from "@/lib/types";
+import {
+  getWidgetInstallGuidance,
+  getWidgetInstallSnippet,
+  type WidgetInstallTarget
+} from "@/lib/widget-installation";
 import { buildWidgetSettingsPayload } from "@/lib/widget-settings";
 import { classNames } from "@/lib/utils";
 import {
@@ -14,7 +17,7 @@ import {
 
 export type WidgetTab = "appearance" | "behavior" | "installation";
 export type PreviewDevice = "desktop" | "mobile";
-export type InstallPlatform = "html" | "react" | "nextjs" | "wordpress" | "shopify" | "webflow";
+export type InstallPlatform = Exclude<WidgetInstallTarget, "other">;
 
 export const COLOR_PRESETS = ["#2563EB", "#7C3AED", "#059669", "#DC2626", "#EA580C", "#DB2777", "#475569", "#18181B"];
 export const TEAM_PHOTO_ACCEPT = "image/png,image/jpeg,image/gif,image/webp";
@@ -123,62 +126,12 @@ export function previewStatus(site: Site) {
   return replyCopy ? `Online • ${replyCopy}` : "Online";
 }
 
+export function getPlatformGuidance(platform: InstallPlatform) {
+  return getWidgetInstallGuidance(platform);
+}
+
 export function getPlatformSnippet(site: Site, platform: InstallPlatform) {
-  const htmlSnippet = getWidgetSnippet(site);
-  const appUrl = getPublicAppUrl();
-
-  if (platform === "react") {
-    return `import { useEffect } from "react";
-
-export function ChattingWidget() {
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "${appUrl}/widget.js";
-    script.dataset.siteId = "${site.id}";
-    document.body.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
-  }, []);
-
-  return null;
-}`;
-  }
-
-  if (platform === "nextjs") {
-    return `import Script from "next/script";
-
-export default function ChattingScript() {
-  return (
-    <Script
-      src="${appUrl}/widget.js"
-      data-site-id="${site.id}"
-      strategy="afterInteractive"
-    />
-  );
-}`;
-  }
-
-  if (platform === "wordpress") {
-    return `Paste this into your theme footer or a custom HTML block:
-
-${htmlSnippet}`;
-  }
-
-  if (platform === "shopify") {
-    return `In Shopify, add this just before </body> in theme.liquid:
-
-${htmlSnippet}`;
-  }
-
-  if (platform === "webflow") {
-    return `In Webflow, open Project Settings → Custom Code → Footer Code and paste:
-
-${htmlSnippet}`;
-  }
-
-  return htmlSnippet;
+  return getWidgetInstallSnippet(platform, site.id);
 }
 
 export function ToggleRow({

@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createDefaultOperatingHours } from "@/lib/widget-settings";
 import type { Site } from "@/lib/types";
 import {
+  getPlatformGuidance,
   ToggleRow,
   WidgetTabIcon,
   getPlatformSnippet,
@@ -93,12 +94,14 @@ describe("dashboard widget settings shared helpers", () => {
   it("returns platform snippets for each supported install path", () => {
     const site = createSite();
 
+    expect(getPlatformGuidance("html")).toContain("closing </body>");
+    expect(getPlatformGuidance("wordpress")).toContain("footer code");
     expect(getPlatformSnippet(site, "html")).toContain('data-site-id="site_123"');
     expect(getPlatformSnippet(site, "react")).toContain("export function ChattingWidget()");
     expect(getPlatformSnippet(site, "nextjs")).toContain('strategy="afterInteractive"');
-    expect(getPlatformSnippet(site, "wordpress")).toContain("Paste this into your theme footer");
-    expect(getPlatformSnippet(site, "shopify")).toContain("theme.liquid");
-    expect(getPlatformSnippet(site, "webflow")).toContain("Project Settings");
+    expect(getPlatformSnippet(site, "wordpress")).toContain('data-site-id="site_123"');
+    expect(getPlatformSnippet(site, "shopify")).toContain('data-site-id="site_123"');
+    expect(getPlatformSnippet(site, "webflow")).toContain('data-site-id="site_123"');
   });
 
   it("renders toggle rows and tab icons", () => {

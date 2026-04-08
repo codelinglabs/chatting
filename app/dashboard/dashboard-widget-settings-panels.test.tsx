@@ -88,6 +88,7 @@ describe("widget behavior and installation panels", () => {
     expect(onSetInstallPlatform).toHaveBeenCalledWith("shopify");
     expect(onCopySnippet).toHaveBeenCalled();
     expect(onVerifyInstallation).toHaveBeenCalled();
+    expect(renderToStaticMarkup(installTree)).toContain("closing &lt;/body&gt; tag");
     expect(renderToStaticMarkup(installTree)).toContain("Widget not detected");
     expect(renderToStaticMarkup(installTree)).toContain("Unable to check installation right now.");
   });

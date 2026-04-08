@@ -3,6 +3,7 @@ vi.mock("@/lib/env", () => ({
 }));
 
 import {
+  INSTALL_TAB_COPY,
   buildNextJsSnippet,
   buildSnippet,
   copyButtonLabel,
@@ -55,6 +56,8 @@ describe("onboarding flow shared helpers", () => {
 
   it("formats copy, snippets, and site urls", () => {
     expect(copyButtonLabel(true)).toBe("Copied!");
+    expect(INSTALL_TAB_COPY.code).toContain("closing </body>");
+    expect(INSTALL_TAB_COPY.wordpress).toContain("footer code");
     expect(buildSnippet("site_1")).toContain('src="https://usechatting.com/widget.js"');
     expect(buildNextJsSnippet("site_1")).toContain('data-site-id="site_1"');
     expect(normalizeSiteHref("docs.usechatting.com")).toBe("https://docs.usechatting.com");

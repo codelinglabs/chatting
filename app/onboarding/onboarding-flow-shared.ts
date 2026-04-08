@@ -1,4 +1,8 @@
-import { getPublicAppUrl } from "@/lib/env";
+import {
+  buildHtmlWidgetSnippet,
+  buildNextJsWidgetSnippet,
+  getWidgetInstallGuidance
+} from "@/lib/widget-installation";
 import {
   createDefaultOperatingHours,
   DEFAULT_AVATAR_STYLE,
@@ -14,6 +18,8 @@ import type {
   WidgetOperatingHours,
   WidgetResponseTimeMode
 } from "@/lib/types";
+
+export { buildHtmlWidgetSnippet as buildSnippet, buildNextJsWidgetSnippet as buildNextJsSnippet };
 
 export type InstallTab = "code" | "nextjs" | "wordpress" | "shopify" | "other";
 export type OnboardingFlowStep = Exclude<OnboardingStep, "signup" | "team" | "done">;
@@ -61,11 +67,11 @@ export const INSTALL_TABS: Array<{ value: InstallTab; label: string }> = [
 ];
 
 export const INSTALL_TAB_COPY: Record<InstallTab, string> = {
-  code: "Paste this into your site footer, right before the closing body tag.",
-  nextjs: "Drop this into your Next.js app with `next/script` so the widget loads after the page becomes interactive.",
-  wordpress: "Paste this into your theme footer or your site's code injection area.",
-  shopify: "Paste this into your theme code or app embed area, then publish the theme.",
-  other: "Use this same snippet in your global footer, custom code area, or body-end injection."
+  code: getWidgetInstallGuidance("html"),
+  nextjs: getWidgetInstallGuidance("nextjs"),
+  wordpress: getWidgetInstallGuidance("wordpress"),
+  shopify: getWidgetInstallGuidance("shopify"),
+  other: getWidgetInstallGuidance("other")
 };
 
 export const RESPONSE_TIME_OPTIONS: Array<{ value: WidgetResponseTimeMode; label: string }> = [
@@ -124,27 +130,6 @@ export function verifyErrorMessage(code: string, hasDomain: boolean) {
 
 export function copyButtonLabel(copied: boolean, base = "Copy code") {
   return copied ? "Copied!" : base;
-}
-
-export function buildSnippet(siteId: string | null) {
-  const src = `${getPublicAppUrl().replace(/\/$/, "")}/widget.js`;
-  return `<script\n  src="${src}"\n  data-site-id="${siteId ?? "your-site-id"}"\n></script>`;
-}
-
-export function buildNextJsSnippet(siteId: string | null) {
-  const src = `${getPublicAppUrl().replace(/\/$/, "")}/widget.js`;
-
-  return `import Script from "next/script";
-
-export default function ChattingScript() {
-  return (
-    <Script
-      src="${src}"
-      data-site-id="${siteId ?? "your-site-id"}"
-      strategy="afterInteractive"
-    />
-  );
-}`;
 }
 
 export function normalizeSiteHref(value: string | null) {

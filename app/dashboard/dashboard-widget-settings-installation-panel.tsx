@@ -9,6 +9,7 @@ import {
   CopyIcon
 } from "./dashboard-ui";
 import {
+  getPlatformGuidance,
   getPlatformSnippet,
   PLATFORM_OPTIONS,
   type InstallPlatform
@@ -34,6 +35,7 @@ export function WidgetInstallationPanel({
   onVerifyInstallation: () => void;
 }) {
   const installCode = getPlatformSnippet(activeSite, installPlatform);
+  const installGuidance = getPlatformGuidance(installPlatform);
   const verified = isSiteWidgetInstalled(activeSite);
   const verifiedLocation =
     activeSite.widgetLastSeenUrl ||
@@ -67,7 +69,7 @@ export function WidgetInstallationPanel({
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">Installation code</label>
         <p className="mb-4 text-[13px] text-slate-500">
-          Add this snippet before the closing {`</body>`} tag on your website.
+          {installGuidance}
         </p>
 
         <div className="mb-4 flex flex-wrap gap-2">
