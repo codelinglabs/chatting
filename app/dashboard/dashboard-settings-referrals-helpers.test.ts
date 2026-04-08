@@ -34,7 +34,7 @@ describe("dashboard settings referrals helpers", () => {
 
   it("formats referral dates, share links, badges, tones, and statuses", () => {
     expect(formatReferralDate("2026-03-29T00:00:00.000Z")).toBe("Mar 29, 2026");
-    expect(referralShareLinkLabel("https://chatly.example/signup?ref=ABC")).toBe("chatly.example/signup?ref=ABC");
+    expect(referralShareLinkLabel("https://chatting.example/signup?ref=ABC")).toBe("chatting.example/signup?ref=ABC");
     expect(referralProgramShortLabel("customer")).toBe("Customer");
     expect(referralProgramShortLabel("affiliate")).toBe("Affiliate");
     expect(referralProgramShortLabel("mutual")).toBe("Give $10");

@@ -2,7 +2,7 @@ import { isHighIntentPage, previewIncomingMessage } from "@/lib/notification-uti
 
 describe("notification utils", () => {
   it("detects high-intent pages from urls and raw paths", () => {
-    expect(isHighIntentPage("https://chatly.example/pricing")).toBe(true);
+    expect(isHighIntentPage("https://chatting.example/pricing")).toBe(true);
     expect(isHighIntentPage("/enterprise/demo")).toBe(true);
     expect(isHighIntentPage("/blog/welcome")).toBe(false);
     expect(isHighIntentPage(null)).toBe(false);

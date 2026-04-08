@@ -27,7 +27,7 @@ describe("env", () => {
     delete process.env.NEXT_PUBLIC_APP_URL;
     expect(getPublicAppUrl()).toBe("https://usechatting.com");
 
-    process.env.NEXT_PUBLIC_APP_URL = "https://chatly.example";
-    expect(getPublicAppUrl()).toBe("https://chatly.example");
+    process.env.NEXT_PUBLIC_APP_URL = "https://chatting.example";
+    expect(getPublicAppUrl()).toBe("https://chatting.example");
   });
 });

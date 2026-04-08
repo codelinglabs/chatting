@@ -11,7 +11,7 @@ function buildReferrals() {
         programType: "customer" as const,
         incentiveLabel: "1 free month",
         description: "Give one free month when a referred signup becomes a paid workspace.",
-        shareUrl: "https://chatly.example/signup?ref=REF-4A02A1"
+        shareUrl: "https://chatting.example/signup?ref=REF-4A02A1"
       },
       {
         id: "program_affiliate",
@@ -20,7 +20,7 @@ function buildReferrals() {
         programType: "affiliate" as const,
         incentiveLabel: "25% recurring commission",
         description: "Earn a recurring 25% commission on paid invoices from referred workspaces.",
-        shareUrl: "https://chatly.example/signup?ref=AFF-4656DE"
+        shareUrl: "https://chatting.example/signup?ref=AFF-4656DE"
       },
       {
         id: "program_mutual",
@@ -29,7 +29,7 @@ function buildReferrals() {
         programType: "mutual" as const,
         incentiveLabel: "$10 for you and $10 for them",
         description: "Unlock a $10 credit for both sides after the referred workspace becomes paid.",
-        shareUrl: "https://chatly.example/signup?ref=GIVE-240425"
+        shareUrl: "https://chatting.example/signup?ref=GIVE-240425"
       }
     ],
     attributedSignups: [
@@ -77,8 +77,8 @@ describe("dashboard settings billing referrals card", () => {
     expect(html).toContain("Customer referrals");
     expect(html).toContain("Affiliate program");
     expect(html).toContain("Give $10, get $10");
-    expect(html).toContain("chatly.example/signup?ref=REF-4A02A1");
-    expect(html).toContain('href="https://chatly.example/signup?ref=REF-4A02A1"');
+    expect(html).toContain("chatting.example/signup?ref=REF-4A02A1");
+    expect(html).toContain('href="https://chatting.example/signup?ref=REF-4A02A1"');
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).toContain("Acme Support");

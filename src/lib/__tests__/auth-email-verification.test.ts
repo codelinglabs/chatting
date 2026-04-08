@@ -63,10 +63,16 @@ describe("auth email verification", () => {
       type: "email_verification",
       expiresAt: "2026-04-02T12:00:00.000Z"
     }));
-    expect(mocks.sendEmailVerificationEmail).toHaveBeenCalledWith(expect.objectContaining({
-      to: "hello@chatting.example",
-      verifyUrl: expect.stringContaining("https://chatting.example/verify?token=")
-    }));
+    const emailPayload = mocks.sendEmailVerificationEmail.mock.calls[0]?.[0] as {
+      to: string;
+      verifyUrl: string;
+    };
+    const verifyUrl = new URL(emailPayload.verifyUrl);
+
+    expect(emailPayload.to).toBe("hello@chatting.example");
+    expect(verifyUrl.origin).toBe("https://chatting.example");
+    expect(verifyUrl.pathname).toBe("/verify");
+    expect(verifyUrl.searchParams.get("token")).toBeTruthy();
   });
 
   it("skips resend delivery for missing or already verified accounts", async () => {
