@@ -11,7 +11,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   entry("April 2026", "Integrations now connect to real external workflows", "Chatting now has a dedicated integrations area for teams that want Slack notifications, Zapier automations, Shopify context, and outbound webhooks wired to live backend connections.", [
     "Slack, Zapier, Shopify, and webhooks now live together in one settings area with real saved connection state instead of placeholder UI.",
     "Zapier can now be used as both a trigger source and an action target, including live support for new conversations, resolved conversations, new contacts, tags, contact creation, contact tagging, and sending messages.",
-    "Shopify now connects through a real OAuth flow so inbox teammates can pull customer order context from connected stores."
+    "Shopify now connects through a real OAuth flow so inbox teammates can pull customer order context from connected stores.",
     "The public guides library now includes dedicated setup walkthroughs for Slack, Zapier, Shopify, and webhooks so teams can get each connection live faster."
   ]),
   entry("Early April 2026", "AI Assist is now built into the inbox", "Chatting now includes AI Assist to help teams reply faster, with suggestions that stay human-controlled and grounded in the live conversation.", [
@@ -22,7 +22,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   entry("Early April 2026", "People now gives teams real contact memory, not just live sessions", "Chatting can now keep track of who a visitor is across conversations so teams have useful context the moment they open the inbox.", [
     "Contact profiles now bring together identity, activity, tags, notes, conversations, and custom fields in one place.",
     "Teams can create and manage their own contact statuses and custom fields from settings.",
-    "Notes, tags, and custom field values can now be updated directly from each contact profile."
+    "Notes, tags, and custom field values can now be updated directly from each contact profile.",
     "Contact tags now update immediately in the inbox sidebar and contact drawer, and the thread tag area is easier to scan while editing live conversations."
   ]),
   entry("Early April 2026", "Automation can now do much more before a teammate jumps in", "Teams can now shape more of the visitor journey from settings, with better routing, FAQ suggestions, and proactive outreach that feel much closer to the live widget experience.", [

@@ -20,12 +20,16 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ## Recent Updates
 
 - Logout and auth redirects now use the configured app URL so sign-out no longer bounces people to container-only hosts like `0.0.0.0:8080`.
-- Centralized admin error alerts now cover wrapped routes, server actions, browser exceptions, and process-level failures, with dev/build checks that block new unwrapped server entry points.
 - Inbox contact tags now add on Enter, update optimistically, and sit in a cleaner shared tags block so teammates can edit thread context faster.
 - Slack, Zapier, Shopify, and webhook settings now live in one integrations area with real connection state, live backend routes, and working Zapier triggers/actions for teams building automations around Chatting.
 - The public guides library now includes dedicated Slack, Zapier, Shopify, and webhooks setup walkthroughs so teams can get integrations live without guessing through the setup.
 - Dashboard now includes an internal publishing queue and preview workspace, and the Publishing nav only appears for the designated reviewer account.
-- Scheduled April and May blog backlog posts now cover Gorgias, customer-support software, Zendesk alternatives, low-conversion diagnosis, small ecommerce support workflow, and Shopify live-chat growth uses.
+- Scheduled April and May blog backlog posts now cover Gorgias, customer-support software, Zendesk alternatives, low-conversion diagnosis, small ecommerce support workflow, Shopify live-chat growth uses, a small-business worth-it guide, and a live-chat benefits explainer.
+- Onboarding now finishes directly in the dashboard, and the old standalone done screen no longer appears as a separate end state.
+- Centralized admin error alerts now cover wrapped routes, server actions, browser exceptions, and process-level failures, with dev/build checks that block new unwrapped server entry points.
+- The marketing blog now supports hidden drafts, scheduled auto-publishing, a shared editorial calendar, and a queued traffic-to-conversion diagnosis draft for the April content backlog.
+- The SEO prompt library now forces a source-abstraction step so Reddit/forum ideas do not overfit to exact numbers, platforms, or niche examples.
+- Landing, signup, onboarding, widget settings, billing upgrades, and inbox replies now share funnel-event tracking, while dashboard settings navigation and hosted reply follow-up feel smoother in day-to-day use.
 - AI Assist is now built into the inbox with reply suggestions, summaries, rewrites, suggested tags, starter usage limits, and a full activity log.
 - Dashboard home, inbox, and thread loading now do less work up front so the main team views open faster.
 - Added a public guides area plus a dedicated inbox shortcuts guide, with direct shortcuts-guide entry points from the dashboard inbox.
@@ -145,8 +149,12 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Public Site & Auth
 - Logout and auth redirects now resolve from the configured public app URL so container runtime hosts do not leak into browser redirects.
-- The marketing blog backlog now includes scheduled comparison, conversion, and ecommerce workflow posts that unlock from their target publish dates across April and May.
+- The marketing blog backlog now includes scheduled comparison, conversion, ecommerce workflow, decision-guide, and explainer posts that unlock from their target publish dates across April and May.
+- Onboarding now resolves completed workspaces straight to the dashboard, and the old `/onboarding?step=done` success screen has been removed.
+- The marketing blog now supports `draft` and `scheduled` publication states, short revalidation-based auto-publishing, and a shared publishing calendar for spacing queued posts.
+- Landing, signup, and onboarding now share consistent funnel-event tracking so signup starts, completed logins, completed signups, onboarding saves, snippet copies, and install checks can all be attributed in one flow.
 - The public site now includes a dedicated guides area, and the inbox shortcuts guide is linked directly from the dashboard for easier discovery.
+- The public guides library now also includes dedicated setup walkthroughs for Slack, Zapier, Shopify, and webhooks.
 - Utility public routes like feedback, verification, preference links, and hosted help-center pages now emit explicit `noindex` metadata, while legal pages expose canonicals and the legacy ROI calculator path permanently redirects to its indexed free-tool URL.
 - Shared landing navigation and footer links now stay aligned with Next route typing during production builds.
 - Newsletter signups now preserve source updates correctly even for first-time subscribers.
@@ -155,7 +163,6 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Marketing SEO now ships a generated sitemap/robots setup, homepage-specific metadata and copy, crawlable blog/free-tools links, author profile pages, and keyword-targeted blog slugs and aliases.
 - The marketing blog now includes a Chatting-first small-business live-chat comparison post aimed at high-intent buyers evaluating chat tools.
 - The marketing blog now also includes an after-hours e-commerce lead-capture case study built around off-hours buyer questions and lightweight follow-up.
-- The public guides library now also includes dedicated setup walkthroughs for Slack, Zapier, Shopify, and webhooks.
 - The public landing now hides the metrics/testimonials proof strip, and the three feature cards no longer render empty footer dividers when no stat copy is configured.
 - The signup verification state now includes a return path back to the signup form so people can correct a mistyped email or other account details before submitting again.
 - Auth forms now pull forgot/reset/resend server actions from the dedicated password-actions module, and shared auth redirect helpers stay typed for Next route redirects during builds.
@@ -185,6 +192,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Widget & Public APIs
 
+- Hosted conversation resume replies now keep the composer focused during sends, and public follow-up replies can now emit consistent reply activity events for funnel analysis.
 - Embeddable widget with optimistic sending, typing, conversation polling, and install detection.
 - The shipped widget runtime now reads branding-aware site config, sends fuller visitor context to public config/status routes, and refreshes site state on route changes.
 - The live widget now runs Automation FAQ suggestions, proactive prompts, and profile-aware routing inputs from the public automation payload.
@@ -197,6 +205,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Inbox tag editing now feels faster, with Enter-to-add contact tags, optimistic updates in the sidebar and contact drawer, and a cleaner shared tags presentation in thread detail.
 - Dashboard settings now include a full Integrations area for Slack, Zapier, Shopify, and webhooks, with live connection flows, persisted workspace state, and dedicated modal-based setup.
 - Dashboard now includes an internal Publishing workspace with queued-post previews, and only the designated reviewer account sees the Publishing navigation entry.
+- Dashboard settings, widget setup, billing upgrades, and inbox replies now emit shared funnel and activation events, and settings/profile navigation stays in-app for faster transitions.
 - AI Assist is now built into the inbox with reply suggestions, summaries, rewrites, suggested tags, starter usage metering, warning states, and detailed usage history.
 - Dashboard home, inbox, and thread loading now use lighter data paths so key team views open faster.
 - Solo workspaces now hide assignment badges, filters, and controls that only make sense once a team has more than one member.
@@ -261,6 +270,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Contributor Docs
 
+- Digital marketing docs now include stronger source-abstraction rules for Chatting SEO prompts so forum-sourced article ideas get rewritten around the real buyer problem instead of the literal source framing.
 - Blog contributor tooling now generates the published blog-post registry from `src/lib/blog-post-*.ts` files during `dev` and `build`, keeping route and sitemap registration in sync without hand-editing imports.
 - Repo agent guidance, product context, and design-system reference docs live alongside the codebase.
 - Changelog guidance now explicitly requires customer-facing product language instead of internal engineering notes or filler.
@@ -397,5 +407,3 @@ The inbound route now:
 - handles SES `Received` notifications
 - parses raw MIME email content with `mailparser`
 - strips common quoted reply blocks before saving the new user message
-- Onboarding now finishes directly in the dashboard, and the old standalone done screen no longer appears as a separate end state.
-- Onboarding now resolves completed workspaces straight to the dashboard, and the old `/onboarding?step=done` success screen has been removed.
