@@ -15,6 +15,7 @@ import {
   SidebarSection
 } from "./dashboard-side-panel-ui";
 import { ThreadContactNotes, ThreadCustomerContext } from "./dashboard-thread-detail-contact-panels";
+import { ThreadShopifyCustomerPanel } from "./dashboard-thread-detail-shopify-panel";
 import { DashboardThreadTagsPanel } from "./dashboard-thread-detail-tags-panel";
 import { DashboardThreadAssignmentControls } from "./dashboard-thread-assignment-controls";
 import {
@@ -30,6 +31,7 @@ import {
   referrerLabel
 } from "./dashboard-thread-detail.utils";
 import { canAssignConversation } from "./dashboard-conversation-assignee";
+import { useDashboardIntegrationsState } from "./use-dashboard-integrations-state";
 
 export function DashboardThreadDetailSidebar({
   activeConversation,
@@ -66,7 +68,13 @@ export function DashboardThreadDetailSidebar({
     : null;
   const { contact, contactStatuses, saveContactPatch } =
     useDashboardThreadContact(contactId);
+  const { state: integrationsState, hydrated: integrationsHydrated } =
+    useDashboardIntegrationsState();
   const conversationCount = visitorActivity ? visitorActivity.otherConversationsTotal + 1 : 1;
+  const showShopifyPanel =
+    activeConversation.email &&
+    integrationsHydrated &&
+    integrationsState.shopify.status === "connected";
   const contactRows = [
     { label: "Record", value: activeConversation.email ? "Email" : "Session" },
     { label: "Session", value: activeConversation.sessionId },
@@ -111,7 +119,13 @@ export function DashboardThreadDetailSidebar({
         {activeConversation.email ? (
           <>
             <ThreadCustomerContext contact={contact} statuses={contactStatuses} />
+            <SidebarDivider />
+          </>
+        ) : null}
 
+        {showShopifyPanel ? (
+          <>
+            <ThreadShopifyCustomerPanel conversationId={activeConversation.id} />
             <SidebarDivider />
           </>
         ) : null}
@@ -153,7 +167,6 @@ export function DashboardThreadDetailSidebar({
 
         <SidebarDivider />
 
-        <ThreadSharedVisitorNotesSection conversationId={activeConversation.id} />
         {contact ? (
           <>
             <ThreadContactNotes
@@ -166,6 +179,7 @@ export function DashboardThreadDetailSidebar({
           </>
         ) : null}
 
+        <ThreadSharedVisitorNotesSection conversationId={activeConversation.id} />
 
         <ThreadRecentHistorySection visitorActivity={visitorActivity} />
       </div>

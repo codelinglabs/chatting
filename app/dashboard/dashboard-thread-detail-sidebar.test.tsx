@@ -1,6 +1,12 @@
 import type { ReactElement, ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { DEFAULT_INTEGRATIONS_STATE } from "./dashboard-integrations-types";
 import { createConversationThread } from "./use-dashboard-actions.test-helpers";
+
+const integrationsHookMock = vi.fn(() => ({
+  state: DEFAULT_INTEGRATIONS_STATE,
+  hydrated: true
+}));
 
 vi.mock("react", async () => {
   const actual = await vi.importActual<typeof import("react")>("react");
@@ -13,6 +19,11 @@ vi.mock("react", async () => {
 vi.mock("./dashboard-visitor-note-editor", () => ({
   DashboardVisitorNoteEditor: ({ conversationId }: { conversationId: string }) => (
     <div>notes:{conversationId}</div>
+  )
+}));
+vi.mock("./dashboard-thread-detail-shopify-panel", () => ({
+  ThreadShopifyCustomerPanel: ({ conversationId }: { conversationId: string }) => (
+    <section>shopify:{conversationId}</section>
   )
 }));
 vi.mock("./dashboard-thread-detail-sidebar-sections", () => ({
@@ -87,37 +98,34 @@ vi.mock("./use-dashboard-thread-contact", () => ({
     saveContactPatch: vi.fn()
   })
 }));
+vi.mock("./use-dashboard-integrations-state", () => ({
+  useDashboardIntegrationsState: () => integrationsHookMock()
+}));
 
 import { DashboardThreadDetailSidebar } from "./dashboard-thread-detail-sidebar";
 
-function collectElements(node: ReactNode, predicate: (element: ReactElement) => boolean): ReactElement[] {
+type TestElement = ReactElement<Record<string, unknown>>;
+
+function collectElements(node: ReactNode, predicate: (element: TestElement) => boolean): TestElement[] {
   if (!node || typeof node === "string" || typeof node === "number" || typeof node === "boolean") {
     return [];
   }
   if (Array.isArray(node)) {
     return node.flatMap((child) => collectElements(child, predicate));
   }
-  const element = node as ReactElement;
+  const element = node as TestElement;
   return [
     ...(predicate(element) ? [element] : []),
-    ...collectElements(element.props?.children, predicate)
+    ...collectElements(element.props.children as ReactNode, predicate)
   ];
 }
 
-function textOf(node: ReactNode): string {
-  if (!node || typeof node === "boolean") {
-    return "";
-  }
-  if (typeof node === "string" || typeof node === "number") {
-    return String(node);
-  }
-  if (Array.isArray(node)) {
-    return node.map(textOf).join(" ");
-  }
-  return textOf((node as ReactElement).props?.children);
-}
-
 describe("dashboard thread detail sidebar", () => {
+  beforeEach(() => {
+    integrationsHookMock.mockReset();
+    integrationsHookMock.mockReturnValue({ state: DEFAULT_INTEGRATIONS_STATE, hydrated: true });
+  });
+
   it("renders the saved-email visitor profile, tags, notes, and history", () => {
     const html = renderToStaticMarkup(
       <DashboardThreadDetailSidebar
@@ -148,7 +156,6 @@ describe("dashboard thread detail sidebar", () => {
         onToggleTag={vi.fn()}
       />
     );
-
     expect(html).toContain("Alex Stone");
     expect(html).toContain("Contact profile");
     expect(html).toContain("Current session");
@@ -179,21 +186,19 @@ describe("dashboard thread detail sidebar", () => {
       onConversationAssignmentChange: vi.fn(),
       onToggleTag
     });
-
     const identitySection = collectElements(
       tree,
-      (element) => typeof element.type === "function" && element.props?.onSaveConversationEmail === onSaveConversationEmail
+      (element) => typeof element.type === "function" && element.props.onSaveConversationEmail === onSaveConversationEmail
     );
     const tagSection = collectElements(
       tree,
-      (element) => typeof element.type === "function" && element.props?.onToggleTag === onToggleTag
+      (element) => typeof element.type === "function" && element.props.onToggleTag === onToggleTag
     );
-
     expect(renderToStaticMarkup(tree)).toContain("Saving...");
     expect(renderToStaticMarkup(tree)).toContain("Shared visitor notes");
-    void identitySection[0]?.props.onSaveConversationEmail({ preventDefault: vi.fn() });
-    void tagSection[0]?.props.onToggleTag("pricing");
-    void tagSection[0]?.props.onToggleTag("confusion");
+    void (identitySection[0]?.props.onSaveConversationEmail as ((event: { preventDefault: () => void }) => Promise<void>) | undefined)?.({ preventDefault: vi.fn() });
+    void (tagSection[0]?.props.onToggleTag as ((tag: string) => Promise<void>) | undefined)?.("pricing");
+    void (tagSection[0]?.props.onToggleTag as ((tag: string) => Promise<void>) | undefined)?.("confusion");
 
     expect(onSaveConversationEmail).toHaveBeenCalled();
     expect(onToggleTag).toHaveBeenCalledTimes(2);
