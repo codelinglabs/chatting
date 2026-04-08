@@ -14,10 +14,12 @@ import { chattingVsGorgiasPost } from "./blog-post-chatting-vs-gorgias";
 import { ecommerceLiveChatSupportPost } from "./blog-post-ecommerce-live-chat-support";
 import { liveChatSoftwareSmallTeamsPost } from "./blog-post-live-chat-software-small-teams";
 import { liveChatVsContactFormsPost } from "./blog-post-live-chat-vs-contact-forms";
+import { liveChatWorthItSmallBusinessPost } from "./blog-post-live-chat-worth-it-small-business";
 import { reduceResponseTimeUnderTwoMinutesPost } from "./blog-post-reduce-response-time-under-2-minutes";
 import { shopifyLiveChatGrowthUsesPost } from "./blog-post-shopify-live-chat-growth-uses";
 import { smallEcommerceCustomerSupportWorkflowPost } from "./blog-post-small-ecommerce-customer-support-workflow";
 import { trafficLowConversionPost } from "./blog-post-traffic-low-conversion";
+import { whatIsLiveChatBenefitsPost } from "./blog-post-what-is-live-chat-benefits";
 import { wordpressLiveChatSetupPost } from "./blog-post-wordpress-live-chat-setup";
 import { zendeskAlternativesSmallTeamsPost } from "./blog-post-zendesk-alternatives-small-teams";
 
@@ -34,10 +36,12 @@ export const generatedBlogPosts: BlogPost[] = [
   ecommerceLiveChatSupportPost,
   liveChatSoftwareSmallTeamsPost,
   liveChatVsContactFormsPost,
+  liveChatWorthItSmallBusinessPost,
   reduceResponseTimeUnderTwoMinutesPost,
   shopifyLiveChatGrowthUsesPost,
   smallEcommerceCustomerSupportWorkflowPost,
   trafficLowConversionPost,
+  whatIsLiveChatBenefitsPost,
   wordpressLiveChatSetupPost,
   zendeskAlternativesSmallTeamsPost,
 ];

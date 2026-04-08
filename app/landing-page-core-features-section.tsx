@@ -27,6 +27,7 @@ const coreFeatures = [
     detail:
       "Set business hours. Show a custom offline message. Capture their email. Reply later — it goes straight to their inbox, and they can reply back into the chat.",
     reverse: true,
+    wideIllustration: false,
     Illustration: OfflineFeatureIllustration
   },
   {
@@ -35,6 +36,7 @@ const coreFeatures = [
     detail:
       "Don't wait for visitors to reach out. Set automated messages on high-intent pages. Someone's been on pricing for 30 seconds? \"Questions about our plans?\" You make the first move.",
     reverse: false,
+    wideIllustration: false,
     Illustration: ProactiveMessagesFeatureIllustration
   },
   {
@@ -43,6 +45,7 @@ const coreFeatures = [
     detail:
       "Route conversations based on page URL, keywords, or visitor data. Pricing questions go to sales. Support issues go to support. No manual sorting.",
     reverse: true,
+    wideIllustration: false,
     Illustration: SmartRoutingFeatureIllustration
   },
   {
@@ -60,6 +63,7 @@ const coreFeatures = [
     detail:
       "Show relevant help articles before connecting to your team. Visitors get instant answers. You handle the complex stuff.",
     reverse: true,
+    wideIllustration: false,
     Illustration: FAQSuggestionsFeatureIllustration
   },
   {
@@ -79,7 +83,6 @@ function CoreFeatureCard({
   reverse,
   title,
   body,
-  close,
   wideIllustration
 }: (typeof coreFeatures)[number]) {
   const illustrationOrder = reverse ? "lg:order-2" : "";
@@ -101,7 +104,6 @@ function CoreFeatureCard({
           <div className="mt-5 space-y-4 text-[17px] leading-8 text-slate-600">
             <p>{body}</p>
             <p className="text-base leading-7 text-slate-500">{detail}</p>
-            {close ? <p className="font-semibold text-slate-900">{close}</p> : null}
           </div>
         </div>
       </div>

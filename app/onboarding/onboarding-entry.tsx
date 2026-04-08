@@ -2,10 +2,9 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { createSiteForUser, getOnboardingData } from "@/lib/data";
 import { normalizeOnboardingStep } from "@/lib/data/onboarding";
-import type { OnboardingStep, Site } from "@/lib/types";
+import type { Site } from "@/lib/types";
 import { OnboardingFlow } from "./onboarding-flow";
-
-type OnboardingFlowStep = Exclude<OnboardingStep, "signup" | "team" | "done">;
+import type { OnboardingFlowStep } from "./onboarding-flow-shared";
 
 function resolveInitialStep(input: {
   requestedStep: string | undefined;
@@ -48,9 +47,10 @@ export async function OnboardingEntry({
     redirect("/dashboard");
   }
 
+  const persistedStep = normalizeOnboardingStep(onboarding.step, "customize") as OnboardingFlowStep;
   const initialStep = resolveInitialStep({
     requestedStep,
-    persistedStep: onboarding.step
+    persistedStep
   });
 
   return (

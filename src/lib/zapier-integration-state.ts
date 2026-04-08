@@ -43,7 +43,7 @@ export function buildZapierIntegrationState(
   const apiKey = readZapierCredentials(row)?.apiKey ?? "";
 
   return {
-    connected: activeZapCount > 0,
+    connected: (activeZapCount ?? 0) > 0,
     apiKeyReady: Boolean(apiKey),
     apiKey,
     activeZapCount

@@ -5,13 +5,13 @@ import {
 } from "@/lib/integration-credentials";
 import type { WorkspaceIntegrationRow } from "@/lib/repositories/integrations-repository";
 
-export function serializeStoredIntegrationCredentials<T extends object>(
+export function serializeStoredIntegrationCredentials<T extends Record<string, unknown>>(
   value: T
 ) {
   return encryptIntegrationCredentials(value);
 }
 
-export function readStoredIntegrationCredentials<T>(
+export function readStoredIntegrationCredentials<T extends Record<string, unknown>>(
   row: WorkspaceIntegrationRow | null
 ) {
   return parseIntegrationCredentials<T>(row?.credentials_json ?? "");
