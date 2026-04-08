@@ -11,6 +11,7 @@ import { getGenericAuthErrorMessage } from "../login/auth-error-messages";
 import { AuthFormIntro, AuthPageShell } from "../login/auth-shell";
 import { signupAction, type AuthActionState } from "../login/actions";
 import { trackGrometricsEvent } from "@/lib/grometrics";
+import { SignupVerificationNotice } from "./signup-verification-notice";
 
 const INITIAL_AUTH_STATE: AuthActionState = {
   error: null,
@@ -18,7 +19,6 @@ const INITIAL_AUTH_STATE: AuthActionState = {
   nextPath: null,
   fields: { email: "", password: "", websiteUrl: "", referralCode: "" }
 };
-
 const SIGNUP_STATS = [{ value: "Free", label: "To start" }, { value: "3 min", label: "Setup time" }, { value: "No CC", label: "Required" }];
 
 export function SignupForm() {
@@ -38,15 +38,12 @@ export function SignupForm() {
   const formReferralCode = signupState.fields.referralCode || referralCodeFromQuery;
   const showVerificationNotice = signupState.ok && !signupState.nextPath && !isInviteSignup;
   const verificationDestination = formEmail || "your inbox";
-
   useEffect(() => {
     if (isInviteSignup) router.prefetch("/dashboard");
   }, [isInviteSignup, router]);
-
   function handleReturnToSignup() {
     setSignupState((current) => ({ ...current, ok: false }));
   }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -91,7 +88,6 @@ export function SignupForm() {
       showToast("error", error);
     }
   }
-
   return (
     <AuthPageShell
       heroTitle={isInviteSignup ? "Join the workspace" : "Start chatting in minutes"}
@@ -119,18 +115,8 @@ export function SignupForm() {
           actionLabel={showVerificationNotice ? undefined : "Sign in"}
           onAction={showVerificationNotice ? undefined : () => router.push(loginPath as never)}
         />
-
         {showVerificationNotice ? (
-          <div className="mt-8 space-y-3 text-center">
-            <p className="text-sm leading-6 text-slate-500">
-              Wrong email? Edit it and send a new link.
-            </p>
-            <div className="flex justify-center">
-              <FormButton type="button" variant="secondary" onClick={handleReturnToSignup}>
-                Edit email
-              </FormButton>
-            </div>
-          </div>
+          <SignupVerificationNotice onEdit={handleReturnToSignup} />
         ) : (
           <>
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -140,7 +126,6 @@ export function SignupForm() {
                 </div>
               ) : null}
               <BrowserTimeZoneField />
-
               <FormTextField
                 label="Work email"
                 name="email"
@@ -150,7 +135,6 @@ export function SignupForm() {
                 defaultValue={formEmail}
                 placeholder="you@company.com"
               />
-
               {isInviteSignup ? null : (
                 <>
                   <FormTextField
@@ -162,7 +146,6 @@ export function SignupForm() {
                     defaultValue={signupState.fields.websiteUrl}
                     placeholder="https://yoursite.com"
                   />
-
                   <FormTextField
                     label="Referral code"
                     name="referralCode"
@@ -173,7 +156,6 @@ export function SignupForm() {
                   />
                 </>
               )}
-
               <div>
                 <FormPasswordField
                   label="Password"
@@ -185,7 +167,6 @@ export function SignupForm() {
                   placeholder="Create a password"
                 />
               </div>
-
               <FormButton
                 type="submit"
                 fullWidth
@@ -194,7 +175,6 @@ export function SignupForm() {
                 {isSubmitting ? "Creating account..." : isInviteSignup ? "Join workspace" : "Create account"}
               </FormButton>
             </form>
-
             <p className="mt-5 text-center text-sm leading-6 text-slate-500">
               By signing up, you agree to our{" "}
               <Link href="/terms" className="font-semibold text-blue-600">

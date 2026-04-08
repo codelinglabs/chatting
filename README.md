@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Email verification now uses the same shared auth screen styling as sign-in, and signup confirmation lets people fix a mistyped email through one inline `Edit it` action.
 - Logout and auth redirects now use the configured app URL so sign-out no longer bounces people to container-only hosts like `0.0.0.0:8080`.
 - Inbox contact tags now add on Enter, update optimistically, and sit in a cleaner shared tags block so teammates can edit thread context faster.
 - Slack, Zapier, Shopify, and webhook settings now live in one integrations area with real connection state, live backend routes, and working Zapier triggers/actions for teams building automations around Chatting.
@@ -148,6 +149,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ## 🚀 Key Modules
 
 ### Public Site & Auth
+- Email verification screens now stay inside the shared auth shell, and signup confirmation offers an inline `Edit it` action so people can correct the email address they just used without leaving the flow.
 - Logout and auth redirects now resolve from the configured public app URL so container runtime hosts do not leak into browser redirects.
 - The marketing blog backlog now includes scheduled comparison, conversion, ecommerce workflow, decision-guide, and explainer posts that unlock from their target publish dates across April and May.
 - Onboarding now resolves completed workspaces straight to the dashboard, and the old `/onboarding?step=done` success screen has been removed.

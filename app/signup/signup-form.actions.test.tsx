@@ -96,9 +96,12 @@ describe("signup form actions", () => {
     expect(html).toContain("Check your email");
     expect(html).toContain("hello@example.com");
     expect(html).toContain("We sent a verification link to hello@example.com.");
-    expect(html).toContain("Wrong email? Edit it and send a new link.");
+    expect(html).toContain("Wrong email?");
+    expect(html).toContain("Edit it");
+    expect(html).toContain("and send a new link.");
+    expect(html).toContain("<button");
 
-    collectElements(tree, (element) => typeof element.type === "function" && element.props.children === "Edit email")[0]?.props.onClick();
+    collectElements(tree, (element) => typeof element.type === "function" && "onEdit" in (element.props ?? {}))[0]?.props.onEdit();
 
     reactMocks.beginRender();
     tree = SignupForm();

@@ -96,8 +96,10 @@ describe("auth and public page wrappers", () => {
 
     expect(verifyEmailWithToken).toHaveBeenNthCalledWith(1, "valid-token");
     expect(verifyEmailWithToken).toHaveBeenNthCalledWith(2, "expired-token");
+    expect(verifiedMarkup).toContain("Welcome back to Chatting");
     expect(verifiedMarkup).toContain("Email verified");
     expect(verifiedMarkup).toContain('href="/login"');
+    expect(expiredMarkup).toContain("Welcome back to Chatting");
     expect(expiredMarkup).toContain("Verification link expired");
     expect(expiredMarkup).toContain("Resend verification email");
     expect(expiredMarkup).toContain('href="/login?mode=verify"');
