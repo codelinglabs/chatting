@@ -10,13 +10,17 @@ declare global {
   }
 }
 
-function cleanGrometricsEventProperties(properties?: GrometricsEventProperties) {
+function cleanGrometricsEventProperties(
+  properties?: GrometricsEventProperties
+): Record<string, GrometricsEventValue> | undefined {
   if (!properties) {
     return undefined;
   }
 
   const entries = Object.entries(properties).filter(([, value]) => value !== undefined);
-  return entries.length ? Object.fromEntries(entries) : undefined;
+  return entries.length
+    ? Object.fromEntries(entries) as Record<string, GrometricsEventValue>
+    : undefined;
 }
 
 export function trackGrometricsEvent(name: string, properties?: GrometricsEventProperties) {
