@@ -1,4 +1,5 @@
 import type { DashboardHomeGrowthData } from "@/lib/data/dashboard-growth-types";
+import { formatResponseTime as formatReadableResponseTime } from "@/lib/format-response-time";
 
 function hoursBetween(start: string | Date, end: string | Date) {
   return (new Date(end).getTime() - new Date(start).getTime()) / (60 * 60 * 1000);
@@ -14,11 +15,7 @@ function formatHoursRemaining(hours: number) {
 }
 
 function formatResponseTime(seconds: number | null) {
-  if (seconds == null) return "No reply data";
-  if (seconds < 60) return `${seconds}s`;
-
-  const minutes = seconds / 60;
-  return `${minutes.toFixed(minutes >= 10 ? 0 : 1)}m`;
+  return formatReadableResponseTime(seconds, { emptyLabel: "No reply data" });
 }
 
 function formatVolumeDetail(current: number, previous: number) {

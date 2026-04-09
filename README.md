@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Dashboard response-time metrics now use readable mixed units like `1m 12s`, `1h 1m`, and `1d 7h` instead of long raw minute counts.
 - Email verification now uses the same shared auth screen styling as sign-in, and signup confirmation lets people fix a mistyped email through one inline `Edit it` action.
 - Logout and auth redirects now use the configured app URL so sign-out no longer bounces people to container-only hosts like `0.0.0.0:8080`.
 - Inbox contact tags now add on Enter, update optimistically, and sit in a cleaner shared tags block so teammates can edit thread context faster.
@@ -204,6 +205,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Dashboard
 
+- Response-time metrics across dashboard home, billing, and health summaries now render in readable mixed units so long waits are easier to scan at a glance.
 - Inbox tag editing now feels faster, with Enter-to-add contact tags, optimistic updates in the sidebar and contact drawer, and a cleaner shared tags presentation in thread detail.
 - Dashboard settings now include a full Integrations area for Slack, Zapier, Shopify, and webhooks, with live connection flows, persisted workspace state, and dedicated modal-based setup.
 - Dashboard now includes an internal Publishing workspace with queued-post previews, and only the designated reviewer account sees the Publishing navigation entry.

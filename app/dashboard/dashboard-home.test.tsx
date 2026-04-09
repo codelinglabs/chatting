@@ -59,6 +59,7 @@ describe("dashboard home", () => {
     expect(html).toContain("Open conversations");
     expect(html).toContain("Resolved today");
     expect(html).toContain("Avg response time");
+    expect(html).toContain("1m 12s");
     expect(html).toContain("Visitor satisfaction");
     expect(html).not.toContain("Growth loops");
     expect(html).not.toContain("The widget is live. Now push for the first conversation.");

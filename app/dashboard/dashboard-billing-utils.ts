@@ -1,4 +1,5 @@
 import type { DashboardBillingSummary, DashboardBillingInvoice } from "@/lib/data";
+import { formatResponseTime as formatReadableResponseTime } from "@/lib/format-response-time";
 
 export type BillingHistorySortKey = "date" | "description" | "amount" | "status";
 
@@ -14,16 +15,7 @@ export function billingPeriodLabel(reference = new Date()) {
 }
 
 export function formatResponseTime(seconds: number | null | undefined) {
-  if (seconds == null || Number.isNaN(seconds)) {
-    return "—";
-  }
-
-  if (seconds < 60) {
-    return `${Math.round(seconds)}s`;
-  }
-
-  const minutes = seconds / 60;
-  return `${minutes < 10 ? minutes.toFixed(1) : Math.round(minutes)}m`;
+  return formatReadableResponseTime(seconds);
 }
 
 export function invoiceStatusMeta(status: DashboardBillingInvoice["status"] | "pending" | "failed" | "refunded") {

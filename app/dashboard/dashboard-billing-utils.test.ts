@@ -5,8 +5,9 @@ describe("dashboard billing utils", () => {
     expect(billingPeriodLabel(new Date("2026-03-15T00:00:00.000Z"))).toBe("1 Mar 2026 - 31 Mar 2026");
     expect(formatResponseTime(null)).toBe("—");
     expect(formatResponseTime(45)).toBe("45s");
-    expect(formatResponseTime(90)).toBe("1.5m");
+    expect(formatResponseTime(90)).toBe("1m 30s");
     expect(formatResponseTime(900)).toBe("15m");
+    expect(formatResponseTime(113820)).toBe("1d 7h");
   });
 
   it("maps invoice statuses and payment issue states", () => {

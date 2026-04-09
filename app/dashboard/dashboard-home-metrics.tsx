@@ -1,4 +1,5 @@
 import type { DashboardHomeData } from "@/lib/data/dashboard-home";
+import { formatResponseTime } from "@/lib/format-response-time";
 
 function metricBadge(value: number | null, positiveLabel = true) {
   if (value == null) {
@@ -32,14 +33,6 @@ function statBadgeClass(tone: "positive" | "neutral") {
     : "bg-slate-100 text-slate-500 ring-1 ring-slate-200";
 }
 
-function formatResponseTime(seconds: number | null) {
-  if (seconds == null) return "--";
-  if (seconds < 60) return `${seconds}s`;
-
-  const minutes = seconds / 60;
-  return `${minutes.toFixed(minutes >= 10 ? 0 : 1)}m`;
-}
-
 export function DashboardHomeMetrics({ data }: { data: DashboardHomeData }) {
   const openBadge = integerBadge(data.openConversationsDelta);
   const resolvedBadge = integerBadge(data.resolvedTodayDelta);
@@ -48,7 +41,7 @@ export function DashboardHomeMetrics({ data }: { data: DashboardHomeData }) {
   const cards = [
     ["Open conversations", String(data.openConversations), openBadge],
     ["Resolved today", String(data.resolvedToday), resolvedBadge],
-    ["Avg response time", formatResponseTime(data.avgResponseSeconds), responseBadge],
+    ["Avg response time", formatResponseTime(data.avgResponseSeconds, { emptyLabel: "--" }), responseBadge],
     [
       "Visitor satisfaction",
       data.satisfactionPercent == null ? "--" : `${data.satisfactionPercent}%`,
