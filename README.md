@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Billing lifecycle jobs now normalize repository timestamps before growth-trial reminders run, preventing `Date`-shaped billing values from crashing scheduled lifecycle emails.
 - Dashboard response-time metrics now use readable mixed units like `1m 12s`, `1h 1m`, and `1d 7h` instead of long raw minute counts.
 - Email verification now uses the same shared auth screen styling as sign-in, and signup confirmation lets people fix a mistyped email through one inline `Edit it` action.
 - Logout and auth redirects now use the configured app URL so sign-out no longer bounces people to container-only hosts like `0.0.0.0:8080`.
@@ -245,6 +246,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Billing & Operations
 
+- Billing repositories now normalize trial, invoice, and payment-method timestamps to ISO strings before lifecycle and reminder services consume them.
 - Admin error alerting now routes server request failures, browser exceptions, and process/runtime crashes through one shared email pipeline, and repo verification blocks new routes or server actions from skipping the shared wrappers.
 - Weekly performance heatmap snapshot generation now stays build-safe while preserving the same report output.
 - Visitor follow-up email templates now avoid repeating extra conversation-link guidance when that instruction is already present.

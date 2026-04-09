@@ -17,7 +17,7 @@ import { displayNameFromEmail, firstNameFromDisplayName } from "@/lib/user-displ
 const TRIAL_ENDING_WINDOW_HOURS = 24 * 3;
 const TRIAL_EMAIL_COOLDOWN_HOURS = 24 * 365;
 
-function formatTrialDate(value: string) {
+function formatTrialDate(value: string | Date) {
   return new Intl.DateTimeFormat("en-GB", {
     month: "long",
     day: "numeric",
@@ -29,8 +29,12 @@ function buildTrialLifecycleUrl() {
   return `${getPublicAppUrl().replace(/\/$/, "")}/dashboard/settings?section=billing`;
 }
 
-function trialHoursRemaining(trialEndsAt: string, now: Date) {
+function trialHoursRemaining(trialEndsAt: string | Date, now: Date) {
   return (new Date(trialEndsAt).getTime() - now.getTime()) / (60 * 60 * 1000);
+}
+
+function trialDateKey(value: string | Date) {
+  return new Date(value).toISOString().slice(0, 10);
 }
 
 async function buildTrialEndingMetrics(userId: string) {
@@ -46,12 +50,12 @@ async function buildTrialEndingMetrics(userId: string) {
   ];
 }
 
-function trialEndingKey(trialEndsAt: string) {
-  return `trial-ending-${trialEndsAt.slice(0, 10)}`;
+function trialEndingKey(trialEndsAt: string | Date) {
+  return `trial-ending-${trialDateKey(trialEndsAt)}`;
 }
 
-function trialExpiredKey(trialEndedAt: string) {
-  return `trial-expired-${trialEndedAt.slice(0, 10)}`;
+function trialExpiredKey(trialEndedAt: string | Date) {
+  return `trial-expired-${trialDateKey(trialEndedAt)}`;
 }
 
 export async function maybeSendTrialEndingReminder(userId: string, now = new Date()) {
@@ -95,7 +99,7 @@ export async function maybeSendTrialEndingReminder(userId: string, now = new Dat
 
 export async function maybeSendTrialExpiredEmail(input: {
   userId: string;
-  trialEndedAt: string;
+  trialEndedAt: string | Date;
 }) {
   const [user, delivery] = await Promise.all([
     findAuthUserById(input.userId),

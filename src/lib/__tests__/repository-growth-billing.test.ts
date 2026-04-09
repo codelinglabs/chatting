@@ -39,12 +39,14 @@ describe("growth and billing repositories", () => {
   it("writes growth email nudges and downgrades expired trials", async () => {
     mocks.query
       .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [{ user_id: "user_1" }] })
+      .mockResolvedValueOnce({
+        rows: [{ user_id: "user_1", trial_ends_at: new Date("2026-04-12T00:00:00.000Z") }]
+      })
       .mockResolvedValueOnce({ rows: [] });
 
     await upsertGrowthEmailNudgeRow("user_1", "trial");
     await expect(listExpiredGrowthTrialWorkspaceRows("2026-04-12T00:00:00.000Z")).resolves.toEqual([
-      { user_id: "user_1" }
+      { user_id: "user_1", trial_ends_at: "2026-04-12T00:00:00.000Z" }
     ]);
     await downgradeExpiredGrowthTrialWorkspace("user_1");
 

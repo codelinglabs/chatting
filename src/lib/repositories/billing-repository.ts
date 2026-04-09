@@ -1,5 +1,10 @@
 import { query } from "@/lib/db";
 import type { BillingInterval, BillingPlanKey } from "@/lib/billing-plans";
+import {
+  normalizeBillingAccountRow,
+  normalizeBillingInvoiceRow,
+  normalizeBillingPaymentMethodRow
+} from "@/lib/repositories/billing-timestamp-normalizers";
 
 export type BillingAccountRow = {
   user_id: string;
@@ -102,7 +107,7 @@ export async function findBillingAccountRow(userId: string) {
     [userId]
   );
 
-  return result.rows[0] ?? null;
+  return result.rows[0] ? normalizeBillingAccountRow(result.rows[0]) : null;
 }
 
 export async function upsertBillingAccountRow(input: {
@@ -198,7 +203,7 @@ export async function findBillingAccountRowByStripeCustomerId(stripeCustomerId: 
     [stripeCustomerId]
   );
 
-  return result.rows[0] ?? null;
+  return result.rows[0] ? normalizeBillingAccountRow(result.rows[0]) : null;
 }
 
 export async function findBillingAccountRowByStripeSubscriptionId(stripeSubscriptionId: string) {
@@ -227,7 +232,7 @@ export async function findBillingAccountRowByStripeSubscriptionId(stripeSubscrip
     [stripeSubscriptionId]
   );
 
-  return result.rows[0] ?? null;
+  return result.rows[0] ? normalizeBillingAccountRow(result.rows[0]) : null;
 }
 
 export async function findBillingPaymentMethodRow(userId: string) {
@@ -250,7 +255,7 @@ export async function findBillingPaymentMethodRow(userId: string) {
     [userId]
   );
 
-  return result.rows[0] ?? null;
+  return result.rows[0] ? normalizeBillingPaymentMethodRow(result.rows[0]) : null;
 }
 
 export async function upsertBillingPaymentMethodRow(input: {
@@ -335,7 +340,7 @@ export async function listBillingInvoiceRows(userId: string, limit = 12) {
     [userId, limit]
   );
 
-  return result.rows;
+  return result.rows.map(normalizeBillingInvoiceRow);
 }
 
 export async function insertBillingInvoiceRow(input: {

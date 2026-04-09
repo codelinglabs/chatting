@@ -56,7 +56,7 @@ describe("growth trial outreach", () => {
   it("sends a trial-ending reminder once a growth trial enters the 3-day window", async () => {
     mocks.findBillingAccountRow.mockResolvedValue({
       plan_key: "growth",
-      trial_ends_at: "2026-04-04T12:00:00.000Z"
+      trial_ends_at: new Date("2026-04-04T12:00:00.000Z")
     });
     mocks.findBillingUsageRow.mockResolvedValue({
       conversation_count: "12",
@@ -105,7 +105,7 @@ describe("growth trial outreach", () => {
   it("sends a post-downgrade trial-expired email", async () => {
     await maybeSendTrialExpiredEmail({
       userId: "user_1",
-      trialEndedAt: "2026-04-01T09:00:00.000Z"
+      trialEndedAt: new Date("2026-04-01T09:00:00.000Z")
     });
 
     expect(mocks.maybeSendGrowthEmail).toHaveBeenCalledWith(

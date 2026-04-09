@@ -97,4 +97,53 @@ describe("billing repository more", () => {
     ]);
     expect(mocks.query.mock.calls[3]?.[0]).toContain("DELETE FROM billing_payment_methods");
   });
+
+  it("normalizes billing timestamp rows to ISO strings", async () => {
+    mocks.query
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            user_id: "user_1",
+            trial_ends_at: new Date("2026-04-12T00:00:00.000Z"),
+            created_at: new Date("2026-03-29T00:00:00.000Z")
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            user_id: "user_1",
+            created_at: new Date("2026-03-29T00:00:00.000Z"),
+            updated_at: new Date("2026-03-29T01:00:00.000Z")
+          }
+        ]
+      })
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            id: "invoice_1",
+            issued_at: new Date("2026-03-29T10:00:00.000Z"),
+            paid_at: new Date("2026-03-29T10:01:00.000Z")
+          }
+        ]
+      });
+
+    await expect(findBillingAccountRow("user_1")).resolves.toEqual({
+      user_id: "user_1",
+      trial_ends_at: "2026-04-12T00:00:00.000Z",
+      created_at: "2026-03-29T00:00:00.000Z"
+    });
+    await expect(findBillingPaymentMethodRow("user_1")).resolves.toEqual({
+      user_id: "user_1",
+      created_at: "2026-03-29T00:00:00.000Z",
+      updated_at: "2026-03-29T01:00:00.000Z"
+    });
+    await expect(listBillingInvoiceRows("user_1", 1)).resolves.toEqual([
+      {
+        id: "invoice_1",
+        issued_at: "2026-03-29T10:00:00.000Z",
+        paid_at: "2026-03-29T10:01:00.000Z"
+      }
+    ]);
+  });
 });

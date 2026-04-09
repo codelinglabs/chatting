@@ -1,4 +1,5 @@
 import { query } from "@/lib/db";
+import { normalizeExpiredGrowthTrialWorkspaceRow } from "@/lib/repositories/billing-timestamp-normalizers";
 
 export type ExpiredGrowthTrialWorkspaceRow = {
   user_id: string;
@@ -21,7 +22,7 @@ export async function listExpiredGrowthTrialWorkspaceRows(referenceTime: string)
     [referenceTime]
   );
 
-  return result.rows;
+  return result.rows.map(normalizeExpiredGrowthTrialWorkspaceRow);
 }
 
 export async function downgradeExpiredGrowthTrialWorkspace(userId: string) {
