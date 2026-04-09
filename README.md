@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Chatting now has a first-party iOS SDK with Swift Package Manager and CocoaPods distribution, so teams can add visitor chat to native apps with live conversation sync, email capture, and a lightweight SwiftUI wrapper.
 - The Zapier setup modal now shows direct docs links, available triggers/actions, and starter workflow recipes in one scrollable setup view.
 - Locked integrations now open the Growth confirmation modal in place, so teams can review billing before unlocking Zapier, Slack, Shopify, or webhooks.
 - Blog and Guides now share one cleaner public nav, and code snippets across articles render with proper inline code and copy-friendly snippet styling.
@@ -204,6 +205,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Widget & Public APIs
 
+- Chatting now includes a first-party iOS SDK with Swift Package Manager and CocoaPods support, covering visitor session storage, live conversation sync, email capture, identify flows, and a lightweight SwiftUI chat surface for native apps.
 - Hosted conversation resume replies now keep the composer focused during sends, and public follow-up replies can now emit consistent reply activity events for funnel analysis.
 - Embeddable widget with optimistic sending, typing, conversation polling, and install detection.
 - The shipped widget runtime now reads branding-aware site config, sends fuller visitor context to public config/status routes, and refreshes site state on route changes.

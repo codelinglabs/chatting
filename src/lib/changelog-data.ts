@@ -8,6 +8,11 @@ const entry = (period: string, title: string, summary: string, bullets: string[]
 });
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
+  entry("April 2026", "Chatting now has a native iOS SDK", "Teams can now bring Chatting into native iPhone and iPad apps with a first-party SDK that supports the same visitor conversation flow already used on the web.", [
+    "The new iOS SDK supports visitor session storage, conversation creation and resume, live conversation refresh, typing updates, email capture, and contact identify flows.",
+    "Teams can ship the SDK either through Swift Package Manager or CocoaPods, depending on how their app is already managed.",
+    "A lightweight SwiftUI wrapper makes it faster to drop in a native chat surface without rebuilding the whole conversation flow from scratch."
+  ]),
   entry("April 2026", "Integrations now connect to real external workflows", "Chatting now has a dedicated integrations area for teams that want Slack notifications, Zapier automations, Shopify context, and outbound webhooks wired to live backend connections.", [
     "Slack, Zapier, Shopify, and webhooks now live together in one settings area with real saved connection state instead of placeholder UI.",
     "Zapier can now be used as both a trigger source and an action target, including live support for new conversations, resolved conversations, new contacts, tags, contact creation, contact tagging, and sending messages.",
