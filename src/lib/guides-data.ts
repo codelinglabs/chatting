@@ -1,13 +1,17 @@
 import type { GuideArticle } from "@/lib/guide-article";
 import { chattingInboxShortcutsGuide } from "@/lib/chatting-inbox-shortcuts-guide";
+import { chattingZapierApiReferenceGuide } from "@/lib/chatting-zapier-api-reference-guide";
 import { chattingShopifyIntegrationGuide } from "@/lib/chatting-shopify-integration-guide";
 import { chattingSlackIntegrationGuide } from "@/lib/chatting-slack-integration-guide";
+import { chattingZapierStarterZapsGuide } from "@/lib/chatting-zapier-starter-zaps-guide";
 import { chattingWebhooksIntegrationGuide } from "@/lib/chatting-webhooks-integration-guide";
 import { chattingZapierIntegrationGuide } from "@/lib/chatting-zapier-integration-guide";
 
 const guides = [
   chattingInboxShortcutsGuide,
+  chattingZapierApiReferenceGuide,
   chattingSlackIntegrationGuide,
+  chattingZapierStarterZapsGuide,
   chattingZapierIntegrationGuide,
   chattingShopifyIntegrationGuide,
   chattingWebhooksIntegrationGuide

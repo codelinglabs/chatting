@@ -1,3 +1,15 @@
+const redisMocks = vi.hoisted(() => ({
+  ensureRedisLiveBridge: vi.fn().mockResolvedValue(true),
+  publishRedisConversationLive: vi.fn().mockResolvedValue(undefined),
+  publishRedisDashboardLive: vi.fn().mockResolvedValue(undefined)
+}));
+
+vi.mock("@/lib/live-events-redis", () => ({
+  ensureRedisLiveBridge: redisMocks.ensureRedisLiveBridge,
+  publishRedisConversationLive: redisMocks.publishRedisConversationLive,
+  publishRedisDashboardLive: redisMocks.publishRedisDashboardLive
+}));
+
 import {
   publishConversationLive,
   publishDashboardLive,
@@ -9,6 +21,9 @@ describe("live events", () => {
   beforeEach(() => {
     delete global.__chattingLiveListeners;
     vi.restoreAllMocks();
+    redisMocks.ensureRedisLiveBridge.mockReset().mockResolvedValue(true);
+    redisMocks.publishRedisConversationLive.mockReset().mockResolvedValue(undefined);
+    redisMocks.publishRedisDashboardLive.mockReset().mockResolvedValue(undefined);
   });
 
   it("publishes dashboard events to subscribers and unsubscribes cleanly", () => {

@@ -19,6 +19,8 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Zapier now has a dedicated API reference plus a starter-Zaps guide, so teams can connect Chatting faster and copy proven workflows without guessing through setup.
+- Live events unit coverage now stubs the Redis bridge directly so local publish/subscribe tests stay deterministic without weakening runtime Redis requirements.
 - Growth health regression coverage now matches the shared compact response-time formatter, keeping dashboard score-card tests aligned with labels like `2h` and `4h 10m`.
 - Billing lifecycle jobs now normalize repository timestamps before growth-trial reminders run, preventing `Date`-shaped billing values from crashing scheduled lifecycle emails.
 - Dashboard response-time metrics now use readable mixed units like `1m 12s`, `1h 1m`, and `1d 7h` instead of long raw minute counts.
@@ -160,6 +162,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Landing, signup, and onboarding now share consistent funnel-event tracking so signup starts, completed logins, completed signups, onboarding saves, snippet copies, and install checks can all be attributed in one flow.
 - The public site now includes a dedicated guides area, and the inbox shortcuts guide is linked directly from the dashboard for easier discovery.
 - The public guides library now also includes dedicated setup walkthroughs for Slack, Zapier, Shopify, and webhooks.
+- Zapier guides now include a dedicated API reference and a starter-Zaps page with copy-ready workflow names, descriptions, and recipes for alerting, logging, imports, and automatic replies.
 - Utility public routes like feedback, verification, preference links, and hosted help-center pages now emit explicit `noindex` metadata, while legal pages expose canonicals and the legacy ROI calculator path permanently redirects to its indexed free-tool URL.
 - Shared landing navigation and footer links now stay aligned with Next route typing during production builds.
 - Newsletter signups now preserve source updates correctly even for first-time subscribers.
@@ -207,6 +210,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Dashboard
 
+- Live-event unit coverage now isolates Redis bridge bootstrapping while production dashboard updates still run through the strict Redis-backed bridge.
 - Dashboard growth-health coverage now follows the same shared response-time formatter used by the live score cards.
 - Response-time metrics across dashboard home, billing, and health summaries now render in readable mixed units so long waits are easier to scan at a glance.
 - Inbox tag editing now feels faster, with Enter-to-add contact tags, optimistic updates in the sidebar and contact drawer, and a cleaner shared tags presentation in thread detail.
