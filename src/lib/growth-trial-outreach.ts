@@ -4,6 +4,7 @@ import {
   sendTrialExpiredEmail
 } from "@/lib/chatting-marketing-email-senders";
 import { maybeSendGrowthEmail, getGrowthDeliverySettings } from "@/lib/growth-outreach-shared";
+import { withRetryableDatabaseConnectionRetry } from "@/lib/retryable-database-errors";
 import {
   countActiveTeamMembershipRows
 } from "@/lib/repositories/workspace-repository";
@@ -38,10 +39,12 @@ function trialDateKey(value: string | Date) {
 }
 
 async function buildTrialEndingMetrics(userId: string) {
-  const [usage, memberCount] = await Promise.all([
-    findBillingUsageRow(userId),
-    countActiveTeamMembershipRows(userId)
-  ]);
+  const [usage, memberCount] = await withRetryableDatabaseConnectionRetry(() =>
+    Promise.all([
+      findBillingUsageRow(userId),
+      countActiveTeamMembershipRows(userId)
+    ])
+  );
 
   return [
     { value: String(Number(usage.conversation_count ?? 0)), label: "conversations" },
@@ -59,11 +62,13 @@ function trialExpiredKey(trialEndedAt: string | Date) {
 }
 
 export async function maybeSendTrialEndingReminder(userId: string, now = new Date()) {
-  const [user, delivery, account] = await Promise.all([
-    findAuthUserById(userId),
-    getGrowthDeliverySettings(userId),
-    findBillingAccountRow(userId)
-  ]);
+  const [user, delivery, account] = await withRetryableDatabaseConnectionRetry(() =>
+    Promise.all([
+      findAuthUserById(userId),
+      getGrowthDeliverySettings(userId),
+      findBillingAccountRow(userId)
+    ])
+  );
   const trialEndsAt = account?.trial_ends_at;
   if (!user || !delivery?.emailNotifications || !trialEndsAt) {
     return;
@@ -101,10 +106,12 @@ export async function maybeSendTrialExpiredEmail(input: {
   userId: string;
   trialEndedAt: string | Date;
 }) {
-  const [user, delivery] = await Promise.all([
-    findAuthUserById(input.userId),
-    getGrowthDeliverySettings(input.userId)
-  ]);
+  const [user, delivery] = await withRetryableDatabaseConnectionRetry(() =>
+    Promise.all([
+      findAuthUserById(input.userId),
+      getGrowthDeliverySettings(input.userId)
+    ])
+  );
   if (!user || !delivery?.emailNotifications) {
     return;
   }

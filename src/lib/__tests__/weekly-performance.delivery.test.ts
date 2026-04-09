@@ -1,7 +1,7 @@
 const mocks = vi.hoisted(() => ({
   getPublicAppUrl: vi.fn(),
-  hasWeeklyPerformanceDelivery: vi.fn(),
-  insertWeeklyPerformanceDelivery: vi.fn(),
+  claimWeeklyPerformanceDelivery: vi.fn(),
+  releaseWeeklyPerformanceDelivery: vi.fn(),
   getOrCreateWeeklyPerformanceSnapshot: vi.fn(),
   sendWeeklyPerformanceEmail: vi.fn(),
   sendWeeklyWidgetInstallEmail: vi.fn()
@@ -13,10 +13,10 @@ vi.mock("@/lib/chatting-notification-email-senders", () => ({
 }));
 vi.mock("@/lib/env", () => ({ getPublicAppUrl: mocks.getPublicAppUrl }));
 vi.mock("@/lib/repositories/weekly-performance-repository", () => ({
-  hasWeeklyPerformanceDelivery: mocks.hasWeeklyPerformanceDelivery,
-  insertWeeklyPerformanceDelivery: mocks.insertWeeklyPerformanceDelivery,
+  claimWeeklyPerformanceDelivery: mocks.claimWeeklyPerformanceDelivery,
   listWeeklyPerformanceRecipientRows: vi.fn(),
-  listWeeklyPerformanceWorkspaceRows: vi.fn()
+  listWeeklyPerformanceWorkspaceRows: vi.fn(),
+  releaseWeeklyPerformanceDelivery: mocks.releaseWeeklyPerformanceDelivery
 }));
 vi.mock("@/lib/weekly-performance-snapshot-service", () => ({
   getOrCreateWeeklyPerformanceSnapshot: mocks.getOrCreateWeeklyPerformanceSnapshot
@@ -55,7 +55,7 @@ describe("weekly performance delivery", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-30T13:15:00.000Z"));
     mocks.getPublicAppUrl.mockReturnValue("https://usechatting.com");
-    mocks.hasWeeklyPerformanceDelivery.mockResolvedValue(false);
+    mocks.claimWeeklyPerformanceDelivery.mockResolvedValue(true);
     mocks.getOrCreateWeeklyPerformanceSnapshot.mockResolvedValue(snapshot());
   });
 
@@ -99,7 +99,8 @@ describe("weekly performance delivery", () => {
         teamPerformance: expect.arrayContaining([expect.objectContaining({ userId: "user_1" })])
       })
     });
-    expect(mocks.insertWeeklyPerformanceDelivery).toHaveBeenCalledWith("user_1", "owner_1", "2026-03-23");
+    expect(mocks.claimWeeklyPerformanceDelivery).toHaveBeenCalledWith("user_1", "owner_1", "2026-03-23");
+    expect(mocks.releaseWeeklyPerformanceDelivery).not.toHaveBeenCalled();
   });
 
   it("sends the install-widget fallback instead of skipping the report", async () => {
@@ -124,6 +125,30 @@ describe("weekly performance delivery", () => {
     });
     expect(mocks.sendWeeklyPerformanceEmail).not.toHaveBeenCalled();
     expect(mocks.getOrCreateWeeklyPerformanceSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("retries cleanup when a claimed weekly delivery cannot be released on the first transient DB timeout", async () => {
+    mocks.sendWeeklyPerformanceEmail.mockRejectedValueOnce(new Error("SEND_FAILED"));
+    mocks.releaseWeeklyPerformanceDelivery
+      .mockRejectedValueOnce(new Error("Authentication timed out"))
+      .mockResolvedValueOnce(undefined);
+
+    await expect(
+      sendUserWeeklyPerformanceEmail({
+        userId: "user_1",
+        ownerUserId: "owner_1",
+        notificationEmail: "team@example.com",
+        recipientTimeZone: "UTC",
+        teamTimeZone: "UTC",
+        teamName: "Acme Support",
+        widgetInstalled: true,
+        now: new Date("2026-03-30T13:15:00.000Z")
+      })
+    ).rejects.toThrow("SEND_FAILED");
+
+    expect(mocks.releaseWeeklyPerformanceDelivery).toHaveBeenCalledTimes(2);
+    expect(mocks.releaseWeeklyPerformanceDelivery).toHaveBeenNthCalledWith(1, "user_1", "owner_1", "2026-03-23");
+    expect(mocks.releaseWeeklyPerformanceDelivery).toHaveBeenNthCalledWith(2, "user_1", "owner_1", "2026-03-23");
   });
 
   it("gates on the local send window including minutes and workspace week alignment", () => {

@@ -71,6 +71,7 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
   ]),
   entry("February 2026", "Important updates started showing up by email", "Chatting began emailing teams the updates that matter most, so keeping up with conversations and weekly performance takes less dashboard checking.", [
     "Daily digests and weekly performance emails can now arrive automatically for each teammate.",
+    "Daily digests, weekly reports, and reminder emails are now less likely to go missing, so teams can rely on routine updates showing up when expected.",
     "Reminder emails help teams catch setup gaps, slow activity, and other moments that need attention.",
     "Conversation and notification emails now feel more polished and easier to scan."
   ]),

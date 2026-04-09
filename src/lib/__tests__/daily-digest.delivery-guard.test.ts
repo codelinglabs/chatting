@@ -51,4 +51,25 @@ describe("daily digest delivery guard", () => {
 
     expect(mocks.releaseDailyDigestDelivery).toHaveBeenCalledWith("user_1", "owner_1", "2026-03-29");
   });
+
+  it("retries delivery cleanup when the release query hits a transient auth timeout", async () => {
+    mocks.claimDailyDigestDelivery.mockResolvedValueOnce(true);
+    mocks.sendDailyDigestEmail.mockRejectedValueOnce(new Error("SEND_FAILED"));
+    mocks.releaseDailyDigestDelivery
+      .mockRejectedValueOnce(new Error("Authentication timed out"))
+      .mockResolvedValueOnce(undefined);
+
+    await expect(
+      sendUserDailyDigest({
+        userId: "user_1",
+        ownerUserId: "owner_1",
+        notificationEmail: "team@example.com",
+        now: new Date("2026-03-30T13:15:00.000Z")
+      })
+    ).rejects.toThrow("SEND_FAILED");
+
+    expect(mocks.releaseDailyDigestDelivery).toHaveBeenCalledTimes(2);
+    expect(mocks.releaseDailyDigestDelivery).toHaveBeenNthCalledWith(1, "user_1", "owner_1", "2026-03-29");
+    expect(mocks.releaseDailyDigestDelivery).toHaveBeenNthCalledWith(2, "user_1", "owner_1", "2026-03-29");
+  });
 });

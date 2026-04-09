@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Scheduled digests, weekly reports, and lifecycle reminder jobs now recover from brief database connection stalls more gracefully, so routine Chatting emails are less likely to get dropped after a transient infra hiccup.
 - Homepage and author-page social previews now use a versioned OG image URL and updated hero-card copy so LinkedIn and similar networks refresh to the current Chatting preview instead of holding onto stale blank cards.
 - Chatting now has a first-party iOS SDK with Swift Package Manager and CocoaPods distribution, so teams can add visitor chat to native apps with live conversation sync, email capture, and a lightweight SwiftUI wrapper.
 - The Zapier setup modal now shows direct docs links, available triggers/actions, and starter workflow recipes in one scrollable setup view.
@@ -262,6 +263,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Billing & Operations
 
+- Scheduled digests, weekly reports, and growth reminder jobs now recover from transient database auth timeouts more safely, reuse shared report snapshots inside a run, and clean up delivery claims after send failures so teams are less likely to miss routine email updates.
 - Billing repositories now normalize trial, invoice, and payment-method timestamps to ISO strings before lifecycle and reminder services consume them.
 - Admin error alerting now routes server request failures, browser exceptions, and process/runtime crashes through one shared email pipeline, and repo verification blocks new routes or server actions from skipping the shared wrappers.
 - Weekly performance heatmap snapshot generation now stays build-safe while preserving the same report output.

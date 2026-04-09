@@ -163,19 +163,13 @@ export async function listWeeklyPerformanceWorkspaceRows() {
   }));
 }
 
-export async function hasWeeklyPerformanceDelivery(
-  userId: string,
-  ownerUserId: string,
-  weekStart: string
-) {
-  const result = await query<{ user_id: string }>(
+export async function claimWeeklyPerformanceDelivery(userId: string, ownerUserId: string, weekStart: string) {
+  const result = await query<{ claimed: number }>(
     `
-      SELECT user_id
-      FROM weekly_performance_deliveries
-      WHERE user_id = $1
-        AND owner_user_id = $2
-        AND week_start = $3::date
-      LIMIT 1
+      INSERT INTO weekly_performance_deliveries (user_id, owner_user_id, week_start)
+      VALUES ($1, $2, $3::date)
+      ON CONFLICT (user_id, owner_user_id, week_start) DO NOTHING
+      RETURNING 1 AS claimed
     `,
     [userId, ownerUserId, weekStart]
   );
@@ -183,16 +177,13 @@ export async function hasWeeklyPerformanceDelivery(
   return Boolean(result.rowCount);
 }
 
-export async function insertWeeklyPerformanceDelivery(
-  userId: string,
-  ownerUserId: string,
-  weekStart: string
-) {
+export async function releaseWeeklyPerformanceDelivery(userId: string, ownerUserId: string, weekStart: string) {
   await query(
     `
-      INSERT INTO weekly_performance_deliveries (user_id, owner_user_id, week_start)
-      VALUES ($1, $2, $3::date)
-      ON CONFLICT (user_id, owner_user_id, week_start) DO NOTHING
+      DELETE FROM weekly_performance_deliveries
+      WHERE user_id = $1
+        AND owner_user_id = $2
+        AND week_start = $3::date
     `,
     [userId, ownerUserId, weekStart]
   );

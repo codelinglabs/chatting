@@ -49,6 +49,28 @@ describe("daily digest runner", () => {
     vi.useRealTimers();
   });
 
+  it("retries a recipient once when workspace loading hits a transient auth timeout", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    mocks.listDailyDigestRecipientRows.mockResolvedValue([
+      { user_id: "user_1", owner_user_id: "owner_1", email: "owner@example.com", notification_email: null, timezone: "UTC" }
+    ]);
+    mocks.getAnalyticsDatasetForOwnerUserId
+      .mockRejectedValueOnce(new Error("Authentication timed out"))
+      .mockResolvedValueOnce({ conversations: [], replyEvents: [] });
+    mocks.sendDailyDigestEmail.mockResolvedValueOnce(undefined);
+
+    await expect(runScheduledDailyDigests(new Date("2026-03-30T13:15:00.000Z"))).resolves.toEqual({
+      processedRecipients: 1,
+      sent: 1,
+      skipped: 0
+    });
+
+    expect(mocks.getAnalyticsDatasetForOwnerUserId).toHaveBeenCalledTimes(2);
+    expect(mocks.sendDailyDigestEmail).toHaveBeenCalledTimes(1);
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
   it("continues sending other teammate digests when one recipient fails", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 

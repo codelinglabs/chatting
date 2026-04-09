@@ -3,6 +3,7 @@ import {
   findGrowthEmailNudgeRow,
   upsertGrowthEmailNudgeRow
 } from "@/lib/repositories/growth-email-nudges-repository";
+import { withRetryableDatabaseConnectionRetry } from "@/lib/retryable-database-errors";
 import { findNotificationSettingsRow } from "@/lib/repositories/settings-repository";
 import { optionalText } from "@/lib/utils";
 
@@ -12,17 +13,23 @@ export async function maybeSendGrowthEmail(
   cooldownHours: number,
   send: () => Promise<void>
 ) {
-  const existing = await findGrowthEmailNudgeRow(userId, nudgeKey);
+  const existing = await withRetryableDatabaseConnectionRetry(() =>
+    findGrowthEmailNudgeRow(userId, nudgeKey)
+  );
   if (!isGrowthNudgeDue(existing?.last_sent_at ?? null, cooldownHours)) {
     return;
   }
 
   await send();
-  await upsertGrowthEmailNudgeRow(userId, nudgeKey);
+  await withRetryableDatabaseConnectionRetry(() =>
+    upsertGrowthEmailNudgeRow(userId, nudgeKey)
+  );
 }
 
 export async function getGrowthDeliverySettings(userId: string) {
-  const row = await findNotificationSettingsRow(userId);
+  const row = await withRetryableDatabaseConnectionRetry(() =>
+    findNotificationSettingsRow(userId)
+  );
   if (!row) {
     return null;
   }

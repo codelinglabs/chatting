@@ -86,4 +86,26 @@ describe("growth outreach orchestration", () => {
     );
     expect(mocks.upsertGrowthEmailNudgeRow).toHaveBeenCalledWith("user_1", "expansion-team");
   });
+
+  it("retries growth nudge persistence when the database auth handshake times out once", async () => {
+    mocks.findNotificationSettingsRow.mockResolvedValueOnce({
+      email: "owner@chatting.example",
+      notification_email: null,
+      email_notifications: true
+    });
+    mocks.getDashboardBillingSummary.mockResolvedValueOnce({
+      planKey: "starter",
+      usedSeats: 2,
+      conversationCount: 12
+    });
+    mocks.findGrowthEmailNudgeRow.mockResolvedValueOnce(null);
+    mocks.upsertGrowthEmailNudgeRow
+      .mockRejectedValueOnce(new Error("Authentication timed out"))
+      .mockResolvedValueOnce(undefined);
+
+    await expect(maybeSendTeamExpansionEmail("user_1")).resolves.toBeUndefined();
+
+    expect(mocks.sendExpansionReminderEmail).toHaveBeenCalledTimes(1);
+    expect(mocks.upsertGrowthEmailNudgeRow).toHaveBeenCalledTimes(2);
+  });
 });

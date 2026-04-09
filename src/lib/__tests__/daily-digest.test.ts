@@ -28,11 +28,7 @@ vi.mock("@/lib/repositories/daily-digest-repository", () => ({
   releaseDailyDigestDelivery: mocks.releaseDailyDigestDelivery
 }));
 
-import {
-  runScheduledDailyDigests,
-  sendUserDailyDigest,
-  shouldRunDailyDigests
-} from "@/lib/daily-digest";
+import { runScheduledDailyDigests, sendUserDailyDigest, shouldRunDailyDigests } from "@/lib/daily-digest";
 import { openConversation } from "@/lib/__tests__/daily-digest-test-fixtures";
 
 describe("daily digest", () => {
@@ -179,5 +175,22 @@ describe("daily digest", () => {
 
     expect(mocks.claimDailyDigestDelivery).toHaveBeenNthCalledWith(1, "user_1", "owner_1", "2026-03-29");
     expect(mocks.claimDailyDigestDelivery).toHaveBeenNthCalledWith(2, "user_1", "owner_2", "2026-03-29");
+  });
+
+  it("reuses workspace analytics and open-conversation data for teammates in the same workspace", async () => {
+    mocks.listDailyDigestRecipientRows.mockResolvedValue([
+      { user_id: "user_1", owner_user_id: "owner_1", email: "owner@example.com", notification_email: null, timezone: "UTC" },
+      { user_id: "user_2", owner_user_id: "owner_1", email: "member@example.com", notification_email: null, timezone: "UTC" }
+    ]);
+    await expect(runScheduledDailyDigests(new Date("2026-03-30T13:15:00.000Z"))).resolves.toEqual({
+      processedRecipients: 2,
+      sent: 2,
+      skipped: 0
+    });
+
+    expect(mocks.getAnalyticsDatasetForOwnerUserId).toHaveBeenCalledTimes(1);
+    expect(mocks.queryConversationSummaries).toHaveBeenCalledTimes(1);
+    expect(mocks.sendDailyDigestEmail).toHaveBeenCalledTimes(2);
+    expect(mocks.claimDailyDigestDelivery).toHaveBeenCalledTimes(2);
   });
 });

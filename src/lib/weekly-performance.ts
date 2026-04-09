@@ -1,55 +1,11 @@
-import {
-  sendWeeklyPerformanceEmail,
-  sendWeeklyWidgetInstallEmail
-} from "@/lib/chatting-notification-email-senders";
-import { getPublicAppUrl } from "@/lib/env";
+import { sendWeeklyPerformanceEmail, sendWeeklyWidgetInstallEmail } from "@/lib/chatting-notification-email-senders";
+import { claimWeeklyPerformanceDelivery, listWeeklyPerformanceRecipientRows, listWeeklyPerformanceWorkspaceRows } from "@/lib/repositories/weekly-performance-repository";
+import { withRetryableDatabaseConnectionRetry } from "@/lib/retryable-database-errors";
+import { previousLocalWeekStartDateKey, resolveReportTimeZone, shouldRunWeeklyReport } from "@/lib/report-time";
 import { optionalText } from "@/lib/utils";
-import {
-  hasWeeklyPerformanceDelivery,
-  insertWeeklyPerformanceDelivery,
-  listWeeklyPerformanceRecipientRows,
-  listWeeklyPerformanceWorkspaceRows
-} from "@/lib/repositories/weekly-performance-repository";
-import {
-  previousLocalWeekStartDateKey,
-  resolveReportTimeZone,
-  shouldRunWeeklyReport
-} from "@/lib/report-time";
-import { getOrCreateWeeklyPerformanceSnapshot } from "@/lib/weekly-performance-snapshot-service";
+import { buildWeeklySnapshotRequest, cleanupClaimedWeeklyPerformanceDelivery, createWeeklyPerformanceSnapshotLoader, loadWeeklyPerformanceSnapshot, type WeeklyPerformanceSnapshot, WeeklyPerformanceCleanupError } from "@/lib/weekly-performance-runtime";
 
 type WeeklyPerformanceSendStatus = "sent" | "too-early" | "already-sent";
-
-function reportLinks() {
-  const baseUrl = getPublicAppUrl();
-  return {
-    reportUrl: `${baseUrl}/dashboard/analytics?range=last_week`,
-    settingsUrl: `${baseUrl}/dashboard/settings?section=reports`,
-    widgetUrl: `${baseUrl}/dashboard/widget`
-  };
-}
-
-function teamNameOrFallback(teamName?: string | null) {
-  return teamName || "Chatting";
-}
-
-function buildWeeklySnapshotRequest(input: {
-  ownerUserId: string;
-  teamName?: string | null;
-  teamTimeZone?: string | null;
-  weekStart: string;
-  includeAiInsights?: boolean;
-  includeTeamLeaderboard?: boolean;
-}) {
-  return {
-    ...reportLinks(),
-    ownerUserId: input.ownerUserId,
-    teamName: teamNameOrFallback(input.teamName),
-    weekStart: input.weekStart,
-    teamTimeZone: resolveReportTimeZone(input.teamTimeZone),
-    includeAiInsights: input.includeAiInsights ?? true,
-    includeTeamLeaderboard: input.includeTeamLeaderboard ?? true
-  };
-}
 
 export function shouldRunWeeklyPerformanceEmails(
   now = new Date(),
@@ -66,21 +22,22 @@ export function shouldRunWeeklyPerformanceEmails(
   );
 }
 
-async function ensureWeeklySnapshots(now: Date) {
-  const workspaces = await listWeeklyPerformanceWorkspaceRows();
+async function ensureWeeklySnapshots(
+  now: Date,
+  loadSnapshot: ReturnType<typeof createWeeklyPerformanceSnapshotLoader>
+) {
+  const workspaces = await withRetryableDatabaseConnectionRetry(() => listWeeklyPerformanceWorkspaceRows());
 
   for (const workspace of workspaces) {
-    if (!workspace.widget_installed) {
-      continue;
-    }
+    if (!workspace.widget_installed) continue;
 
-    await getOrCreateWeeklyPerformanceSnapshot(buildWeeklySnapshotRequest({
+    await loadSnapshot(buildWeeklySnapshotRequest({
       ownerUserId: workspace.owner_user_id,
       teamName: workspace.team_name,
       teamTimeZone: workspace.team_timezone,
       weekStart: previousLocalWeekStartDateKey(now, workspace.team_timezone),
       includeAiInsights: workspace.workspace_ai_insights_enabled,
-      includeTeamLeaderboard: workspace.workspace_include_team_leaderboard,
+      includeTeamLeaderboard: workspace.workspace_include_team_leaderboard
     }));
   }
 }
@@ -99,24 +56,17 @@ export async function sendUserWeeklyPerformanceEmail(input: {
   workspaceAiInsightsEnabled?: boolean;
   widgetInstalled?: boolean;
   now?: Date;
+  snapshot?: WeeklyPerformanceSnapshot;
 }): Promise<WeeklyPerformanceSendStatus> {
   const now = input.now ?? new Date();
   const teamTimeZone = resolveReportTimeZone(input.teamTimeZone ?? input.recipientTimeZone);
 
-  if (
-    !shouldRunWeeklyPerformanceEmails(
-      now,
-      input.recipientTimeZone,
-      teamTimeZone,
-      input.weeklyReportSendHour ?? 9,
-      input.weeklyReportSendMinute ?? 0
-    )
-  ) {
+  if (!shouldRunWeeklyPerformanceEmails(now, input.recipientTimeZone, teamTimeZone, input.weeklyReportSendHour ?? 9, input.weeklyReportSendMinute ?? 0)) {
     return "too-early";
   }
 
   const deliveryKey = previousLocalWeekStartDateKey(now, teamTimeZone);
-  if (await hasWeeklyPerformanceDelivery(input.userId, input.ownerUserId, deliveryKey)) {
+  if (!(await withRetryableDatabaseConnectionRetry(() => claimWeeklyPerformanceDelivery(input.userId, input.ownerUserId, deliveryKey)))) {
     return "already-sent";
   }
 
@@ -130,40 +80,48 @@ export async function sendUserWeeklyPerformanceEmail(input: {
   });
 
   if (!input.widgetInstalled) {
-    await sendWeeklyWidgetInstallEmail({
-      to: input.notificationEmail,
-      teamName: snapshotRequest.teamName,
-      widgetUrl: snapshotRequest.widgetUrl,
-      settingsUrl: snapshotRequest.settingsUrl
-    });
-    await insertWeeklyPerformanceDelivery(input.userId, input.ownerUserId, deliveryKey);
-    return "sent";
+    try {
+      await sendWeeklyWidgetInstallEmail({
+        to: input.notificationEmail,
+        teamName: snapshotRequest.teamName,
+        widgetUrl: snapshotRequest.widgetUrl,
+        settingsUrl: snapshotRequest.settingsUrl
+      });
+      return "sent";
+    } catch (error) {
+      await cleanupClaimedWeeklyPerformanceDelivery({ userId: input.userId, ownerUserId: input.ownerUserId, deliveryKey, sendError: error });
+      throw error;
+    }
   }
 
-  const snapshot = await getOrCreateWeeklyPerformanceSnapshot(snapshotRequest);
+  const snapshot = input.snapshot ?? (await loadWeeklyPerformanceSnapshot(snapshotRequest));
 
-  await sendWeeklyPerformanceEmail({
-    to: input.notificationEmail,
-    footerTeamName: snapshotRequest.teamName,
-    report: {
-      ...snapshot,
-      recipientUserId: input.userId,
-      teamPerformance: input.workspaceIncludeTeamLeaderboard === false ? [] : snapshot.teamPerformance,
-      personalPerformance:
-        input.weeklyReportIncludePersonalStats === false
-          ? null
-          : snapshot.personalPerformanceByUserId[input.userId] ?? null
-    }
-  });
-  await insertWeeklyPerformanceDelivery(input.userId, input.ownerUserId, deliveryKey);
-
-  return "sent";
+  try {
+    await sendWeeklyPerformanceEmail({
+      to: input.notificationEmail,
+      footerTeamName: snapshotRequest.teamName,
+      report: {
+        ...snapshot,
+        recipientUserId: input.userId,
+        teamPerformance: input.workspaceIncludeTeamLeaderboard === false ? [] : snapshot.teamPerformance,
+        personalPerformance:
+          input.weeklyReportIncludePersonalStats === false
+            ? null
+            : snapshot.personalPerformanceByUserId[input.userId] ?? null
+      }
+    });
+    return "sent";
+  } catch (error) {
+    await cleanupClaimedWeeklyPerformanceDelivery({ userId: input.userId, ownerUserId: input.ownerUserId, deliveryKey, sendError: error });
+    throw error;
+  }
 }
 
 export async function runScheduledWeeklyPerformanceEmails(now = new Date()) {
-  await ensureWeeklySnapshots(now);
+  const loadSnapshot = createWeeklyPerformanceSnapshotLoader();
+  await ensureWeeklySnapshots(now, loadSnapshot);
 
-  const recipients = await listWeeklyPerformanceRecipientRows();
+  const recipients = await withRetryableDatabaseConnectionRetry(() => listWeeklyPerformanceRecipientRows());
   let sent = 0;
   let skipped = 0;
 
@@ -182,12 +140,33 @@ export async function runScheduledWeeklyPerformanceEmails(now = new Date()) {
         workspaceIncludeTeamLeaderboard: recipient.workspace_include_team_leaderboard,
         workspaceAiInsightsEnabled: recipient.workspace_ai_insights_enabled,
         widgetInstalled: recipient.widget_installed,
-        now
+        now,
+        snapshot: recipient.widget_installed
+          ? await loadSnapshot(buildWeeklySnapshotRequest({
+              ownerUserId: recipient.owner_user_id,
+              teamName: recipient.team_name,
+              teamTimeZone: recipient.team_timezone,
+              weekStart: previousLocalWeekStartDateKey(now, recipient.team_timezone),
+              includeAiInsights: recipient.workspace_ai_insights_enabled,
+              includeTeamLeaderboard: recipient.workspace_include_team_leaderboard
+            }))
+          : undefined
       });
       sent += status === "sent" ? 1 : 0;
       skipped += status === "sent" ? 0 : 1;
     } catch (error) {
       skipped += 1;
+      if (error instanceof WeeklyPerformanceCleanupError) {
+        console.error(
+          "weekly performance delivery cleanup failed",
+          recipient.user_id,
+          recipient.owner_user_id,
+          error.sendError,
+          error.cleanupError
+        );
+        continue;
+      }
+
       console.error("weekly performance email failed", recipient.user_id, recipient.owner_user_id, error);
     }
   }

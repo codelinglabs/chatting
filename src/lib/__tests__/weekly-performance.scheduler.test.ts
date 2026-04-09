@@ -1,7 +1,7 @@
 const mocks = vi.hoisted(() => ({
   getPublicAppUrl: vi.fn(),
-  hasWeeklyPerformanceDelivery: vi.fn(),
-  insertWeeklyPerformanceDelivery: vi.fn(),
+  claimWeeklyPerformanceDelivery: vi.fn(),
+  releaseWeeklyPerformanceDelivery: vi.fn(),
   listWeeklyPerformanceRecipientRows: vi.fn(),
   listWeeklyPerformanceWorkspaceRows: vi.fn(),
   getOrCreateWeeklyPerformanceSnapshot: vi.fn(),
@@ -15,10 +15,10 @@ vi.mock("@/lib/chatting-notification-email-senders", () => ({
 }));
 vi.mock("@/lib/env", () => ({ getPublicAppUrl: mocks.getPublicAppUrl }));
 vi.mock("@/lib/repositories/weekly-performance-repository", () => ({
-  hasWeeklyPerformanceDelivery: mocks.hasWeeklyPerformanceDelivery,
-  insertWeeklyPerformanceDelivery: mocks.insertWeeklyPerformanceDelivery,
+  claimWeeklyPerformanceDelivery: mocks.claimWeeklyPerformanceDelivery,
   listWeeklyPerformanceRecipientRows: mocks.listWeeklyPerformanceRecipientRows,
-  listWeeklyPerformanceWorkspaceRows: mocks.listWeeklyPerformanceWorkspaceRows
+  listWeeklyPerformanceWorkspaceRows: mocks.listWeeklyPerformanceWorkspaceRows,
+  releaseWeeklyPerformanceDelivery: mocks.releaseWeeklyPerformanceDelivery
 }));
 vi.mock("@/lib/weekly-performance-snapshot-service", () => ({
   getOrCreateWeeklyPerformanceSnapshot: mocks.getOrCreateWeeklyPerformanceSnapshot
@@ -32,7 +32,7 @@ describe("weekly performance scheduler", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-30T13:15:00.000Z"));
     mocks.getPublicAppUrl.mockReturnValue("https://usechatting.com");
-    mocks.hasWeeklyPerformanceDelivery.mockResolvedValue(false);
+    mocks.claimWeeklyPerformanceDelivery.mockResolvedValue(true);
     mocks.getOrCreateWeeklyPerformanceSnapshot.mockResolvedValue({
       teamName: "Chatting",
       dateRange: "Mar 23 – Mar 29",
@@ -80,8 +80,51 @@ describe("weekly performance scheduler", () => {
     expect(mocks.getOrCreateWeeklyPerformanceSnapshot).toHaveBeenCalledWith(expect.objectContaining({ ownerUserId: "owner_1", weekStart: "2026-03-23" }));
     expect(mocks.getOrCreateWeeklyPerformanceSnapshot).toHaveBeenCalledWith(expect.objectContaining({ ownerUserId: "owner_2", weekStart: "2026-03-23" }));
     expect(mocks.sendWeeklyPerformanceEmail).toHaveBeenCalledTimes(2);
-    expect(mocks.insertWeeklyPerformanceDelivery).toHaveBeenCalledTimes(1);
-    expect(mocks.insertWeeklyPerformanceDelivery).toHaveBeenCalledWith("user_2", "owner_2", "2026-03-23");
+    expect(mocks.claimWeeklyPerformanceDelivery).toHaveBeenCalledTimes(2);
+    expect(mocks.releaseWeeklyPerformanceDelivery).toHaveBeenCalledTimes(1);
+    expect(mocks.releaseWeeklyPerformanceDelivery).toHaveBeenCalledWith("user_1", "owner_1", "2026-03-23");
     expect(errorSpy).toHaveBeenCalledWith("weekly performance email failed", "user_1", "owner_1", expect.any(Error));
+  });
+
+  it("retries a transient auth timeout while loading workspace data and reuses the snapshot for teammates in the same workspace", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    mocks.listWeeklyPerformanceWorkspaceRows.mockResolvedValue([
+      { owner_user_id: "owner_1", team_timezone: "UTC", team_name: "Chatting", workspace_include_team_leaderboard: true, workspace_ai_insights_enabled: true, widget_installed: true }
+    ]);
+    mocks.listWeeklyPerformanceRecipientRows.mockResolvedValue([
+      { user_id: "user_1", owner_user_id: "owner_1", workspace_role: "owner", email: "owner@example.com", notification_email: null, first_name: "Tina", recipient_timezone: "UTC", team_timezone: "UTC", team_name: "Chatting", weekly_report_enabled: true, weekly_report_send_hour: 9, weekly_report_send_minute: 0, weekly_report_include_personal_stats: true, workspace_weekly_reports_enabled: true, workspace_include_team_leaderboard: true, workspace_ai_insights_enabled: true, widget_installed: true },
+      { user_id: "user_2", owner_user_id: "owner_1", workspace_role: "admin", email: "member@example.com", notification_email: null, first_name: "Alex", recipient_timezone: "UTC", team_timezone: "UTC", team_name: "Chatting", weekly_report_enabled: true, weekly_report_send_hour: 9, weekly_report_send_minute: 0, weekly_report_include_personal_stats: true, workspace_weekly_reports_enabled: true, workspace_include_team_leaderboard: true, workspace_ai_insights_enabled: true, widget_installed: true }
+    ]);
+    mocks.getOrCreateWeeklyPerformanceSnapshot
+      .mockRejectedValueOnce(new Error("Authentication timed out"))
+      .mockResolvedValueOnce({
+        teamName: "Chatting",
+        dateRange: "Mar 23 – Mar 29",
+        previewText: "4 conversations, 4m avg response time",
+        reportUrl: "https://usechatting.com/dashboard/analytics?range=last_week",
+        settingsUrl: "https://usechatting.com/dashboard/settings?section=reports",
+        widgetUrl: "https://usechatting.com/dashboard/widget",
+        quietWeek: false,
+        metrics: [],
+        heatmapHours: [],
+        heatmapRows: [],
+        peakLabel: null,
+        topPages: [],
+        insight: null,
+        tip: { text: "Tip", href: "https://usechatting.com/dashboard/widget", label: "Open widget settings" },
+        teamPerformance: [],
+        personalPerformanceByUserId: {}
+      });
+
+    await expect(runScheduledWeeklyPerformanceEmails(new Date("2026-03-30T13:15:00.000Z"))).resolves.toEqual({
+      processedRecipients: 2,
+      sent: 2,
+      skipped: 0
+    });
+
+    expect(mocks.getOrCreateWeeklyPerformanceSnapshot).toHaveBeenCalledTimes(2);
+    expect(mocks.sendWeeklyPerformanceEmail).toHaveBeenCalledTimes(2);
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 });

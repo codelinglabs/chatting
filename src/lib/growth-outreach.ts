@@ -12,6 +12,7 @@ import {
 import { getDashboardHomeResponseMetrics } from "@/lib/repositories/dashboard-home-repository";
 import { getDashboardGrowthSnapshot } from "@/lib/repositories/dashboard-growth-repository";
 import { findAuthUserById } from "@/lib/repositories/auth-repository";
+import { withRetryableDatabaseConnectionRetry } from "@/lib/retryable-database-errors";
 import { isSiteWidgetInstalled } from "@/lib/site-installation";
 
 function roundToWhole(value: string | null | undefined) {
@@ -19,7 +20,9 @@ function roundToWhole(value: string | null | undefined) {
 }
 
 async function getSiteForGrowthEmails(siteId: string) {
-  const result = await querySites("s.id = $1", [siteId], "LIMIT 1");
+  const result = await withRetryableDatabaseConnectionRetry(() =>
+    querySites("s.id = $1", [siteId], "LIMIT 1")
+  );
   return result.rows[0] ? mapSite(result.rows[0]) : null;
 }
 
@@ -28,12 +31,14 @@ export async function maybeSendSiteLifecycleEmails(siteId: string) {
     const site = await getSiteForGrowthEmails(siteId);
     if (!site) return;
 
-    const [user, delivery, snapshot, response] = await Promise.all([
-      findAuthUserById(site.userId),
-      getGrowthDeliverySettings(site.userId),
-      getDashboardGrowthSnapshot(site.userId),
-      getDashboardHomeResponseMetrics(site.userId)
-    ]);
+    const [user, delivery, snapshot, response] = await withRetryableDatabaseConnectionRetry(() =>
+      Promise.all([
+        findAuthUserById(site.userId),
+        getGrowthDeliverySettings(site.userId),
+        getDashboardGrowthSnapshot(site.userId),
+        getDashboardHomeResponseMetrics(site.userId)
+      ])
+    );
     if (!user || !delivery?.emailNotifications) return;
 
     const totalConversations = Number(snapshot.total_conversations ?? 0);
@@ -88,10 +93,12 @@ export async function maybeSendSiteLifecycleEmails(siteId: string) {
 
 export async function maybeSendTeamExpansionEmail(userId: string) {
   try {
-    const [delivery, billing] = await Promise.all([
-      getGrowthDeliverySettings(userId),
-      getDashboardBillingSummary(userId)
-    ]);
+    const [delivery, billing] = await withRetryableDatabaseConnectionRetry(() =>
+      Promise.all([
+        getGrowthDeliverySettings(userId),
+        getDashboardBillingSummary(userId)
+      ])
+    );
     if (!delivery?.emailNotifications || !shouldSendTeamExpansionReminder(billing.planKey, billing.usedSeats)) return;
 
     await maybeSendGrowthEmail(userId, "expansion-team", 24 * 14, () =>
@@ -110,10 +117,12 @@ export async function maybeSendTeamExpansionEmail(userId: string) {
 
 export async function maybeSendAnalyticsExpansionEmail(userId: string) {
   try {
-    const [delivery, billing] = await Promise.all([
-      getGrowthDeliverySettings(userId),
-      getDashboardBillingSummary(userId)
-    ]);
+    const [delivery, billing] = await withRetryableDatabaseConnectionRetry(() =>
+      Promise.all([
+        getGrowthDeliverySettings(userId),
+        getDashboardBillingSummary(userId)
+      ])
+    );
     if (
       !delivery?.emailNotifications ||
       !shouldSendAnalyticsExpansionReminder(billing.planKey, billing.conversationCount, billing.usedSeats)

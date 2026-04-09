@@ -49,4 +49,33 @@ describe("growth outreach runner", () => {
     expect(mocks.maybeSendTrialEndingReminder).toHaveBeenNthCalledWith(2, "user_2");
     expect(result).toEqual({ processedSites: 2, downgradedWorkspaces: 1 });
   });
+
+  it("keeps processing remaining trials and sites when one lifecycle action fails", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    mocks.runExpiredGrowthTrialDowngrades.mockResolvedValueOnce({
+      downgradedWorkspaces: 0,
+      expiredTrials: [
+        { userId: "user_9", trialEndedAt: "2026-03-29T00:00:00.000Z" },
+        { userId: "user_8", trialEndedAt: "2026-03-28T00:00:00.000Z" }
+      ]
+    });
+    mocks.listGrowthLifecycleSiteRows.mockResolvedValueOnce([
+      { site_id: "site_1", user_id: "user_1" },
+      { site_id: "site_2", user_id: "user_2" }
+    ]);
+    mocks.maybeSendTrialExpiredEmail.mockRejectedValueOnce(new Error("Authentication timed out"));
+    mocks.maybeSendSiteLifecycleEmails.mockRejectedValueOnce(new Error("Authentication timed out"));
+
+    await expect(runScheduledGrowthLifecycleEmails()).resolves.toEqual({
+      processedSites: 2,
+      downgradedWorkspaces: 0
+    });
+
+    expect(mocks.maybeSendTrialExpiredEmail).toHaveBeenCalledTimes(2);
+    expect(mocks.maybeSendSiteLifecycleEmails).toHaveBeenCalledTimes(2);
+    expect(mocks.maybeSendTrialEndingReminder).toHaveBeenCalledTimes(2);
+    expect(errorSpy).toHaveBeenCalledWith("growth trial expired email failed", "user_9", expect.any(Error));
+    expect(errorSpy).toHaveBeenCalledWith("growth lifecycle site email failed", "site_1", "user_1", expect.any(Error));
+  });
 });
