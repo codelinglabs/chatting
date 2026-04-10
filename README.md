@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Email-template preview tests now use the hosted `https://usechatting.com` origin so dashboard preview coverage matches the current public app URL.
 - Growth billing now expands Stripe price tiers during validation, so tiered Growth price checks inspect the full Stripe price shape before checkout flows use it.
 - Scheduled Zapier deliveries now retry database reads and delivery-state writes after transient Postgres auth timeouts instead of aborting the whole run on the first connection failure.
 - Unreadable encrypted integration credentials now fail closed to `null` instead of escaping as parse errors, so broken saved credential blobs no longer crash the shared parser path.
@@ -234,6 +235,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Dashboard
 
+- Email-template preview tests now use the hosted `https://usechatting.com` origin to match the current dashboard preview environment.
 - Live-event unit coverage now isolates Redis bridge bootstrapping while production dashboard updates still run through the strict Redis-backed bridge.
 - Dashboard growth-health coverage now follows the same shared response-time formatter used by the live score cards.
 - Locked integrations now route through the shared Growth confirmation modal from settings instead of sending teams out to billing immediately.

@@ -37,7 +37,7 @@ describe("settings email templates more", () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       requestAnimationFrame: (callback: FrameRequestCallback) => callback(0),
-      location: { origin: "https://app.usechatting.com" }
+      location: { origin: "https://usechatting.com" }
     });
 
     const { SettingsEmailTemplates, reactMocks, captures, renderTranscript, renderVisitor } = await loadSettingsEmailTemplates();
@@ -99,7 +99,7 @@ describe("settings email templates more", () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
       requestAnimationFrame: (callback: FrameRequestCallback) => callback(0),
-      location: { origin: "https://app.usechatting.com" }
+      location: { origin: "https://usechatting.com" }
     });
 
     const { SettingsEmailTemplates, reactMocks, captures } = await loadSettingsEmailTemplates();
