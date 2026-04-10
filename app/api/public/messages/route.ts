@@ -1,4 +1,8 @@
-import { createUserMessage, getConversationSummaryById } from "@/lib/data";
+import {
+  bindSessionMobilePushDevicesToConversation,
+  createUserMessage,
+  getConversationSummaryById
+} from "@/lib/data";
 import { extractUploadedAttachments, extractVisitorMetadata } from "@/lib/conversation-io";
 import { sendWelcomeTemplateEmail } from "@/lib/conversation-template-emails";
 import { publishConversationLive } from "@/lib/live-events";
@@ -51,6 +55,11 @@ async function handlePOST(request: Request) {
       attachments,
       content,
       metadata
+    });
+    await bindSessionMobilePushDevicesToConversation({
+      siteId,
+      sessionId,
+      conversationId: result.conversationId
     });
 
     publishConversationLive(result.conversationId, {

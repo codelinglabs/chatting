@@ -25,7 +25,7 @@ declare global {
   var __chattingDb: ChatlyDb | undefined;
 }
 
-const SCHEMA_VERSION = "2026-04-07-workspace-zapier-delivery-queue";
+const SCHEMA_VERSION = "2026-04-09-mobile-push-registrations";
 const SCHEMA_LOCK_KEY = [20260401, 1] as const;
 
 async function createPool() {

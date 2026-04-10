@@ -74,6 +74,11 @@ export {
 } from "./data/visitor-notes";
 export { getDashboardStats } from "./data/stats";
 export { recordUserPresence } from "./data/presence";
+export {
+  bindSessionMobilePushDevicesToConversation,
+  registerPublicMobilePushDevice,
+  unregisterPublicMobilePushDevice
+} from "./data/mobile-push";
 export { getDashboardUnreadCount } from "./data/unread";
 export { subscribeToNewsletter } from "./data/newsletter";
 export { requestFreeToolExport } from "./data/free-tool-export";

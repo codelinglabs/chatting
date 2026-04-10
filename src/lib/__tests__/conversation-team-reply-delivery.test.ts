@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   hasConversationAccess: vi.fn(),
   getWorkspaceAccess: vi.fn(),
   sendOfflineReplyTemplateEmail: vi.fn(),
+  sendConversationMobilePushNotifications: vi.fn(),
   publishConversationLive: vi.fn(),
   publishDashboardLive: vi.fn()
 }));
@@ -30,6 +31,10 @@ vi.mock("@/lib/conversation-template-emails", () => ({
   sendOfflineReplyTemplateEmail: mocks.sendOfflineReplyTemplateEmail
 }));
 
+vi.mock("@/lib/expo-push", () => ({
+  sendConversationMobilePushNotifications: mocks.sendConversationMobilePushNotifications
+}));
+
 vi.mock("@/lib/live-events", () => ({
   publishConversationLive: mocks.publishConversationLive,
   publishDashboardLive: mocks.publishDashboardLive
@@ -47,6 +52,7 @@ describe("conversation team reply delivery", () => {
       id: "msg_1",
       createdAt: "2026-04-07T09:00:00.000Z"
     });
+    mocks.sendConversationMobilePushNotifications.mockResolvedValue({ sent: 0, disabled: 0 });
   });
 
   it("returns null when the actor cannot reply in the conversation", async () => {
@@ -88,6 +94,12 @@ describe("conversation team reply delivery", () => {
 
     expect(mocks.markConversationRead).toHaveBeenCalledWith("conv_1", "user_1");
     expect(mocks.sendOfflineReplyTemplateEmail).not.toHaveBeenCalled();
+    expect(mocks.sendConversationMobilePushNotifications).toHaveBeenCalledWith({
+      ownerUserId: "owner_1",
+      conversationId: "conv_1",
+      content: "Hello",
+      attachmentsCount: 0
+    });
     expect(mocks.publishConversationLive).toHaveBeenCalledWith(
       "conv_1",
       expect.objectContaining({ type: "message.created", sender: "team" })

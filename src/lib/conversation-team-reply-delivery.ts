@@ -1,4 +1,5 @@
 import { sendOfflineReplyTemplateEmail } from "@/lib/conversation-template-emails";
+import { sendConversationMobilePushNotifications } from "@/lib/expo-push";
 import {
   getConversationReplyDeliveryState,
   markConversationRead
@@ -100,6 +101,17 @@ export async function deliverConversationTeamReply(input: {
       console.error("reply email send failed", error);
       emailDelivery = "failed";
     }
+  }
+
+  try {
+    await sendConversationMobilePushNotifications({
+      ownerUserId: input.workspaceOwnerId,
+      conversationId: input.conversationId,
+      content: input.content,
+      attachmentsCount: input.attachments?.length ?? 0
+    });
+  } catch (error) {
+    console.error("mobile push send failed", error);
   }
 
   publishConversationLive(input.conversationId, {

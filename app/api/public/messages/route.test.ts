@@ -1,4 +1,5 @@
 const mocks = vi.hoisted(() => ({
+  bindSessionMobilePushDevicesToConversation: vi.fn(),
   createUserMessage: vi.fn(),
   deliverZapierEvent: vi.fn(),
   extractUploadedAttachments: vi.fn(),
@@ -10,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/data", () => ({
+  bindSessionMobilePushDevicesToConversation: mocks.bindSessionMobilePushDevicesToConversation,
   createUserMessage: mocks.createUserMessage,
   getConversationSummaryById: mocks.getConversationSummaryById
 }));
@@ -141,6 +143,11 @@ describe("public messages route", () => {
       })
     );
     expect(mocks.publishConversationLive).toHaveBeenCalledTimes(2);
+    expect(mocks.bindSessionMobilePushDevicesToConversation).toHaveBeenCalledWith({
+      siteId: "site_1",
+      sessionId: "session_1",
+      conversationId: "conv_1"
+    });
     expect(mocks.deliverZapierEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         ownerUserId: "user_1",

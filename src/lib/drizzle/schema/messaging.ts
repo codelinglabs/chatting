@@ -2,6 +2,7 @@ import { check, customType, foreignKey, index, integer, pgTable, primaryKey, tex
 import { desc, sql } from "drizzle-orm";
 import { conversations } from "./conversations";
 import { users } from "./core";
+import { sites } from "./sites";
 
 export const messages = pgTable("messages", {
     id: text("id").primaryKey(),
@@ -86,6 +87,28 @@ export const emailTemplateDeliveries = pgTable("email_template_deliveries", {
     emailTemplateDeliveriesDeliveryKeyKey: uniqueIndex("email_template_deliveries_delivery_key_key").on(table.deliveryKey),
     idxEmailTemplateDeliveriesConversation: index("idx_email_template_deliveries_conversation").on(table.conversationId, desc(table.createdAt)),
     idxEmailTemplateDeliveriesRetryQueue: index("idx_email_template_deliveries_retry_queue").on(table.status, table.nextAttemptAt),
+  }));
+
+export const mobilePushRegistrations = pgTable("mobile_push_registrations", {
+    id: text("id").primaryKey(),
+    siteId: text("site_id").notNull(),
+    conversationId: text("conversation_id"),
+    sessionId: text("session_id").notNull(),
+    provider: text("provider").notNull().default("expo"),
+    platform: text("platform"),
+    appId: text("app_id"),
+    pushToken: text("push_token").notNull(),
+    disabledAt: timestamp("disabled_at", { withTimezone: true, mode: "date" }),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+  }, (table) => ({
+    mobilePushRegistrationsConversationIdFkey: foreignKey({ name: "mobile_push_registrations_conversation_id_fkey", columns: [table.conversationId], foreignColumns: [conversations.id] }).onDelete("set null"),
+    mobilePushRegistrationsProviderCheck: check("mobile_push_registrations_provider_check", sql.raw("(provider = ANY (ARRAY['expo'::text]))")),
+    mobilePushRegistrationsSiteIdFkey: foreignKey({ name: "mobile_push_registrations_site_id_fkey", columns: [table.siteId], foreignColumns: [sites.id] }).onDelete("cascade"),
+    mobilePushRegistrationsPushTokenKey: uniqueIndex("mobile_push_registrations_push_token_key").on(table.pushToken),
+    idxMobilePushRegistrationsConversation: index("idx_mobile_push_registrations_conversation").on(table.conversationId, desc(table.updatedAt)),
+    idxMobilePushRegistrationsSiteSession: index("idx_mobile_push_registrations_site_session").on(table.siteId, table.sessionId, desc(table.updatedAt)),
   }));
 
 export const tags = pgTable("tags", {

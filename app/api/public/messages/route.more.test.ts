@@ -1,4 +1,5 @@
 const mocks = vi.hoisted(() => ({
+  bindSessionMobilePushDevicesToConversation: vi.fn(),
   createUserMessage: vi.fn(),
   deliverZapierEvent: vi.fn(),
   extractUploadedAttachments: vi.fn(),
@@ -10,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/data", () => ({
+  bindSessionMobilePushDevicesToConversation: mocks.bindSessionMobilePushDevicesToConversation,
   createUserMessage: mocks.createUserMessage,
   getConversationSummaryById: mocks.getConversationSummaryById
 }));

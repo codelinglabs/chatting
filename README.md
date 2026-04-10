@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- Mobile chat apps can now register push devices against public conversations, and the shared public API CORS helpers now support the register/unregister flow cleanly with `DELETE`.
 - Scheduled digests, weekly reports, and lifecycle reminder jobs now recover from brief database connection stalls more gracefully, so routine Chatting emails are less likely to get dropped after a transient infra hiccup.
 - Homepage and author-page social previews now use a versioned OG image URL and updated hero-card copy so LinkedIn and similar networks refresh to the current Chatting preview instead of holding onto stale blank cards.
 - Chatting now has a first-party iOS SDK with Swift Package Manager and CocoaPods distribution, so teams can add visitor chat to native apps with live conversation sync, email capture, and a lightweight SwiftUI wrapper.
@@ -208,6 +209,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Widget & Public APIs
 
+- Public mobile device registration, Expo push-backed team reply delivery, and shared `DELETE`-capable CORS helpers now support mobile register and unregister flows.
 - Chatting now includes a first-party iOS SDK with Swift Package Manager and CocoaPods support, covering visitor session storage, live conversation sync, email capture, identify flows, and a lightweight SwiftUI chat surface for native apps.
 - Hosted conversation resume replies now keep the composer focused during sends, and public follow-up replies can now emit consistent reply activity events for funnel analysis.
 - Embeddable widget with optimistic sending, typing, conversation polling, and install detection.
