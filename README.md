@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- JetBrains `.idea/` project files are now ignored in git so local workspace metadata stays out of the shared worktree.
 - Email-template preview tests now use the hosted `https://usechatting.com` origin so dashboard preview coverage matches the current public app URL.
 - Growth billing now expands Stripe price tiers during validation, so tiered Growth price checks inspect the full Stripe price shape before checkout flows use it.
 - Scheduled Zapier deliveries now retry database reads and delivery-state writes after transient Postgres auth timeouts instead of aborting the whole run on the first connection failure.
@@ -277,6 +278,10 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 - Dashboard email settings now preview transcript and visitor email layouts through the same canonical shell used for live sends.
 - Dashboard reply regression coverage now asserts rollback state by conversation id so recency sorting can stay intact without brittle array-order expectations.
 - Dashboard shell, inbox, visitors, widget settings, and route handlers now have broad Vitest coverage across interactive and edge-case flows.
+
+### Repository & Tooling
+
+- Git now ignores JetBrains `.idea/` project files so local IDE workspace metadata stays out of the shared Chatting worktree.
 
 ### Billing & Operations
 
