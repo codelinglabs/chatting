@@ -7,10 +7,13 @@ Visitor-side iOS/macOS Swift Package for Chatting live chat.
 - persistent visitor session storage
 - site config and online-status reads
 - create/resume conversation messages
+- attachment uploads through the public Chatting message API
 - contact identify sync
 - email capture
 - visitor typing updates
 - live SSE conversation events
+- APNs push-token registration for native iOS apps
+- automatic reconnect and conversation refresh when the app returns to the foreground
 - a lightweight SwiftUI wrapper target: `ChattingSDKUI`
 
 ## Install
@@ -67,6 +70,19 @@ You need two values before the SDK can connect:
 
 - `baseURL`: use `https://usechatting.com`
 - `siteId`: your site/workspace ID inside Chatting
+
+### Role split
+
+- This README is mainly for the iOS app developer integrating Chatting into an app.
+- If you run Chatting itself, your backend-side APNs setup is smaller than the app-side setup below.
+
+If you run Chatting itself, your job is only:
+
+- deploy Chatting with `APPLE_TEAM_ID`
+- deploy Chatting with `APPLE_KEY_ID`
+- deploy Chatting with `APPLE_PUSH_KEY_P8`
+
+Everything below about notification permission, APNs device tokens, and `registerPushToken(...)` belongs to the iOS app that is integrating the SDK.
 
 ### Present chat from your app
 
@@ -160,10 +176,43 @@ private struct SupportChatSheet: View {
 
 Use `identify` when you already know who the customer is. Use `emailAddress` plus `saveEmail()` when you only want a follow-up email without a full signed-in profile.
 
+### Register APNs push notifications
+
+Do this in the iOS app:
+
+- request notification permission
+- register for remote notifications
+- forward the APNs device token into `ChattingClient`
+
+```swift
+import ChattingSDK
+import UIKit
+
+func registerChattingPush(client: ChattingClient, deviceToken: Data) {
+  let token = deviceToken.map { String(format: "%02x", $0) }.joined()
+  guard let bundleId = Bundle.main.bundleIdentifier else {
+    return
+  }
+
+  Task {
+    try? await client.registerPushToken(
+      ChattingPushRegistration(
+        pushToken: token,
+        bundleId: bundleId,
+        environment: .production
+      )
+    )
+  }
+}
+```
+
+When you use `ChattingConversationView`, the wrapper reconnects and refreshes automatically when the app returns to the foreground. If a user opens the app from a push notification, present the same support screen and the conversation reloads from current server state.
+
 ### Current scope
 
 - Foreground live chat works now, including live conversation sync while the app is open.
-- Push notifications and suspended/background delivery are not included in v1 yet.
+- APNs-backed push notifications work for native iOS apps once the host app forwards the APNs token into `ChattingClient`.
+- The SwiftUI wrapper reconnects and refreshes the conversation when the app becomes active again.
 
 ## Demo scaffold
 
@@ -178,4 +227,5 @@ The package includes a tiny sample under `Examples/ChattingDemo` that now mirror
 
 - The default session store uses `UserDefaults` namespaced by `siteId`.
 - The SDK talks to the existing public Chatting APIs under `/api/public/...`.
-- This v1 is text-chat focused. Attachments, push notifications, and background delivery are not included yet.
+- Attachment uploads are supported through `ChattingClient.sendMessage(...attachments:)`.
+- Native iOS push delivery still depends on normal app-side APNs entitlements, permission prompts, and token registration in the integrating app.

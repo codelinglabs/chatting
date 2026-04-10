@@ -6,4 +6,5 @@ Before running:
 
 - use `https://usechatting.com` as `baseURL`
 - replace `replace-with-your-site-id` with your real site/workspace ID from Chatting
-- keep the demo in the foreground for live SSE updates in this v1
+- the demo covers foreground chat out of the box
+- native iOS push still requires your real app target to request notification permission and forward an APNs token into `ChattingClient`

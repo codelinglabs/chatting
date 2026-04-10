@@ -15,9 +15,24 @@ struct ChattingTransport {
     path: String,
     body: RequestBody
   ) async throws -> Response {
+    try await sendJSON(path: path, method: "POST", body: body)
+  }
+
+  func delete<RequestBody: Encodable, Response: Decodable>(
+    path: String,
+    body: RequestBody
+  ) async throws -> Response {
+    try await sendJSON(path: path, method: "DELETE", body: body)
+  }
+
+  func postMultipart<Response: Decodable>(
+    path: String,
+    multipart: ChattingMultipartFormData
+  ) async throws -> Response {
     var request = try request(path: path, method: "POST", queryItems: [])
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.httpBody = try encoder.encode(body)
+    let encoded = multipart.encoded()
+    request.setValue(encoded.contentType, forHTTPHeaderField: "Content-Type")
+    request.httpBody = encoded.body
     return try await send(request, as: Response.self)
   }
 
@@ -35,6 +50,17 @@ struct ChattingTransport {
     let (data, response) = try await urlSession.data(for: request)
     try validate(response: response, data: data)
     return try decoder.decode(responseType, from: data)
+  }
+
+  private func sendJSON<RequestBody: Encodable, Response: Decodable>(
+    path: String,
+    method: String,
+    body: RequestBody
+  ) async throws -> Response {
+    var request = try request(path: path, method: method, queryItems: [])
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = try encoder.encode(body)
+    return try await send(request, as: Response.self)
   }
 
   private func request(path: String, method: String, queryItems: [URLQueryItem]) throws -> URLRequest {

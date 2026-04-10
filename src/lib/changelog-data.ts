@@ -19,9 +19,9 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
     "The public guides library now includes a matching Expo and React Native setup guide with the exact install, client setup, and push registration flow."
   ]),
   entry("April 2026", "Chatting now has a native iOS SDK", "Teams can now bring Chatting into native iPhone and iPad apps with a first-party SDK that supports the same visitor conversation flow already used on the web.", [
-    "The new iOS SDK supports visitor session storage, conversation creation and resume, live conversation refresh, typing updates, email capture, and contact identify flows.",
+    "The iOS SDK supports visitor session storage, conversation creation and resume, live conversation refresh, typing updates, email capture, contact identify flows, APNs token registration, and attachment uploads.",
     "Teams can ship the SDK either through Swift Package Manager or CocoaPods, depending on how their app is already managed.",
-    "A lightweight SwiftUI wrapper makes it faster to drop in a native chat surface without rebuilding the whole conversation flow from scratch."
+    "A lightweight SwiftUI wrapper makes it faster to drop in a native chat surface without rebuilding the whole conversation flow from scratch, and it now reconnects and refreshes automatically when the app becomes active again."
   ]),
   entry("April 2026", "Integrations now connect to real external workflows", "Chatting now has a dedicated integrations area for teams that want Slack notifications, Zapier automations, Shopify context, and outbound webhooks wired to live backend connections.", [
     "Slack, Zapier, Shopify, and webhooks now live together in one settings area with real saved connection state instead of placeholder UI.",

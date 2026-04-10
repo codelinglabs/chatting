@@ -1,11 +1,14 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 #if SWIFT_PACKAGE
 import ChattingSDK
 #endif
 
 public struct ChattingConversationView: View {
-  @StateObject private var viewModel: ChattingConversationViewModel
+  @Environment(\.scenePhase) private var scenePhase
+  @StateObject var viewModel: ChattingConversationViewModel
+  @State private var isImportingAttachments = false
 
   private let context: ChattingVisitorContext
 
@@ -24,11 +27,21 @@ public struct ChattingConversationView: View {
       conversationBody
       Divider()
       emailBar
+      pendingAttachmentsBar
       composer
     }
     .background(Color.chattingCanvas)
     .task { viewModel.start(context: context) }
     .onDisappear { viewModel.stop() }
+    .onChange(of: scenePhase) { nextScenePhase in
+      viewModel.handleScenePhase(nextScenePhase)
+    }
+    .fileImporter(
+      isPresented: $isImportingAttachments,
+      allowedContentTypes: [.item],
+      allowsMultipleSelection: true,
+      onCompletion: viewModel.importAttachments
+    )
   }
 
   private var header: some View {
@@ -132,6 +145,13 @@ public struct ChattingConversationView: View {
 
   private var composer: some View {
     HStack(alignment: .bottom, spacing: 12) {
+      Button {
+        isImportingAttachments = true
+      } label: {
+        Image(systemName: "paperclip")
+      }
+      .buttonStyle(.bordered)
+
       TextField("Type a message", text: Binding(
         get: { viewModel.draftMessage },
         set: { viewModel.updateDraft($0) }
@@ -160,22 +180,5 @@ public struct ChattingConversationView: View {
     #else
     return field
     #endif
-  }
-
-  private func bubble(for message: ChattingMessage, fill: Color, text: Color) -> some View {
-    VStack(alignment: .leading, spacing: 6) {
-      Text(message.content.isEmpty ? "(attachment placeholder)" : message.content)
-        .foregroundStyle(text)
-      if !message.attachments.isEmpty {
-        Text("\(message.attachments.count) attachment\(message.attachments.count == 1 ? "" : "s")")
-          .font(.caption)
-          .foregroundStyle(text.opacity(0.85))
-      }
-    }
-    .font(.body)
-    .padding(.horizontal, 14)
-    .padding(.vertical, 10)
-    .background(fill)
-    .clipShape(RoundedRectangle(cornerRadius: 18))
   }
 }

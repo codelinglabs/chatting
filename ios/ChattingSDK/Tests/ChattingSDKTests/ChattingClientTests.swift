@@ -85,6 +85,74 @@ final class ChattingClientTests: XCTestCase {
     XCTAssertEqual(store.state?.email, "alex@example.com")
   }
 
+  func testRegisterPushTokenPostsApnsMetadata() async throws {
+    let store = MemorySessionStore(state: ChattingSessionState(sessionId: "session_123"))
+    let client = makeClient(sessionStore: store)
+    MockURLProtocol.requestHandler = { request in
+      XCTAssertEqual(request.url?.path, "/api/public/mobile-device")
+      XCTAssertEqual(request.httpMethod, "POST")
+
+      let body = try XCTUnwrap(request.mockHTTPBodyData())
+      let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+      XCTAssertEqual(payload["provider"] as? String, "apns")
+      XCTAssertEqual(payload["platform"] as? String, "ios")
+      XCTAssertEqual(payload["pushToken"] as? String, "device-token")
+      XCTAssertEqual(payload["bundleId"] as? String, "com.usechatting.app")
+      XCTAssertEqual(payload["environment"] as? String, "production")
+
+      return (
+        HTTPURLResponse(url: try XCTUnwrap(request.url), statusCode: 200, httpVersion: nil, headerFields: nil)!,
+        #"{"ok":true}"#.data(using: .utf8)!
+      )
+    }
+
+    try await client.registerPushToken(
+      ChattingPushRegistration(
+        pushToken: "device-token",
+        bundleId: "com.usechatting.app",
+        environment: .production
+      )
+    )
+
+    XCTAssertEqual(store.state?.pushRegistration?.pushToken, "device-token")
+    XCTAssertEqual(store.state?.pushTokenSyncedConversationId, nil)
+  }
+
+  func testSendMessageUploadsAttachmentsAsMultipart() async throws {
+    let store = MemorySessionStore(state: ChattingSessionState(sessionId: "session_123"))
+    let client = makeClient(sessionStore: store)
+    MockURLProtocol.requestHandler = { request in
+      XCTAssertEqual(request.url?.path, "/api/public/messages")
+      XCTAssertEqual(request.httpMethod, "POST")
+      XCTAssertTrue((request.value(forHTTPHeaderField: "Content-Type") ?? "").contains("multipart/form-data"))
+
+      let body = String(decoding: try XCTUnwrap(request.mockHTTPBodyData()), as: UTF8.self)
+      XCTAssertTrue(body.contains("name=\"attachments\"; filename=\"brief.pdf\""))
+      XCTAssertTrue(body.contains("name=\"siteId\""))
+      XCTAssertTrue(body.contains("name=\"content\""))
+
+      return (
+        HTTPURLResponse(url: try XCTUnwrap(request.url), statusCode: 200, httpVersion: nil, headerFields: nil)!,
+        """
+        {"ok":true,"conversationId":"conv_123","message":{"id":"msg_1","content":"","createdAt":"2026-04-09T00:00:00.000Z","sender":"user","attachments":[]},"faqSuggestions":null}
+        """.data(using: .utf8)!
+      )
+    }
+
+    _ = try await client.sendMessage(
+      "",
+      attachments: [
+        ChattingAttachmentUpload(
+          fileName: "brief.pdf",
+          contentType: "application/pdf",
+          data: Data("hello".utf8)
+        )
+      ]
+    )
+
+    XCTAssertEqual(store.state?.conversationId, "conv_123")
+  }
+
   private func makeClient(sessionStore: ChattingSessionStore) -> ChattingClient {
     let configuration = URLSessionConfiguration.ephemeral
     configuration.protocolClasses = [MockURLProtocol.self]

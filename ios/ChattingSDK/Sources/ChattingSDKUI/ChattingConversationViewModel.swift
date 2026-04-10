@@ -7,10 +7,11 @@ import ChattingSDK
 
 @MainActor
 public final class ChattingConversationViewModel: ObservableObject {
-  @Published public private(set) var siteConfig: ChattingSiteConfig?
-  @Published public private(set) var siteStatus: ChattingSiteStatus?
-  @Published public private(set) var messages: [ChattingMessage] = []
-  @Published public private(set) var faqSuggestions: ChattingFAQSuggestions?
+  @Published public internal(set) var siteConfig: ChattingSiteConfig?
+  @Published public internal(set) var siteStatus: ChattingSiteStatus?
+  @Published public internal(set) var messages: [ChattingMessage] = []
+  @Published public internal(set) var faqSuggestions: ChattingFAQSuggestions?
+  @Published public internal(set) var pendingAttachments: [ChattingAttachmentUpload] = []
   @Published public internal(set) var teamTyping = false
   @Published public private(set) var isLoading = false
   @Published public private(set) var isSending = false
@@ -21,10 +22,10 @@ public final class ChattingConversationViewModel: ObservableObject {
 
   public let client: ChattingClient
 
-  private var context = ChattingVisitorContext()
+  var context = ChattingVisitorContext()
   private var bootstrapTask: Task<Void, Never>?
   var liveTask: Task<Void, Never>?
-  private var typingResetTask: Task<Void, Never>?
+  var typingResetTask: Task<Void, Never>?
   var liveConversationId: String?
   let reconnectDelayNanoseconds: UInt64 = 1_000_000_000
 
@@ -77,12 +78,14 @@ public final class ChattingConversationViewModel: ObservableObject {
 
   public func sendDraft() {
     let message = draftMessage.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !message.isEmpty, !isSending else {
+    guard (!message.isEmpty || !pendingAttachments.isEmpty), !isSending else {
       return
     }
 
     let previousDraft = draftMessage
+    let previousAttachments = pendingAttachments
     draftMessage = ""
+    pendingAttachments = []
     teamTyping = false
     errorMessage = nil
 
@@ -94,12 +97,15 @@ public final class ChattingConversationViewModel: ObservableObject {
         _ = try await client.sendMessage(
           message,
           context: context,
-          email: emailAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+          email: emailAddress.trimmingCharacters(in: .whitespacesAndNewlines),
+          attachments: previousAttachments
         )
+        try? await client.syncPushToken()
         try await reloadConversation()
         startLiveEventsIfNeeded()
       } catch {
         draftMessage = previousDraft
+        pendingAttachments = previousAttachments
         errorMessage = error.localizedDescription
       }
     }
@@ -145,6 +151,7 @@ public final class ChattingConversationViewModel: ObservableObject {
     defer { isLoading = false }
 
     do {
+      try? await client.syncPushToken()
       async let nextConfig = client.fetchSiteConfig(context: context)
       async let nextStatus = client.fetchSiteStatus(context: context)
       siteConfig = try await nextConfig
@@ -164,7 +171,7 @@ public final class ChattingConversationViewModel: ObservableObject {
     apply(conversation)
   }
 
-  private func apply(_ conversation: ChattingConversationState) {
+  func apply(_ conversation: ChattingConversationState) {
     messages = conversation.messages
     faqSuggestions = conversation.faqSuggestions
   }

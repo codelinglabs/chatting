@@ -6,6 +6,8 @@ public enum ChattingClientError: Error, LocalizedError, Equatable {
   case invalidEventPayload
   case missingConversationIdentifier
   case emptyMessage
+  case attachmentLimitExceeded
+  case attachmentTooLarge
 
   public var errorDescription: String? {
     switch self {
@@ -18,8 +20,33 @@ public enum ChattingClientError: Error, LocalizedError, Equatable {
     case .missingConversationIdentifier:
       return "No active Chatting conversation exists for this session yet."
     case .emptyMessage:
-      return "Message content cannot be empty."
+      return "Message content or an attachment is required."
+    case .attachmentLimitExceeded:
+      return "You can attach up to 3 files per message."
+    case .attachmentTooLarge:
+      return "Each attachment must be smaller than 4 MB."
     }
+  }
+}
+
+public enum ChattingPushEnvironment: String, Codable, Equatable, Sendable {
+  case sandbox
+  case production
+}
+
+public struct ChattingPushRegistration: Codable, Equatable, Sendable {
+  public let pushToken: String
+  public let bundleId: String
+  public let environment: ChattingPushEnvironment
+
+  public init(
+    pushToken: String,
+    bundleId: String,
+    environment: ChattingPushEnvironment
+  ) {
+    self.pushToken = pushToken
+    self.bundleId = bundleId
+    self.environment = environment
   }
 }
 
@@ -27,11 +54,21 @@ public struct ChattingSessionState: Codable, Equatable, Sendable {
   public var sessionId: String
   public var conversationId: String?
   public var email: String?
+  public var pushRegistration: ChattingPushRegistration?
+  public var pushTokenSyncedConversationId: String?
 
-  public init(sessionId: String, conversationId: String? = nil, email: String? = nil) {
+  public init(
+    sessionId: String,
+    conversationId: String? = nil,
+    email: String? = nil,
+    pushRegistration: ChattingPushRegistration? = nil,
+    pushTokenSyncedConversationId: String? = nil
+  ) {
     self.sessionId = sessionId
     self.conversationId = conversationId
     self.email = email
+    self.pushRegistration = pushRegistration
+    self.pushTokenSyncedConversationId = pushTokenSyncedConversationId
   }
 }
 
