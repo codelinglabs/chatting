@@ -68,11 +68,11 @@ export function parseIntegrationCredentials<T>(value: string) {
     return null;
   }
 
-  const raw = isEncryptedIntegrationCredentials(value)
-    ? decryptIntegrationCredentials(value)
-    : value;
-
   try {
+    const raw = isEncryptedIntegrationCredentials(value)
+      ? decryptIntegrationCredentials(value)
+      : value;
+
     return JSON.parse(raw) as T;
   } catch {
     return null;

@@ -32,4 +32,12 @@ describe("integration credentials", () => {
       accessToken: "xoxb-legacy"
     });
   });
+
+  it("returns null for unreadable encrypted credentials", () => {
+    expect(
+      parseIntegrationCredentials<{ accessToken: string }>(
+        "enc:v1:bad-iv:bad-tag:bad-ciphertext"
+      )
+    ).toBeNull();
+  });
 });
