@@ -10,6 +10,8 @@ import {
 } from "@/lib/blog-data";
 
 describe("blog data", () => {
+  const queuedBacklogNow = new Date("2026-04-09T08:00:00.000Z");
+
   it("returns the featured post with hydrated author and category data", () => {
     const post = getFeaturedBlogPost();
 
@@ -59,26 +61,40 @@ describe("blog data", () => {
   });
 
   it("keeps draft backlog posts out of public blog lookups", () => {
-    expect(getBlogPostBySlug("best-live-chat-software-customer-support")).toBeNull();
-    expect(getBlogPostBySlug("zendesk-alternatives-small-teams")).toBeNull();
-    expect(getBlogPostBySlug("traffic-low-conversion")).toBeNull();
-    expect(getBlogPostBySlug("small-ecommerce-customer-support-workflow")).toBeNull();
-    expect(getBlogPostBySlug("shopify-live-chat-growth-uses")).toBeNull();
-    expect(getBlogPostBySlug("live-chat-worth-it-small-business")).toBeNull();
-    expect(getBlogPostBySlug("what-is-live-chat-benefits")).toBeNull();
+    vi.useFakeTimers();
+    vi.setSystemTime(queuedBacklogNow);
+
+    try {
+      expect(getBlogPostBySlug("best-live-chat-software-customer-support")).toBeNull();
+      expect(getBlogPostBySlug("zendesk-alternatives-small-teams")).toBeNull();
+      expect(getBlogPostBySlug("traffic-low-conversion")).toBeNull();
+      expect(getBlogPostBySlug("small-ecommerce-customer-support-workflow")).toBeNull();
+      expect(getBlogPostBySlug("shopify-live-chat-growth-uses")).toBeNull();
+      expect(getBlogPostBySlug("live-chat-worth-it-small-business")).toBeNull();
+      expect(getBlogPostBySlug("what-is-live-chat-benefits")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("returns queued posts with hydrated author and category details", () => {
-    expect(getQueuedBlogPosts().map((post) => post.slug)).toEqual([
-      "best-live-chat-software-customer-support",
-      "zendesk-alternatives-small-teams",
-      "traffic-low-conversion",
-      "small-ecommerce-customer-support-workflow",
-      "shopify-live-chat-growth-uses",
-      "live-chat-worth-it-small-business",
-      "what-is-live-chat-benefits"
-    ]);
-    expect(getQueuedBlogPosts().every((post) => post.author.name && post.category.label)).toBe(true);
+    vi.useFakeTimers();
+    vi.setSystemTime(queuedBacklogNow);
+
+    try {
+      expect(getQueuedBlogPosts().map((post) => post.slug)).toEqual([
+        "best-live-chat-software-customer-support",
+        "zendesk-alternatives-small-teams",
+        "traffic-low-conversion",
+        "small-ecommerce-customer-support-workflow",
+        "shopify-live-chat-growth-uses",
+        "live-chat-worth-it-small-business",
+        "what-is-live-chat-benefits"
+      ]);
+      expect(getQueuedBlogPosts().every((post) => post.author.name && post.category.label)).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("resolves queued posts by slug and alias", () => {
