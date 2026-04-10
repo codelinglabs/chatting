@@ -16,21 +16,24 @@ const workflowSections = CHATTING_ZAPIER_STARTER_WORKFLOWS.map((workflow) =>
 );
 
 export const chattingZapierStarterZapsGuideSections = [
-  section("overview", "What to publish first", [
-    paragraph("If you want Chatting and Zapier adoption to grow after launch, start by publishing a few narrow starter Zaps that solve one clear problem each. The best ones help teams spot new conversations quickly, log new contacts, import leads, or send a first reply without writing extra backend glue."),
-    paragraph("These starter workflows are written so you can reuse the same names and one-line summaries in docs, onboarding emails, in-app callouts, and future Zap template listings.")
+  section("before-you-start", "Before you start", [
+    list([
+      "Connect Chatting to Zapier first",
+      "Pick one alert workflow, one logging workflow, or one action workflow to publish first",
+      "Test each Zap with one real conversation or contact before turning it on"
+    ]),
+    paragraph("Use this page as the shortlist of starter workflows after the main Zapier connection is already working.")
   ]),
   ...workflowSections,
-  section("sharing", "How to share these starter Zaps", [
+  section("publish-these-zaps", "Publish these Zaps", [
     list([
-      "Start with one alert workflow, one logging workflow, and one action workflow so users can choose a clear first win",
-      "Use the template names exactly as written so docs, screenshots, and future Zapier templates stay consistent",
-      "Link back to the main setup guide before the list so users connect Chatting first",
-      "Tell users to test with one real conversation or contact before they turn the Zap on"
+      "Start with one alert workflow, one logging workflow, and one action workflow",
+      "Use the template names exactly as written so docs and templates stay consistent",
+      "Link back to the main Zapier setup guide before this list"
     ], true),
     cta(
-      "Need the connection steps too?",
-      "Open the main Zapier setup guide first, then come back here to choose the best starter workflow for your team.",
+      "Need the connection steps first?",
+      "Open the main Zapier setup guide, connect Chatting, then come back here to pick the first starter Zap.",
       "Open setup guide",
       CHATTING_ZAPIER_SETUP_GUIDE_PATH
     )

@@ -1,47 +1,44 @@
 import { cta, faq, list, paragraph, section } from "@/lib/blog-block-factories";
 
 export const chattingSlackIntegrationGuideSections = [
-  section("why", "Why teams connect Slack", [
-    paragraph("Slack is the fastest way to pull Chatting into the rest of the day. Instead of watching the inbox constantly, your team can get new conversation alerts in a channel they already live in."),
-    paragraph("The Slack integration is best for teams who want immediate visibility, cleaner handoffs, and the option to reply from the Slack thread when a teammate is away from the dashboard.")
-  ]),
-  section("setup", "How to connect Slack", [
+  section("before-you-start", "Before you start", [
     list([
-      "Open Settings → Integrations in Chatting",
-      "Choose Slack and start the connection flow",
-      "Authorize Chatting in Slack",
-      "Pick the Slack channel where new conversations should land",
-      "Save the settings to finish the connection"
-    ], true),
-    paragraph("Once Slack is connected, Chatting stores the workspace and channel settings for your team, so you can come back later and change where alerts go.")
+      "A Slack workspace where you can install or approve apps",
+      "One channel for Chatting alerts",
+      "A decision on whether your team should reply from Slack or use Slack for notifications only"
+    ]),
+    paragraph("Pick the first Slack channel before you connect the integration. Most teams start with one shared support or sales channel.")
   ]),
-  section("notifications", "What you can send to Slack", [
-    paragraph("Slack settings let you decide how noisy or quiet the integration should be."),
+  section("connect-slack", "Connect Slack", [
+    list([
+      "Open `Settings → Integrations → Slack` in Chatting",
+      "Start the Slack connection flow",
+      "Authorize Chatting in Slack",
+      "Choose the Slack channel where new conversations should land",
+      "Save the integration settings"
+    ], true),
+    paragraph("After the connection is saved, Chatting keeps the workspace and channel settings so you can change them later.")
+  ]),
+  section("notifications", "Choose which notifications to send", [
     list([
       "New conversation notifications",
       "Conversations assigned to you",
       "Resolved conversations",
       "All new messages"
     ]),
-    paragraph("Most teams start with new conversations and assigned-to-me alerts first, then widen it only if the channel still feels manageable.")
+    paragraph("Start with a narrow set first so the channel stays useful.")
   ]),
-  section("replying", "Replying from Slack", [
-    paragraph("If Reply from Slack is enabled, your team can answer directly from the Slack thread and send that reply back to the visitor."),
-    paragraph("That keeps fast handoffs possible without forcing every teammate back into the dashboard for short, straightforward replies.")
+  section("reply-from-slack", "Reply from Slack", [
+    paragraph("If Reply from Slack is enabled, teammates can answer from the Slack thread and send that message back to the visitor."),
+    paragraph("If you keep Slack as notification-only, all replies stay in the Chatting dashboard.")
   ]),
-  section("rollout", "A simple rollout that works", [
+  section("check-installation", "Check the installation", [
     list([
-      "Start with one shared support or sales channel",
-      "Keep notifications narrow at first",
-      "Turn on Reply from Slack for the teammates who actually use it",
-      "Use assigned-to-me alerts when individual ownership matters"
-    ], true),
-    cta(
-      "Ready to connect Slack?",
-      "Open the Integrations area in Chatting and finish the Slack connection in a few minutes.",
-      "Open Chatting",
-      "/login"
-    )
+      "Start a new conversation from the widget or test page",
+      "Confirm the alert appears in the Slack channel",
+      "If Reply from Slack is enabled, send a reply from the Slack thread",
+      "Confirm the visitor receives the reply in Chatting"
+    ], true)
   ]),
   section("faq", "FAQ", [
     faq([
@@ -51,12 +48,18 @@ export const chattingSlackIntegrationGuideSections = [
       },
       {
         question: "Do we have to allow replies from Slack?",
-        answer: "No. You can keep Slack as a notification-only integration if you want the dashboard to remain the only place where replies are sent."
+        answer: "No. You can keep Slack as a notification-only integration if you want replies to stay in the dashboard."
       },
       {
         question: "What should we do if Slack shows a reconnect state?",
         answer: "Reconnect the Slack account from Chatting so notifications and threaded replies can resume cleanly."
       }
-    ])
+    ]),
+    cta(
+      "Ready to connect Slack?",
+      "Open the Slack integration in Chatting and connect one channel first.",
+      "Open Chatting",
+      "/login"
+    )
   ])
 ];

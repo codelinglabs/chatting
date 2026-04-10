@@ -1,0 +1,40 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="104" y1="82" x2="1088" y2="544" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFF6FF"/>
+      <stop offset="0.44" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFF7ED"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" rx="40" fill="#F8FAFC"/>
+  <rect x="74" y="62" width="1052" height="506" rx="34" fill="url(#bg)"/>
+
+  <rect x="138" y="122" width="212" height="132" rx="28" fill="#DBEAFE"/>
+  <rect x="182" y="162" width="104" height="20" rx="10" fill="#2563EB"/>
+  <rect x="182" y="204" width="128" height="18" rx="9" fill="#93C5FD"/>
+
+  <rect x="374" y="122" width="212" height="132" rx="28" fill="#FFF7ED"/>
+  <rect x="418" y="162" width="94" height="20" rx="10" fill="#F97316"/>
+  <rect x="418" y="204" width="118" height="18" rx="9" fill="#FDBA74"/>
+
+  <rect x="610" y="122" width="212" height="132" rx="28" fill="#ECFDF5"/>
+  <rect x="654" y="162" width="108" height="20" rx="10" fill="#10B981"/>
+  <rect x="654" y="204" width="122" height="18" rx="9" fill="#86EFAC"/>
+
+  <rect x="846" y="122" width="216" height="132" rx="28" fill="#FFFFFF"/>
+  <rect x="890" y="162" width="116" height="20" rx="10" fill="#0F172A"/>
+  <rect x="890" y="204" width="96" height="18" rx="9" fill="#CBD5E1"/>
+
+  <rect x="138" y="280" width="924" height="124" rx="30" fill="#F8FAFC"/>
+  <circle cx="204" cy="342" r="16" fill="#2563EB"/>
+  <rect x="236" y="331" width="134" height="22" rx="11" fill="#93C5FD"/>
+  <circle cx="438" cy="342" r="16" fill="#F97316"/>
+  <rect x="470" y="331" width="142" height="22" rx="11" fill="#FDBA74"/>
+  <circle cx="690" cy="342" r="16" fill="#10B981"/>
+  <rect x="722" y="331" width="128" height="22" rx="11" fill="#86EFAC"/>
+  <circle cx="914" cy="342" r="16" fill="#0F172A"/>
+  <rect x="946" y="331" width="62" height="22" rx="11" fill="#CBD5E1"/>
+
+  <text x="138" y="520" fill="#0F172A" font-family="Fraunces, serif" font-size="46" font-weight="600">Zapier starter Zaps</text>
+</svg>

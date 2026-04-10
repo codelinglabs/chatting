@@ -5,16 +5,16 @@ export const chattingZapierApiReferenceGuide: GuideArticle = {
   slug: "chatting-zapier-api-reference",
   title: "Chatting Zapier API reference",
   excerpt:
-    "Reference docs for Chatting's Zapier auth check, trigger subscriptions, action endpoints, error codes, and sample payloads.",
+    "Endpoint reference for Chatting's Zapier auth check, trigger subscriptions, sample endpoints, actions, and error codes.",
   subtitle:
-    "The endpoint-level reference for Chatting's Zapier app, including auth headers, trigger lifecycle requests, actions, and the payload shapes reviewers and integrators need.",
+    "Use this reference while reviewing or building the Chatting Zapier app.",
   seoTitle: "Chatting Zapier API Reference",
   publishedAt: "2026-04-09T00:45:00.000Z",
-  updatedAt: "2026-04-09T00:45:00.000Z",
+  updatedAt: "2026-04-10T09:30:00.000Z",
   readingTime: 6,
   image: {
-    src: "/blog/chatting-zapier-integration-guide.svg",
-    alt: "Chatting Zapier API reference artwork showing a trigger, workflow, and action flow."
+    src: "/blog/chatting-zapier-api-reference.svg",
+    alt: "Chatting Zapier API reference cover with endpoint, request, and response panels."
   },
   sections: chattingZapierApiReferenceGuideSections
 };

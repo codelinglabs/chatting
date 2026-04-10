@@ -13,7 +13,7 @@ const footerGroups = [
   {
     title: "Resources",
     links: [
-      { label: "Help Center", href: "/guides" },
+      { label: "Guides", href: "/guides" },
       { label: "Blog", href: "/blog" }
     ]
   },

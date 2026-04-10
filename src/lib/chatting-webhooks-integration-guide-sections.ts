@@ -1,11 +1,15 @@
 import { code, cta, faq, list, paragraph, section } from "@/lib/blog-block-factories";
 
 export const chattingWebhooksIntegrationGuideSections = [
-  section("why", "When to use webhooks instead of Zapier", [
-    paragraph("Webhooks are the right choice when your team already has its own backend, queue, or automation service and wants raw Chatting events delivered straight to an HTTPS endpoint."),
-    paragraph("Compared with Zapier, webhooks give you more control over signing, retries, and the exact system that should process each event.")
+  section("before-you-start", "Before you start", [
+    list([
+      "An HTTPS endpoint you control",
+      "A backend or queue that can process webhook deliveries",
+      "A signing secret if you want request verification"
+    ]),
+    paragraph("Webhook endpoints should acknowledge quickly and move heavier work into your own background job or queue.")
   ]),
-  section("events", "Which events Chatting can send", [
+  section("supported-events", "Supported events", [
     list([
       "`conversation.created`",
       "`conversation.resolved`",
@@ -14,32 +18,30 @@ export const chattingWebhooksIntegrationGuideSections = [
       "`contact.created`",
       "`contact.updated`",
       "`tag.added`"
-    ]),
-    paragraph("Choose only the events your endpoint actually needs. That keeps the payload stream cleaner and makes webhook debugging much easier.")
+    ])
   ]),
-  section("setup", "How to add a webhook endpoint", [
+  section("add-endpoint", "Add the webhook endpoint", [
     list([
-      "Open Settings → Integrations → Webhooks in Chatting",
+      "Open `Settings → Integrations → Webhooks` in Chatting",
       "Add an HTTPS endpoint URL",
       "Choose which events to send",
       "Optionally add a signing secret",
       "Save the endpoint and run a test delivery"
     ], true),
-    paragraph("Chatting only accepts secure HTTPS endpoints here, which helps avoid accidentally sending customer event data to an unsafe destination.")
+    paragraph("Choose only the events your endpoint actually needs so the delivery stream stays easier to review.")
   ]),
-  section("signing", "How to verify signatures", [
-    paragraph("If you save a secret, Chatting signs payloads so your backend can verify the request before processing it."),
-    paragraph("Use the `X-Chatting-Signature` header and compare it against a signature you compute with the same secret on your side."),
+  section("verify-signatures", "Verify signatures", [
+    paragraph("If you save a secret, Chatting signs payloads so your backend can verify each request before processing it."),
+    paragraph("Use the `X-Chatting-Signature` header and compare it with a signature you compute using the same secret."),
     code("POST /webhooks/chatting\nX-Chatting-Signature: <computed-signature>\nContent-Type: application/json", "http")
   ]),
-  section("testing", "How to test and debug", [
+  section("test-deliveries", "Test deliveries", [
     list([
       "Use the Test button after saving the endpoint",
       "Check the last response summary in Chatting",
       "Open the saved response body when a test fails",
-      "Keep your endpoint fast and queue longer work asynchronously"
-    ]),
-    paragraph("That last step matters. Webhook endpoints should acknowledge quickly, then move heavier processing into your own worker or queue.")
+      "Verify your endpoint returns quickly"
+    ], true)
   ]),
   section("faq", "FAQ", [
     faq([
@@ -57,8 +59,8 @@ export const chattingWebhooksIntegrationGuideSections = [
       }
     ]),
     cta(
-      "Need raw events in your own backend?",
-      "Open the Webhooks page in Chatting and add one HTTPS endpoint first before you widen the event set.",
+      "Need raw events in your backend?",
+      "Open the Webhooks page in Chatting and add one HTTPS endpoint first.",
       "Open Chatting",
       "/login"
     )

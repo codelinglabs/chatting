@@ -1,29 +1,33 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="630" rx="36" fill="url(#bg)"/>
-  <rect x="74" y="84" width="1052" height="462" rx="32" fill="white" fill-opacity="0.84"/>
-  <rect x="118" y="124" width="308" height="382" rx="24" fill="#F8FAFC"/>
-  <rect x="462" y="124" width="620" height="382" rx="24" fill="#EFF6FF"/>
-  <text x="150" y="174" fill="#0F172A" font-size="34" font-family="Arial, sans-serif" font-weight="700">Slack setup</text>
-  <rect x="150" y="212" width="244" height="54" rx="16" fill="white"/>
-  <text x="174" y="246" fill="#334155" font-size="24" font-family="Arial, sans-serif">Choose channel</text>
-  <rect x="150" y="286" width="244" height="54" rx="16" fill="white"/>
-  <text x="174" y="320" fill="#334155" font-size="24" font-family="Arial, sans-serif">New conversation</text>
-  <rect x="150" y="360" width="244" height="54" rx="16" fill="white"/>
-  <text x="174" y="394" fill="#334155" font-size="24" font-family="Arial, sans-serif">Reply from Slack</text>
-  <rect x="520" y="176" width="504" height="92" rx="24" fill="white"/>
-  <circle cx="574" cy="222" r="22" fill="#2563EB"/>
-  <text x="614" y="212" fill="#0F172A" font-size="30" font-family="Arial, sans-serif" font-weight="700">#support-chat</text>
-  <text x="614" y="245" fill="#475569" font-size="22" font-family="Arial, sans-serif">New conversation from tina@usechatting.com</text>
-  <rect x="586" y="308" width="438" height="128" rx="24" fill="white"/>
-  <text x="624" y="356" fill="#0F172A" font-size="28" font-family="Arial, sans-serif" font-weight="700">Reply in thread</text>
-  <text x="624" y="394" fill="#475569" font-size="22" font-family="Arial, sans-serif">Chatting sends the answer back to the visitor.</text>
-  <path d="M432 286C470 286 494 286 528 286" stroke="#2563EB" stroke-width="12" stroke-linecap="round"/>
-  <path d="M512 260L548 286L512 312" stroke="#2563EB" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
   <defs>
-    <linearGradient id="bg" x1="70" y1="48" x2="1118" y2="584" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#DBEAFE"/>
-      <stop offset="0.52" stop-color="#F8FAFC"/>
-      <stop offset="1" stop-color="#FFF7ED"/>
+    <linearGradient id="bg" x1="104" y1="82" x2="1088" y2="544" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5F3FF"/>
+      <stop offset="0.46" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#EFF6FF"/>
     </linearGradient>
   </defs>
+
+  <rect width="1200" height="630" rx="40" fill="#F8FAFC"/>
+  <rect x="74" y="62" width="1052" height="506" rx="34" fill="url(#bg)"/>
+
+  <rect x="138" y="122" width="304" height="282" rx="30" fill="#EEF2FF"/>
+  <circle cx="196" cy="180" r="16" fill="#2563EB"/>
+  <circle cx="240" cy="180" r="16" fill="#10B981"/>
+  <circle cx="284" cy="180" r="16" fill="#F59E0B"/>
+  <rect x="186" y="230" width="182" height="20" rx="10" fill="#0F172A"/>
+  <rect x="186" y="274" width="208" height="18" rx="9" fill="#A5B4FC"/>
+  <rect x="186" y="314" width="164" height="18" rx="9" fill="#C7D2FE"/>
+
+  <rect x="474" y="122" width="588" height="120" rx="30" fill="#FFFFFF"/>
+  <circle cx="532" cy="182" r="18" fill="#2563EB"/>
+  <rect x="570" y="170" width="188" height="24" rx="12" fill="#0F172A"/>
+  <rect x="782" y="173" width="194" height="18" rx="9" fill="#CBD5E1"/>
+
+  <rect x="474" y="266" width="588" height="138" rx="30" fill="#EFF6FF"/>
+  <rect x="526" y="304" width="120" height="20" rx="10" fill="#2563EB"/>
+  <rect x="664" y="304" width="178" height="20" rx="10" fill="#93C5FD"/>
+  <rect x="526" y="348" width="154" height="20" rx="10" fill="#10B981"/>
+  <rect x="698" y="348" width="118" height="20" rx="10" fill="#86EFAC"/>
+
+  <text x="138" y="520" fill="#0F172A" font-family="Fraunces, serif" font-size="44" font-weight="600">Connect Slack to Chatting</text>
 </svg>

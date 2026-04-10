@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- The public guide library now follows a clearer step-by-step docs structure, and the landing footer resources link now labels `/guides` correctly instead of calling it Help Center.
 - The public guides library now includes dedicated iOS SDK and Expo/React Native setup walkthroughs with install steps, client setup, and verification sections.
 - The iOS SDK docs and demo scaffold now show the real app-level support-sheet integration pattern, including required config values and signed-in identify flows.
 - Chatting now has a published React Native and Expo package, so mobile teams can add an in-app support screen, live conversation updates, and Expo push registration without building their own client layer first.
@@ -165,6 +166,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ## 🚀 Key Modules
 
 ### Public Site & Auth
+- The public guide library now uses a more direct installation-doc structure across shortcuts, Slack, Shopify, webhooks, and Zapier pages, and the landing footer now labels the `/guides` destination correctly.
 - The public guides library now includes dedicated iOS SDK and Expo/React Native setup guides alongside the existing integrations walkthroughs.
 - Shared social preview metadata now points at a versioned OG image URL, and the default homepage OG card copy now matches the current Chatting positioning so cached blank previews can refresh cleanly on LinkedIn and similar platforms.
 - Blog and Guides now share one public content shell, and guide/article code snippets render with cleaner inline-code and block-snippet styling.
@@ -304,6 +306,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Contributor Docs
 
+- Added a guide writing standard for public docs so future guide pages follow the same setup-first structure, verification flow, and copy rules.
 - Digital marketing docs now include stronger source-abstraction rules for Chatting SEO prompts so forum-sourced article ideas get rewritten around the real buyer problem instead of the literal source framing.
 - Blog contributor tooling now generates the published blog-post registry from `src/lib/blog-post-*.ts` files during `dev` and `build`, keeping route and sitemap registration in sync without hand-editing imports.
 - Repo agent guidance, product context, and design-system reference docs live alongside the codebase.

@@ -5,16 +5,16 @@ export const chattingZapierIntegrationGuide: GuideArticle = {
   slug: "chatting-zapier-integration",
   title: "Chatting Zapier integration guide: build triggers and actions that actually help",
   excerpt:
-    "Use Chatting with Zapier to trigger Slack, Sheets, and CRM automations when conversations, contacts, and tags change, or send actions back into Chatting.",
+    "Connect Chatting to Zapier so conversations, contacts, and tags can trigger automations or receive actions back.",
   subtitle:
-    "A setup guide for teams who want fast no-code automations around Chatting without losing sight of what data should move where.",
+    "Step-by-step Zapier setup guide with the API key flow, supported triggers and actions, and a first Zap to test.",
   seoTitle: "Chatting Zapier Integration Guide",
   publishedAt: "2026-04-08T15:10:00.000Z",
-  updatedAt: "2026-04-09T01:40:00.000Z",
+  updatedAt: "2026-04-10T09:30:00.000Z",
   readingTime: 5,
   image: {
     src: "/blog/chatting-zapier-integration-guide.svg",
-    alt: "Chatting Zapier guide artwork with trigger cards, action cards, and linked workflow lines."
+    alt: "Chatting Zapier guide cover with trigger, routing, and action panels."
   },
   sections: chattingZapierIntegrationGuideSections
 };

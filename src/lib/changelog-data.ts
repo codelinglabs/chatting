@@ -8,6 +8,10 @@ const entry = (period: string, title: string, summary: string, bullets: string[]
 });
 
 export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
+  entry("April 2026", "Guides now read more like setup docs and less like blog filler", "The public guide library now does a better job of walking teams through setup step by step instead of making them guess where the real instructions start.", [
+    "Slack, Shopify, Zapier, webhooks, inbox shortcuts, and mobile setup guides now follow a clearer structure with prerequisites, setup steps, verification, and FAQs.",
+    "The public footer now labels the guides destination correctly instead of calling it Help Center."
+  ]),
   entry("April 2026", "Chatting now has a React Native and Expo package", "Teams can now add Chatting to Expo and React Native apps with a published package instead of building their own mobile chat client from scratch.", [
     "The new package includes session storage, live conversation sync, and a drop-in support screen for mobile apps.",
     "Expo apps can register push tokens through the package so team replies can bring people back into the conversation after the app is backgrounded.",

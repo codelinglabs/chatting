@@ -5,16 +5,16 @@ export const chattingSlackIntegrationGuide: GuideArticle = {
   slug: "chatting-slack-integration",
   title: "Chatting Slack integration guide: connect alerts and reply from Slack",
   excerpt:
-    "Connect Slack to Chatting so your team sees new conversations quickly, controls which alerts land in-channel, and optionally replies from Slack threads.",
+    "Connect Slack to Chatting to send conversation alerts into a channel and optionally reply from Slack.",
   subtitle:
-    "A practical walkthrough for teams who want Chatting alerts in Slack without turning one channel into a firehose.",
+    "Step-by-step Slack connection guide with the authorization flow, channel setup, and reply options.",
   seoTitle: "Chatting Slack Integration Guide",
   publishedAt: "2026-04-08T15:00:00.000Z",
-  updatedAt: "2026-04-08T15:00:00.000Z",
+  updatedAt: "2026-04-10T09:30:00.000Z",
   readingTime: 4,
   image: {
     src: "/blog/chatting-slack-integration-guide.svg",
-    alt: "Chatting Slack guide artwork with a Slack channel, conversation cards, and reply arrows."
+    alt: "Chatting Slack guide cover with channel-style cards and reply panels."
   },
   sections: chattingSlackIntegrationGuideSections
 };

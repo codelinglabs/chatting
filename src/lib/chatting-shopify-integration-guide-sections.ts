@@ -1,40 +1,45 @@
 import { cta, faq, list, paragraph, section } from "@/lib/blog-block-factories";
 
 export const chattingShopifyIntegrationGuideSections = [
-  section("why", "Why connect Shopify", [
-    paragraph("Shopify is valuable in Chatting because it brings order and customer context into the inbox instead of forcing teammates to jump between tabs while they are trying to answer a visitor."),
-    paragraph("When it is connected, the inbox can show the customer's profile, recent orders, total spend, and a direct link back to Shopify.")
-  ]),
-  section("before-you-start", "What you need first", [
+  section("before-you-start", "Before you start", [
     list([
       "Your Shopify store domain in the form `your-store.myshopify.com`",
       "Permission to approve the app inside Shopify",
-      "A use case for seeing customer and order context inside the inbox"
+      "Visitor email addresses collected in Chatting so Shopify records can match"
     ]),
-    paragraph("Chatting requests read access for customers and orders so the team can see the context that matters during a live conversation.")
+    paragraph("Chatting requests read access for Shopify customers and orders so the inbox can show useful context during a conversation.")
   ]),
-  section("setup", "How to connect Shopify", [
+  section("connect-shopify", "Connect Shopify", [
     list([
       "Open `Settings → Integrations → Shopify` in Chatting",
       "Enter the store slug or full `myshopify` domain",
       "Start the Shopify authorization flow",
       "Approve access in Shopify and return to Chatting"
     ], true),
-    paragraph("Once the store is connected, Chatting can look up Shopify customer context for inbox conversations with a matching email address.")
+    paragraph("After the connection succeeds, Chatting can look up Shopify customer context from the inbox.")
   ]),
-  section("inbox", "How the team uses it in the inbox", [
+  section("inbox-context", "What appears in the inbox", [
     list([
-      "Check whether the visitor is a repeat buyer before replying",
-      "See recent order totals and statuses without leaving the thread",
-      "Open the Shopify customer record when a deeper account issue needs a second look"
+      "Customer profile details",
+      "Recent orders",
+      "Order totals and statuses",
+      "A direct link back to the Shopify customer record"
     ]),
-    paragraph("This matters most for support, returns, shipping questions, and high-value conversations where context changes the right reply.")
+    paragraph("This context only appears when Chatting can match the conversation to a Shopify customer.")
+  ]),
+  section("check-installation", "Check the installation", [
+    list([
+      "Open a conversation with a matched customer email",
+      "Confirm Shopify context appears in the inbox sidebar",
+      "Open the linked customer record in Shopify",
+      "Verify recent orders and totals match Shopify"
+    ], true)
   ]),
   section("faq", "FAQ", [
     faq([
       {
         question: "Do we need to enter the full Shopify URL?",
-        answer: "You can enter the slug only. Chatting will normalize it into the full `your-store.myshopify.com` format before starting the connection."
+        answer: "No. You can enter the slug only and Chatting will normalize it into the full `your-store.myshopify.com` format."
       },
       {
         question: "Will every conversation show Shopify data?",
@@ -46,8 +51,8 @@ export const chattingShopifyIntegrationGuideSections = [
       }
     ]),
     cta(
-      "Want Shopify context in the inbox?",
-      "Connect your store from Chatting and make sure your team collects visitor email addresses when a conversation starts.",
+      "Ready to connect Shopify?",
+      "Open the Shopify integration in Chatting and start with your store domain.",
       "Open Chatting",
       "/login"
     )

@@ -1,9 +1,13 @@
 import { cta, faq, list, paragraph, section } from "@/lib/blog-block-factories";
 
 export const chattingInboxShortcutsGuideSections = [
-  section("why", "Why this guide exists", [
-    paragraph("Most teams learn one or two inbox shortcuts and never discover the rest. That means more clicking, slower triage, and AI Assist features that stay hidden even when they are already available."),
-    paragraph("This guide gives your team one place to see the keyboard shortcuts and command palette actions that are already built into the Chatting inbox.")
+  section("before-you-start", "Before you start", [
+    list([
+      "Open the inbox first",
+      "Use `Cmd` on Mac and `Ctrl` on Windows",
+      "Use `Ctrl/Cmd + /` any time to open the built-in shortcuts modal"
+    ]),
+    paragraph("This page mirrors the shortcuts already available in the Chatting inbox.")
   ]),
   section("keyboard-shortcuts", "Inbox keyboard shortcuts", [
     list([
@@ -17,19 +21,17 @@ export const chattingInboxShortcutsGuideSections = [
       "`Escape`: close overlays or clear the current selection",
       "`R`: mark the active conversation resolved or reopen it",
       "`N`: jump to search"
-    ]),
-    paragraph("The AI shortcuts only work when you already have a conversation open. If there is no active conversation, there is nothing to summarize or draft a reply for.")
+    ])
   ]),
-  section("ai-assist", "AI Assist shortcuts your team should know", [
-    paragraph("The two most useful shortcuts for busy inboxes are the AI ones."),
+  section("ai-assist", "AI Assist shortcuts", [
     list([
-      "`Ctrl/Cmd + J` opens Suggest reply so you can get a draft without leaving the keyboard",
-      "`Ctrl/Cmd + Shift + S` opens Summarize conversation so you can catch up on a long thread quickly"
+      "`Ctrl/Cmd + J`: open Suggest reply for the active conversation",
+      "`Ctrl/Cmd + Shift + S`: open Summarize conversation for the active conversation"
     ]),
-    paragraph("These are especially helpful for handoffs, catching up after being away, and replying faster when the question is familiar but the wording still needs a human pass.")
+    paragraph("These shortcuts only work when a conversation is already open in the inbox.")
   ]),
-  section("command-palette", "What is in the command palette", [
-    paragraph("Open the command palette with `Ctrl/Cmd + K` to get a searchable action menu inside the inbox."),
+  section("command-palette", "Command palette actions", [
+    paragraph("Open the command palette with `Ctrl/Cmd + K` to search actions without leaving the keyboard."),
     list([
       "Focus search",
       "Show keyboard shortcuts",
@@ -39,22 +41,15 @@ export const chattingInboxShortcutsGuideSections = [
       "Suggest reply when AI reply is available",
       "Summarize conversation when AI summary is available",
       "Mark conversation resolved or reopen conversation"
-    ]),
-    paragraph("This is the fastest way to learn what is available without memorizing everything on day one.")
+    ])
   ]),
-  section("rollout", "A simple rollout for your team", [
+  section("check-shortcuts", "Check the shortcuts", [
     list([
-      "Teach everyone `Ctrl/Cmd + K` on day one",
-      "Teach support teammates `Ctrl/Cmd + J` and `Ctrl/Cmd + Shift + S` next",
-      "Pin this guide in your internal onboarding notes",
-      "Encourage teammates to use the shortcuts modal as the quick reference"
-    ], true),
-    cta(
-      "Want the shortcuts inside the inbox too?",
-      "Open the inbox and use `Ctrl/Cmd + /` to pull up the built-in keyboard shortcuts list.",
-      "Open Chatting",
-      "/login"
-    )
+      "Open the inbox",
+      "Press `Ctrl/Cmd + /` and confirm the shortcuts modal opens",
+      "Press `Ctrl/Cmd + K` and confirm the command palette opens",
+      "Open a conversation and test `Ctrl/Cmd + J` or `Ctrl/Cmd + Shift + S`"
+    ], true)
   ]),
   section("faq", "FAQ", [
     faq([
@@ -64,14 +59,18 @@ export const chattingInboxShortcutsGuideSections = [
       },
       {
         question: "Will AI Assist shortcuts work for every teammate?",
-        answer:
-          "They work when AI Assist is available for that workspace and the teammate has an active conversation open."
+        answer: "They work when AI Assist is available for that workspace and the teammate has an active conversation open."
       },
       {
-        question: "Where can teammates discover this without guessing?",
-        answer:
-          "Inside the inbox, use `Ctrl/Cmd + /` to open the keyboard shortcuts modal and `Ctrl/Cmd + K` to browse actions in the command palette."
+        question: "Where can teammates see these inside the product?",
+        answer: "Inside the inbox, use `Ctrl/Cmd + /` to open the keyboard shortcuts modal and `Ctrl/Cmd + K` to browse actions in the command palette."
       }
-    ])
+    ]),
+    cta(
+      "Need the shortcut list in the inbox?",
+      "Open the inbox and use `Ctrl/Cmd + /` to view the built-in shortcuts modal.",
+      "Open Chatting",
+      "/login"
+    )
   ])
 ];
