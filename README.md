@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- The Reddit reply generator now treats links and direct service mentions as conditional, so prompt guidance is safer in subreddits where automod may remove obvious promo patterns.
 - Repo guidance now requires `npm run build` after any user-requested test run, so verification reports always include both test and build status.
 - JetBrains `.idea/` project files are now ignored in git so local workspace metadata stays out of the shared worktree.
 - Email-template preview tests now use the hosted `https://usechatting.com` origin so dashboard preview coverage matches the current public app URL.
@@ -320,6 +321,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ### Contributor Docs
 
+- The Reddit reply generator now includes clearer automod-safety rules for subreddits where direct links, domains, or service mentions are likely to trigger removals.
 - Repo agent instructions now require a follow-up `npm run build` after any user-requested test run so verification stays consistent across tasks.
 - Added a guide writing standard for public docs so future guide pages follow the same setup-first structure, verification flow, and copy rules.
 - Digital marketing docs now include stronger source-abstraction rules for Chatting SEO prompts so forum-sourced article ideas get rewritten around the real buyer problem instead of the literal source framing.
