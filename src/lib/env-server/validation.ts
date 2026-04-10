@@ -1,62 +1,96 @@
 import "server-only";
 
+import { type AppEnvValidationGroup } from "@/lib/env-config";
 import { getRuntimeEnvironment, type RuntimeEnvironment } from "@/lib/env";
 import { getMissingEnvVarsForGroup } from "@/lib/env-server/groups";
 import { type ServerEnvSource } from "@/lib/env-server/core";
 import { buildStripeEnvSource } from "@/lib/env-server/stripe";
 
-let validatedStartupCoreEnvironment = false;
-let validatedIntegrationsEnvironment: RuntimeEnvironment | null = null;
-let validatedR2Environment: RuntimeEnvironment | null = null;
-let validatedStripeBillingEnvironment: RuntimeEnvironment | null = null;
+const validationState = {
+  startup: null as RuntimeEnvironment | null,
+  integrations: null as RuntimeEnvironment | null,
+  redisLive: null as RuntimeEnvironment | null,
+  r2: null as RuntimeEnvironment | null,
+  stripeBilling: null as RuntimeEnvironment | null
+};
+
+type EnvValidationParams = {
+  environment?: RuntimeEnvironment;
+  source?: ServerEnvSource;
+};
+
+type CachedEnvValidationParams = EnvValidationParams & {
+  cache?: boolean;
+};
+
 type StripeEnvValidationGroup = "stripe-checkout" | "stripe-billing";
 
-function getMissingStripeEnvVars(
-  group: StripeEnvValidationGroup,
-  params?: {
-    environment?: RuntimeEnvironment;
-    source?: ServerEnvSource;
+function getMissingProductionEnvVars(group: AppEnvValidationGroup, params?: EnvValidationParams) {
+  const environment = params?.environment || getRuntimeEnvironment();
+  if (environment !== "production") {
+    return [] as string[];
   }
-) {
+
+  return getMissingEnvVarsForGroup(group, params?.source || process.env);
+}
+
+function getMissingStripeEnvVars(group: StripeEnvValidationGroup, params?: EnvValidationParams) {
   const environment = params?.environment || getRuntimeEnvironment();
   const source = buildStripeEnvSource(params?.source || process.env, environment);
   return getMissingEnvVarsForGroup(group, source);
 }
 
-export function getMissingStartupProductionCoreEnvVars(params?: {
-  environment?: RuntimeEnvironment;
-  source?: ServerEnvSource;
-}) {
-  const environment = params?.environment || getRuntimeEnvironment();
-  if (environment !== "production") {
-    return [] as string[];
+function assertCachedEnv(
+  cacheKey: keyof typeof validationState,
+  messagePrefix: string,
+  getMissing: (params?: EnvValidationParams) => string[],
+  params?: CachedEnvValidationParams,
+  options?: {
+    productionOnly?: boolean;
   }
-  return getMissingEnvVarsForGroup("startup-production-core", params?.source || process.env);
+) {
+  const environment = params?.environment || getRuntimeEnvironment();
+  if (options?.productionOnly && environment !== "production") {
+    return;
+  }
+
+  const useCache = params?.cache !== false && !params?.source;
+  if (useCache && validationState[cacheKey] === environment) {
+    return;
+  }
+
+  const missing = getMissing({
+    environment,
+    source: params?.source
+  });
+
+  if (missing.length > 0) {
+    throw new Error(`${messagePrefix}${missing.join(", ")}`);
+  }
+
+  if (useCache) {
+    validationState[cacheKey] = environment;
+  }
 }
 
-export function getMissingStripeCheckoutEnvVars(params?: {
-  environment?: RuntimeEnvironment;
-  source?: ServerEnvSource;
-}) {
+export function getMissingStartupProductionCoreEnvVars(params?: EnvValidationParams) {
+  return getMissingProductionEnvVars("startup-production-core", params);
+}
+
+export function getMissingStripeCheckoutEnvVars(params?: EnvValidationParams) {
   return getMissingStripeEnvVars("stripe-checkout", params);
 }
 
-export function getMissingStripeBillingEnvVars(params?: {
-  environment?: RuntimeEnvironment;
-  source?: ServerEnvSource;
-}) {
+export function getMissingStripeBillingEnvVars(params?: EnvValidationParams) {
   return getMissingStripeEnvVars("stripe-billing", params);
 }
 
-export function getMissingIntegrationsEnvVars(params?: {
-  environment?: RuntimeEnvironment;
-  source?: ServerEnvSource;
-}) {
-  const environment = params?.environment || getRuntimeEnvironment();
-  if (environment !== "production") {
-    return [] as string[];
-  }
-  return getMissingEnvVarsForGroup("integrations", params?.source || process.env);
+export function getMissingIntegrationsEnvVars(params?: EnvValidationParams) {
+  return getMissingProductionEnvVars("integrations", params);
+}
+
+export function getMissingRedisLiveEnvVars(params?: EnvValidationParams) {
+  return getMissingEnvVarsForGroup("redis-live", params?.source || process.env);
 }
 
 export function getMissingR2EnvVars(params?: {
@@ -79,121 +113,46 @@ export function isStripeBillingReady(
   return getMissingStripeBillingEnvVars({ source, environment }).length === 0;
 }
 
-export function assertStartupProductionCoreEnvConfigured(params?: {
-  environment?: RuntimeEnvironment;
-  source?: ServerEnvSource;
-  cache?: boolean;
-}) {
-  const environment = params?.environment || getRuntimeEnvironment();
-  if (environment !== "production") {
-    return;
-  }
-  const useCache = params?.cache !== false && !params?.source;
-  if (useCache && validatedStartupCoreEnvironment) {
-    return;
-  }
-
-  const missing = getMissingStartupProductionCoreEnvVars({
-    environment,
-    source: params?.source
-  });
-
-  if (missing.length > 0) {
-    throw new Error(
-      `[StartupEnvConfig] Missing required production env vars: ${missing.join(", ")}`
-    );
-  }
-
-  if (useCache) {
-    validatedStartupCoreEnvironment = true;
-  }
+export function assertStartupProductionCoreEnvConfigured(params?: CachedEnvValidationParams) {
+  assertCachedEnv(
+    "startup",
+    "[StartupEnvConfig] Missing required production env vars: ",
+    getMissingStartupProductionCoreEnvVars,
+    params,
+    { productionOnly: true }
+  );
 }
 
-export function assertStripeBillingEnvConfigured(params?: {
-  environment?: RuntimeEnvironment;
-  source?: ServerEnvSource;
-  cache?: boolean;
-}) {
-  const environment = params?.environment || getRuntimeEnvironment();
-  const useCache = params?.cache !== false && !params?.source;
-
-  if (useCache && validatedStripeBillingEnvironment === environment) {
-    return;
-  }
-
-  const missing = getMissingStripeBillingEnvVars({
-    environment,
-    source: params?.source
-  });
-
-  if (missing.length > 0) {
-    throw new Error(
-      `[StripeBillingConfig] Missing required Stripe billing env vars: ${missing.join(", ")}`
-    );
-  }
-
-  if (useCache) {
-    validatedStripeBillingEnvironment = environment;
-  }
+export function assertStripeBillingEnvConfigured(params?: CachedEnvValidationParams) {
+  assertCachedEnv(
+    "stripeBilling",
+    "[StripeBillingConfig] Missing required Stripe billing env vars: ",
+    getMissingStripeBillingEnvVars,
+    params
+  );
 }
 
-export function assertIntegrationsEnvConfigured(params?: {
-  environment?: RuntimeEnvironment;
-  source?: ServerEnvSource;
-  cache?: boolean;
-}) {
-  const environment = params?.environment || getRuntimeEnvironment();
-
-  if (environment !== "production") {
-    return;
-  }
-
-  const useCache = params?.cache !== false && !params?.source;
-  if (useCache && validatedIntegrationsEnvironment === environment) {
-    return;
-  }
-
-  const missing = getMissingIntegrationsEnvVars({
-    environment,
-    source: params?.source
-  });
-
-  if (missing.length > 0) {
-    throw new Error(
-      `[IntegrationsConfig] Missing required integrations env vars: ${missing.join(", ")}`
-    );
-  }
-
-  if (useCache) {
-    validatedIntegrationsEnvironment = environment;
-  }
+export function assertIntegrationsEnvConfigured(params?: CachedEnvValidationParams) {
+  assertCachedEnv(
+    "integrations",
+    "[IntegrationsConfig] Missing required integrations env vars: ",
+    getMissingIntegrationsEnvVars,
+    params,
+    { productionOnly: true }
+  );
 }
 
-export function assertR2EnvConfigured(params?: {
-  environment?: RuntimeEnvironment;
-  source?: ServerEnvSource;
-  cache?: boolean;
-}) {
-  const environment = params?.environment || getRuntimeEnvironment();
+export function assertRedisLiveEnvConfigured(params?: CachedEnvValidationParams) {
+  assertCachedEnv(
+    "redisLive",
+    "[RedisLiveConfig] Missing required Redis live env vars: ",
+    getMissingRedisLiveEnvVars,
+    params
+  );
+}
 
-  if (environment !== "production") {
-    return;
-  }
-
-  const useCache = params?.cache !== false && !params?.source;
-  if (useCache && validatedR2Environment === environment) {
-    return;
-  }
-
-  const missing = getMissingR2EnvVars({
-    source: params?.source
+export function assertR2EnvConfigured(params?: CachedEnvValidationParams) {
+  assertCachedEnv("r2", "[R2Config] Missing required R2 env vars: ", getMissingR2EnvVars, params, {
+    productionOnly: true
   });
-
-  if (missing.length > 0) {
-    throw new Error(`[R2Config] Missing required R2 env vars: ${missing.join(", ")}`);
-  }
-
-  if (useCache) {
-    validatedR2Environment = environment;
-  }
 }

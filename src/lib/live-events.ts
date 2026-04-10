@@ -1,147 +1,86 @@
-import type { ConversationStatus, Sender } from "@/lib/types";
+import "server-only";
 
-type DashboardTypingActor = "visitor" | "team";
+import {
+  ensureRedisLiveBridge,
+  publishRedisConversationLive,
+  publishRedisDashboardLive
+} from "@/lib/live-events-redis";
+import {
+  publishLocalConversationLive,
+  publishLocalDashboardLive,
+  subscribeLocalConversationLive,
+  subscribeLocalDashboardLive
+} from "@/lib/live-events-state";
+import type {
+  DashboardLiveEvent,
+  LiveEventListener,
+  PublicConversationLiveEvent
+} from "@/lib/live-events.types";
 
-export type DashboardLiveEvent =
-  | {
-      type: "message.created";
-      conversationId: string;
-      sender: Sender;
-      createdAt: string;
-      preview?: string | null;
-      pageUrl?: string | null;
-      location?: string | null;
-      siteName?: string | null;
-      visitorLabel?: string | null;
-      isNewConversation?: boolean;
-      isNewVisitor?: boolean;
-      highIntent?: boolean;
-    }
-  | {
-      type: "conversation.updated";
-      conversationId: string;
-      status: ConversationStatus;
-      updatedAt: string;
-    }
-  | {
-      type: "conversation.read";
-      conversationId: string;
-      updatedAt: string;
-    }
-  | {
-      type: "typing.updated";
-      conversationId: string;
-      actor: DashboardTypingActor;
-      typing: boolean;
-    }
-  | {
-      type: "visitor.presence.updated";
-      siteId: string;
-      sessionId: string;
-      conversationId: string | null;
-      pageUrl: string | null;
-      updatedAt: string;
-    };
+export type { DashboardLiveEvent, PublicConversationLiveEvent } from "@/lib/live-events.types";
 
-export type PublicConversationLiveEvent =
-  | {
-      type: "message.created";
-      conversationId: string;
-      sender: Sender;
-      createdAt: string;
-    }
-  | {
-      type: "typing.updated";
-      conversationId: string;
-      actor: "team";
-      typing: boolean;
-    }
-  | {
-      type: "conversation.updated";
-      conversationId: string;
-      status: ConversationStatus;
-      updatedAt: string;
-    };
+const redisDispatchers = {
+  dashboard: publishLocalDashboardLive,
+  conversation: publishLocalConversationLive
+};
 
-type Listener<T> = (event: T) => void;
-
-declare global {
-  // eslint-disable-next-line no-var
-  var __chattingLiveListeners:
-    | {
-        dashboardByUserId: Map<string, Set<Listener<DashboardLiveEvent>>>;
-        conversationById: Map<string, Set<Listener<PublicConversationLiveEvent>>>;
-      }
-    | undefined;
+function reportRedisBridgeError(error: unknown) {
+  console.error("redis live bridge failed", error);
 }
 
-function getState() {
-  if (!global.__chattingLiveListeners) {
-    global.__chattingLiveListeners = {
-      dashboardByUserId: new Map(),
-      conversationById: new Map()
-    };
-  }
-
-  return global.__chattingLiveListeners;
+function warmRedisLiveBridge() {
+  void ensureRedisLiveBridge(redisDispatchers).catch(reportRedisBridgeError);
 }
 
-function subscribe<T>(
-  bucket: Map<string, Set<Listener<T>>>,
+export function warmLiveEventBridge() {
+  return ensureRedisLiveBridge(redisDispatchers).catch((error) => {
+    reportRedisBridgeError(error);
+    throw error;
+  });
+}
+
+function subscribeLive<TEvent>(
+  subscribeLocal: (key: string, listener: LiveEventListener<TEvent>) => () => void,
   key: string,
-  listener: Listener<T>
+  listener: LiveEventListener<TEvent>
 ) {
-  const current = bucket.get(key) ?? new Set<Listener<T>>();
-  current.add(listener);
-  bucket.set(key, current);
-
-  return () => {
-    const listeners = bucket.get(key);
-    if (!listeners) {
-      return;
-    }
-
-    listeners.delete(listener);
-
-    if (!listeners.size) {
-      bucket.delete(key);
-    }
-  };
+  warmRedisLiveBridge();
+  return subscribeLocal(key, listener);
 }
 
-function publish<T>(bucket: Map<string, Set<Listener<T>>>, key: string, event: T) {
-  const listeners = bucket.get(key);
-  if (!listeners?.size) {
-    return;
-  }
-
-  for (const listener of listeners) {
-    try {
-      listener(event);
-    } catch (error) {
-      console.error("live event listener failed", error);
-    }
-  }
+function publishLive<TEvent>(
+  publishLocal: (key: string, event: TEvent) => void,
+  publishRedis: (key: string, event: TEvent) => Promise<unknown>,
+  key: string,
+  event: TEvent
+) {
+  publishLocal(key, event);
+  void ensureRedisLiveBridge(redisDispatchers)
+    .then(() => publishRedis(key, event))
+    .catch(reportRedisBridgeError);
 }
 
-export function subscribeDashboardLive(userId: string, listener: Listener<DashboardLiveEvent>) {
-  return subscribe(getState().dashboardByUserId, userId, listener);
+export function subscribeDashboardLive(
+  userId: string,
+  listener: LiveEventListener<DashboardLiveEvent>
+) {
+  return subscribeLive(subscribeLocalDashboardLive, userId, listener);
 }
 
 export function publishDashboardLive(userId: string, event: DashboardLiveEvent) {
-  publish(getState().dashboardByUserId, userId, event);
+  publishLive(publishLocalDashboardLive, publishRedisDashboardLive, userId, event);
 }
 
 export function subscribeConversationLive(
   conversationId: string,
-  listener: Listener<PublicConversationLiveEvent>
+  listener: LiveEventListener<PublicConversationLiveEvent>
 ) {
-  return subscribe(getState().conversationById, conversationId, listener);
+  return subscribeLive(subscribeLocalConversationLive, conversationId, listener);
 }
 
 export function publishConversationLive(
   conversationId: string,
   event: PublicConversationLiveEvent
 ) {
-  publish(getState().conversationById, conversationId, event);
+  publishLive(publishLocalConversationLive, publishRedisConversationLive, conversationId, event);
 }

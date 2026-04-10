@@ -57,6 +57,10 @@ export function getDatabaseConfig(params?: {
   };
 }
 
+export function getRedisUrl(source: ServerEnvSource = process.env) {
+  return getRequiredServerEnv("REDIS_URL", { source, errorCode: "REDIS_URL_NOT_CONFIGURED" });
+}
+
 export function getAppDisplayName(source: ServerEnvSource = process.env) {
   return getOptionalServerEnv("APP_NAME", source)!;
 }

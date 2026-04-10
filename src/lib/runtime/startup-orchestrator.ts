@@ -2,13 +2,19 @@ import "server-only";
 
 export async function startNodeRuntimeServices() {
   const [
-    { assertIntegrationsEnvConfigured, assertStartupProductionCoreEnvConfigured },
+    {
+      assertIntegrationsEnvConfigured,
+      assertRedisLiveEnvConfigured,
+      assertStartupProductionCoreEnvConfigured
+    },
+    { warmLiveEventBridge },
     { dailyDigestScheduler },
     { growthLifecycleScheduler },
     { zapierDeliveryScheduler },
     { weeklyPerformanceScheduler }
   ] = await Promise.all([
     import("@/lib/env.server"),
+    import("@/lib/live-events"),
     import("@/lib/runtime/daily-digest-scheduler"),
     import("@/lib/runtime/growth-lifecycle-scheduler"),
     import("@/lib/runtime/zapier-delivery-scheduler"),
@@ -17,6 +23,8 @@ export async function startNodeRuntimeServices() {
 
   assertStartupProductionCoreEnvConfigured();
   assertIntegrationsEnvConfigured();
+  assertRedisLiveEnvConfigured();
+  await warmLiveEventBridge();
   dailyDigestScheduler.start();
   growthLifecycleScheduler.start();
   zapierDeliveryScheduler.start();

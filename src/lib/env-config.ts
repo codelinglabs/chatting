@@ -1,6 +1,7 @@
 export type AppEnvValidationGroup =
   | "startup-production-core"
   | "integrations"
+  | "redis-live"
   | "stripe-checkout"
   | "stripe-billing"
   | "r2"
@@ -61,6 +62,10 @@ export const APP_ENV_DEFINITIONS = {
   NEXT_PUBLIC_ZAPIER_APP_URL: {
     exampleValue: "https://zapier.com/developer/public-invite/<your-private-invite-id>",
     requiredIn: ["integrations"]
+  },
+  REDIS_URL: {
+    exampleValue: "rediss://default:<password>@<host>:6379",
+    requiredIn: ["redis-live"]
   },
   R2_ACCESS_KEY_ID: {
     exampleValue: "",
@@ -133,6 +138,7 @@ export const APP_ENV_EXAMPLE_ORDER = [
   "DATABASE_URL",
   "NEXT_PUBLIC_APP_URL",
   "NEXT_PUBLIC_ZAPIER_APP_URL",
+  "REDIS_URL",
   "AUTH_SECRET",
   "INTEGRATIONS_ENCRYPTION_KEY",
   "AWS_REGION",

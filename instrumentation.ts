@@ -3,6 +3,6 @@ export async function register() {
     return;
   }
 
-  const { registerNodeInstrumentation } = await import("./instrumentation-node");
-  await registerNodeInstrumentation();
+  const { startNodeRuntimeServices } = await import("@/lib/runtime/startup-orchestrator");
+  await startNodeRuntimeServices();
 }

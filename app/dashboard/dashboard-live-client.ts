@@ -1,6 +1,6 @@
 "use client";
 
-import type { DashboardLiveEvent } from "@/lib/live-events";
+import type { DashboardLiveEvent } from "@/lib/live-events.types";
 
 type DashboardLiveMessage = DashboardLiveEvent | { type: "connected" };
 

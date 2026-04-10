@@ -16,6 +16,7 @@ export {
   getAuthSecret,
   getDatabaseConfig,
   getMiniMaxConfig,
+  getRedisUrl,
   getReplyDomain,
   getSesClientConfig,
   getSesInboundTopicArnSet
@@ -27,10 +28,12 @@ export {
 } from "@/lib/env-server/stripe";
 export {
   assertIntegrationsEnvConfigured,
+  assertRedisLiveEnvConfigured,
   assertR2EnvConfigured,
   assertStartupProductionCoreEnvConfigured,
   assertStripeBillingEnvConfigured,
   getMissingIntegrationsEnvVars,
+  getMissingRedisLiveEnvVars,
   getMissingR2EnvVars,
   getMissingStartupProductionCoreEnvVars,
   getMissingStripeBillingEnvVars,
