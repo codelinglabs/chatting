@@ -19,6 +19,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 
 ## Recent Updates
 
+- The public guides library now includes dedicated iOS SDK and Expo/React Native setup walkthroughs with install steps, client setup, and verification sections.
 - The iOS SDK docs and demo scaffold now show the real app-level support-sheet integration pattern, including required config values and signed-in identify flows.
 - Chatting now has a published React Native and Expo package, so mobile teams can add an in-app support screen, live conversation updates, and Expo push registration without building their own client layer first.
 - Live dashboard and public conversation updates now fan out through a shared Redis bridge, so realtime events stay in sync across multiple app instances instead of depending on one process-local listener map.
@@ -164,6 +165,7 @@ Async team chat for high-intent visitors. This MVP gives each SaaS account:
 ## 🚀 Key Modules
 
 ### Public Site & Auth
+- The public guides library now includes dedicated iOS SDK and Expo/React Native setup guides alongside the existing integrations walkthroughs.
 - Shared social preview metadata now points at a versioned OG image URL, and the default homepage OG card copy now matches the current Chatting positioning so cached blank previews can refresh cleanly on LinkedIn and similar platforms.
 - Blog and Guides now share one public content shell, and guide/article code snippets render with cleaner inline-code and block-snippet styling.
 - Email verification screens now stay inside the shared auth shell, and signup confirmation offers an inline `Edit it` action so people can correct the email address they just used without leaving the flow.

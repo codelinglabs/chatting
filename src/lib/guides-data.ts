@@ -1,5 +1,7 @@
 import type { GuideArticle } from "@/lib/guide-article";
 import { chattingInboxShortcutsGuide } from "@/lib/chatting-inbox-shortcuts-guide";
+import { chattingIosSdkGuide } from "@/lib/chatting-ios-sdk-guide";
+import { chattingReactNativeExpoGuide } from "@/lib/chatting-react-native-expo-guide";
 import { chattingZapierApiReferenceGuide } from "@/lib/chatting-zapier-api-reference-guide";
 import { chattingShopifyIntegrationGuide } from "@/lib/chatting-shopify-integration-guide";
 import { chattingSlackIntegrationGuide } from "@/lib/chatting-slack-integration-guide";
@@ -8,6 +10,8 @@ import { chattingWebhooksIntegrationGuide } from "@/lib/chatting-webhooks-integr
 import { chattingZapierIntegrationGuide } from "@/lib/chatting-zapier-integration-guide";
 
 const guides = [
+  chattingReactNativeExpoGuide,
+  chattingIosSdkGuide,
   chattingInboxShortcutsGuide,
   chattingZapierApiReferenceGuide,
   chattingSlackIntegrationGuide,
